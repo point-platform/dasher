@@ -124,6 +124,15 @@ namespace MsgPack.Strict
 
             #endregion
 
+            Action<string> throwException = msg =>
+            {
+                ilg.Emit(OpCodes.Ldtoken, type);
+                ilg.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+                ilg.Emit(OpCodes.Ldstr, msg);
+                ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(Type), typeof(string)}));
+                ilg.Emit(OpCodes.Throw);
+            };
+
             #region Read map length
 
             var mapSize = ilg.DeclareLocal(typeof(long));
@@ -135,13 +144,7 @@ namespace MsgPack.Strict
                 // return value should be true
                 var ifLabel = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, ifLabel);
-                {
-                    ilg.Emit(OpCodes.Ldtoken, type);
-                    ilg.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
-                    ilg.Emit(OpCodes.Ldstr, "Data stream ended.");
-                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(Type), typeof(string)}));
-                    ilg.Emit(OpCodes.Throw);
-                }
+                throwException("Data stream ended.");
                 ilg.MarkLabel(ifLabel);
             }
 
