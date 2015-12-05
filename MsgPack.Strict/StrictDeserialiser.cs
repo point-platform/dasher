@@ -247,17 +247,15 @@ namespace MsgPack.Strict
                     ilg.Emit(OpCodes.Call, methodInfo);
 
                     // If the 'type getter' failed, throw
+                    var typeGetterSuccess = ilg.DefineLabel();
+                    ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
                     {
-                        var typeGetterSuccess = ilg.DefineLabel();
-                        ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
-                        {
-                            // TODO throw better exception
-                            ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 4");
-                            ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
-                            ilg.Emit(OpCodes.Throw);
-                        }
-                        ilg.MarkLabel(typeGetterSuccess);
+                        // TODO throw better exception
+                        ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 4");
+                        ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
+                        ilg.Emit(OpCodes.Throw);
                     }
+                    ilg.MarkLabel(typeGetterSuccess);
                 }
 
                 if (nextLabel != null)
