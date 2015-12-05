@@ -154,7 +154,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnUnexpectedField()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(3)
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(123)
                 .Pack("SUPRISE").Pack("Unexpected"));
@@ -169,7 +169,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnDuplicateField()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(3)
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(123)
                 .Pack("Score").Pack(321));
