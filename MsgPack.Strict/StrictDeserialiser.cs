@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -86,12 +85,6 @@ namespace MsgPack.Strict
 
             #endregion
 
-            Action<string> debug = msg =>
-            {
-//                ilg.Emit(OpCodes.Ldstr, msg);
-//                ilg.Emit(OpCodes.Call, typeof (Debug).GetMethod("WriteLine", new[] {typeof (string)}));
-            };
-
             #region Initialise locals
 
             var valueLocals = new LocalBuilder[parameters.Length];
@@ -154,8 +147,6 @@ namespace MsgPack.Strict
 
             // for each item in map
             {
-                debug("Starting loop");
-
                 // var loopIndex;
                 var loopIndex = ilg.DeclareLocal(typeof(long));
                 // loopIndex = 0;
@@ -170,11 +161,6 @@ namespace MsgPack.Strict
                 ilg.Emit(OpCodes.Br, lblLoopTest);
 
                 ilg.MarkLabel(lblLoopStart);
-
-                debug("=============================");
-                debug("<loop start>");
-
-                debug("Reading key");
 
                 // read the key
                 var key = ilg.DeclareLocal(typeof(string));
@@ -194,10 +180,6 @@ namespace MsgPack.Strict
                     ilg.MarkLabel(ifLabel);
                 }
 
-                // DEBUG CODE
-                ilg.Emit(OpCodes.Ldloc, key);
-                ilg.Emit(OpCodes.Call, typeof(Debug).GetMethod("WriteLine", new[] {typeof(string)}));
-
                 Label? nextLabel = null;
                 for (var parameterIndex = 0; parameterIndex < parameters.Length; parameterIndex++)
                 {
@@ -205,9 +187,6 @@ namespace MsgPack.Strict
                     if (nextLabel != null)
                         ilg.MarkLabel(nextLabel.Value);
                     nextLabel = ilg.DefineLabel();
-
-                    debug("-----------------");
-                    debug($"Testing parameter #{parameterIndex}: key == {parameters[parameterIndex].Name}");
 
                     // compare map's key with this parameter's name in a case insensitive way
                     ilg.Emit(OpCodes.Ldloc, key);
@@ -218,14 +197,10 @@ namespace MsgPack.Strict
                     // if the key doesn't match this property, go to the next block
                     ilg.Emit(OpCodes.Brfalse, nextLabel.Value);
 
-                    debug("Found parameter");
-
                     // read value
                     MethodInfo methodInfo;
                     if (!_typeGetters.TryGetValue(parameters[parameterIndex].ParameterType, out methodInfo))
                         throw new NotImplementedException();
-
-                    debug("Found parameter type getter");
 
                     // verify we haven't already seen a value for this parameter
                     {
@@ -275,7 +250,6 @@ namespace MsgPack.Strict
                     ilg.MarkLabel(nextLabel.Value);
 
                 // increment the loop index
-                debug("<loop increment>");
                 ilg.Emit(OpCodes.Ldloc, loopIndex);
                 ilg.Emit(OpCodes.Ldc_I4_1, loopIndex);
                 ilg.Emit(OpCodes.Conv_I8);
@@ -284,14 +258,12 @@ namespace MsgPack.Strict
 
                 // test loop condition
                 ilg.MarkLabel(lblLoopTest);
-                debug("<loop test>");
                 ilg.Emit(OpCodes.Ldloc, loopIndex);
                 ilg.Emit(OpCodes.Ldloc, mapSize);
                 ilg.Emit(OpCodes.Beq, lblLoopExit);
 
                 ilg.Emit(OpCodes.Br, lblLoopStart);
                 ilg.MarkLabel(lblLoopExit);
-                debug("<loop exited>");
             }
 
             #region Verify all required values specified
