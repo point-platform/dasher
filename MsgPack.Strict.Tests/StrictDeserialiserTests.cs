@@ -33,7 +33,7 @@ namespace MsgPack.Strict.Tests
             public int Score { get; }
         }
 
-        public class TestDefaultParams
+        public sealed class TestDefaultParams
         {
             public byte    B   { get; }
             public sbyte   Sb  { get; }
