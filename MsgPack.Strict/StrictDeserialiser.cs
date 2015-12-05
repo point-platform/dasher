@@ -251,7 +251,7 @@ namespace MsgPack.Strict
 
                 // increment the loop index
                 ilg.Emit(OpCodes.Ldloc, loopIndex);
-                ilg.Emit(OpCodes.Ldc_I4_1, loopIndex);
+                ilg.Emit(OpCodes.Ldc_I4_1);
                 ilg.Emit(OpCodes.Conv_I8);
                 ilg.Emit(OpCodes.Add);
                 ilg.Emit(OpCodes.Stloc, loopIndex);
