@@ -160,7 +160,8 @@ namespace MsgPack.Strict.Tests
                 .Pack("SUPRISE").Pack("Unexpected"));
 
             var deserialiser = StrictDeserialiser.Get<UserScore>();
-            var ex = Assert.Throws<StrictDeserialisationException>(() => deserialiser.Deserialise(bytes));
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
             Assert.Equal("Encountered unexpected field \"SUPRISE\".", ex.Message);
@@ -175,7 +176,8 @@ namespace MsgPack.Strict.Tests
                 .Pack("Score").Pack(321));
 
             var deserialiser = StrictDeserialiser.Get<UserScore>();
-            var ex = Assert.Throws<StrictDeserialisationException>(() => deserialiser.Deserialise(bytes));
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
             Assert.Equal("Duplicate field \"Score\".", ex.Message);
@@ -197,7 +199,8 @@ namespace MsgPack.Strict.Tests
             var bytes = new byte[0];
 
             var deserialiser = StrictDeserialiser.Get<UserScore>();
-            var ex = Assert.Throws<StrictDeserialisationException>(() => deserialiser.Deserialise(bytes));
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
             Assert.Equal("Data stream ended.", ex.Message);
@@ -231,8 +234,8 @@ namespace MsgPack.Strict.Tests
         public void SpecifiedValueOverridesDefaultValue()
         {
             var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
-            .Pack("Name").Pack("Bob")
-            .Pack("Score").Pack(12345)); // score has a default of 100
+                .Pack("Name").Pack("Bob")
+                .Pack("Score").Pack(12345)); // score has a default of 100
 
             var deserialiser = StrictDeserialiser.Get<UserScoreWithDefaultScore>();
             var after = deserialiser.Deserialise(bytes);
@@ -244,14 +247,16 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnMultipleConstructors()
         {
-            var ex = Assert.Throws<StrictDeserialisationException>(() => StrictDeserialiser.Get<MultipleConstructors>());
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => StrictDeserialiser.Get<MultipleConstructors>());
             Assert.Equal("Type must have a single public constructor.", ex.Message);
         }
 
         [Fact]
         public void ThrowsNoPublicConstructors()
         {
-            var ex = Assert.Throws<StrictDeserialisationException>(() => StrictDeserialiser.Get<NoPublicConstructors>());
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => StrictDeserialiser.Get<NoPublicConstructors>());
             Assert.Equal("Type must have a single public constructor.", ex.Message);
         }
     }
