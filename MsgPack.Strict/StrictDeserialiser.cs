@@ -192,6 +192,7 @@ namespace MsgPack.Strict
                 // It could be slightly more efficient here to generate a O(log(N)) tree-based lookup,
                 // but that would take quite some engineering. Let's see if there's a significant perf
                 // hit here or not first.
+                var lblEndIfChain = ilg.DefineLabel();
                 Label? nextLabel = null;
                 for (var parameterIndex = 0; parameterIndex < parameters.Length; parameterIndex++)
                 {
@@ -256,10 +257,20 @@ namespace MsgPack.Strict
                         ilg.Emit(OpCodes.Throw);
                     }
                     ilg.MarkLabel(typeGetterSuccess);
+
+                    ilg.Emit(OpCodes.Br, lblEndIfChain);
                 }
 
                 if (nextLabel != null)
                     ilg.MarkLabel(nextLabel.Value);
+
+                // If we got here then the property was not recognised. Throw.
+                ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\".");
+                ilg.Emit(OpCodes.Ldloc, key);
+                ilg.Emit(OpCodes.Call, typeof(string).GetMethod("Format", new[] {typeof(string), typeof(object)}));
+                throwException();
+
+                ilg.MarkLabel(lblEndIfChain);
 
                 // Increment the loop index
                 ilg.Emit(OpCodes.Ldloc, loopIndex);
