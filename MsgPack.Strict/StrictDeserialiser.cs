@@ -64,7 +64,7 @@ namespace MsgPack.Strict
             #region Verify and prepare for target type
 
             if (type.IsPrimitive)
-                throw new Exception("TEST THIS CASE");
+                throw new Exception("TEST THIS CASE 1");
 
             var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (ctors.Length != 1)
@@ -181,7 +181,7 @@ namespace MsgPack.Strict
                     ilg.Emit(OpCodes.Brtrue, ifLabel);
                     {
                         // TODO throw better exception
-                        ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE");
+                        ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 2");
                         ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
                         ilg.Emit(OpCodes.Throw);
                     }
@@ -228,7 +228,7 @@ namespace MsgPack.Strict
                         ilg.Emit(OpCodes.Brfalse, notSeenLabel);
                         {
                             // TODO throw better exception
-                            ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE");
+                            ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 3");
                             ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
                             ilg.Emit(OpCodes.Throw);
                         }
@@ -253,7 +253,7 @@ namespace MsgPack.Strict
                         ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
                         {
                             // TODO throw better exception
-                            ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE");
+                            ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 4");
                             ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
                             ilg.Emit(OpCodes.Throw);
                         }
@@ -296,7 +296,7 @@ namespace MsgPack.Strict
             ilg.Emit(OpCodes.Brtrue, lblValuesOk);
             {
                 // TODO throw better exception
-                ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE");
+                ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 5");
                 ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
                 ilg.Emit(OpCodes.Throw);
             }
