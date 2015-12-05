@@ -66,7 +66,11 @@ namespace MsgPack.Strict
             if (type.IsPrimitive)
                 throw new Exception("TEST THIS CASE");
 
-            var ctor = type.GetConstructors().Single();
+            var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+            if (ctors.Length != 1)
+                throw new StrictDeserialisationException(type, "Type must have a single public constructor.");
+            var ctor = ctors[0];
+
             var parameters = ctor.GetParameters();
 
             #endregion

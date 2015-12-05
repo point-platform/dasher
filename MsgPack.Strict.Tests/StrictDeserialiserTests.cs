@@ -2,8 +2,6 @@
 
 namespace MsgPack.Strict.Tests
 {
-    // TODO no constructor
-    // TODO multiple constructors
     // TODO class/ctor private
     // TODO mismatch between ctor args and properties (?)
 
@@ -85,6 +83,32 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        public sealed class MultipleConstructors
+        {
+            public int Number { get; }
+            public string Text { get; }
+
+            public MultipleConstructors(int number, string text)
+            {
+                Number = number;
+                Text = text;
+            }
+
+            public MultipleConstructors(int number)
+            {
+                Number = number;
+            }
+        }
+
+        public sealed class NoPublicConstructors
+        {
+            public int Number { get; }
+
+            internal NoPublicConstructors(int number)
+            {
+                Number = number;
+            }
+        }
 
         #endregion
 
@@ -201,6 +225,20 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(1.23M, after.Dc);
             Assert.Equal(true, after.Bo);
             Assert.Equal(null, after.O);
+        }
+
+        [Fact]
+        public void ThrowsOnMultipleConstructors()
+        {
+            var ex = Assert.Throws<StrictDeserialisationException>(() => StrictDeserialiser.Get<MultipleConstructors>());
+            Assert.Equal("Type must have a single public constructor.", ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsNoPublicConstructors()
+        {
+            var ex = Assert.Throws<StrictDeserialisationException>(() => StrictDeserialiser.Get<NoPublicConstructors>());
+            Assert.Equal("Type must have a single public constructor.", ex.Message);
         }
     }
 }
