@@ -284,14 +284,21 @@ namespace MsgPack.Strict
 
             #region Verify all required values either specified or have a default value
 
-            ilg.Emit(OpCodes.Ldc_I4_1);
+            var lblValuesMissing = ilg.DefineLabel();
+            var lblValuesOk = ilg.DefineLabel();
+
             foreach (var valueSetLocal in valueSetLocals)
             {
+                // If any value is zero then neither a default nor specified value
+                // exists for that parameter, and we cannot continue.
                 ilg.Emit(OpCodes.Ldloc, valueSetLocal);
-                ilg.Emit(OpCodes.And, valueSetLocal);
+                ilg.Emit(OpCodes.Ldc_I4_0);
+                ilg.Emit(OpCodes.Beq, lblValuesMissing);
             }
-            var lblValuesOk = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lblValuesOk);
+
+            // If we got here, all value exist and we're good to continue.
+            // Jump to the next section.
+            ilg.Emit(OpCodes.Br, lblValuesOk);
             {
                 // If we got here then one or more values is missing.
                 ilg.MarkLabel(lblValuesMissing);

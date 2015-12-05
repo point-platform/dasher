@@ -168,6 +168,20 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
+        public void ThrowsOnMissingField()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("Name").Pack("Bob"));
+
+            var deserialiser = StrictDeserialiser.Get<UserScore>();
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => deserialiser.Deserialise(bytes));
+
+            Assert.Equal(typeof(UserScore), ex.TargetType);
+            Assert.Equal("Missing required field \"Score\".", ex.Message);
+        }
+
+        [Fact]
         public void ThrowsOnDuplicateField()
         {
             var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(3)
