@@ -182,10 +182,8 @@ namespace MsgPack.Strict
                     var ifLabel = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Brtrue, ifLabel);
                     {
-                        // TODO throw better exception
-                        ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 2");
-                        ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
-                        ilg.Emit(OpCodes.Throw);
+                        ilg.Emit(OpCodes.Ldstr, "Data stream ended.");
+                        throwException();
                     }
                     ilg.MarkLabel(ifLabel);
                 }
@@ -214,7 +212,7 @@ namespace MsgPack.Strict
                     // Read value
                     MethodInfo methodInfo;
                     if (!_typeGetters.TryGetValue(parameters[parameterIndex].ParameterType, out methodInfo))
-                        throw new NotImplementedException();
+                        throw new NotImplementedException($"No support yet exists for reading values of type {parameters[parameterIndex].ParameterType} from MsgPack data");
 
                     // Verify we haven't already seen a value for this parameter
                     {
@@ -297,10 +295,11 @@ namespace MsgPack.Strict
             var lblValuesOk = ilg.DefineLabel();
             ilg.Emit(OpCodes.Brtrue, lblValuesOk);
             {
-                // TODO throw better exception
-                ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 5");
-                ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
-                ilg.Emit(OpCodes.Throw);
+                // If we got here then one or more values is missing.
+                ilg.MarkLabel(lblValuesMissing);
+                // TODO include more detailed information about the missing fields
+                ilg.Emit(OpCodes.Ldstr, "Missing one or more required fields");
+                throwException();
             }
             ilg.MarkLabel(lblValuesOk);
 
