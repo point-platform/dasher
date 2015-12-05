@@ -129,11 +129,17 @@ namespace MsgPack.Strict
 
             var mapSize = ilg.DeclareLocal(typeof(long));
             {
-                // read its length
+                // MsgPack messages may be single values, arrays, maps, or any arbitrary
+                // combination of these types. Our convention is to require messages to
+                // be encoded as maps where the key is the property name.
+                //
+                // MsgPack maps begin with a header indicating the number of pairs
+                // within the map. We read this here.
                 ilg.Emit(OpCodes.Ldarg_0); // unpacker
                 ilg.Emit(OpCodes.Ldloca, mapSize);
                 ilg.Emit(OpCodes.Callvirt, typeof(Unpacker).GetMethod("ReadMapLength"));
-                // return value should be true
+
+                // If false was returned, the data stream ended
                 var ifLabel = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, ifLabel);
                 {
@@ -145,30 +151,34 @@ namespace MsgPack.Strict
 
             #endregion
 
-            // for each item in map
+            // For each key/value pair in the map...
             {
-                // var loopIndex;
+                // Create a loop counter, initialised to zero
                 var loopIndex = ilg.DeclareLocal(typeof(long));
-                // loopIndex = 0;
                 ilg.Emit(OpCodes.Ldc_I4_0);
                 ilg.Emit(OpCodes.Conv_I8);
                 ilg.Emit(OpCodes.Stloc, loopIndex);
 
-                var lblLoopTest = ilg.DefineLabel();
-                var lblLoopExit = ilg.DefineLabel();
-                var lblLoopStart = ilg.DefineLabel();
+                // Create labels to jump to within the loop
+                var lblLoopTest = ilg.DefineLabel();   // Comparing counter to map size
+                var lblLoopExit = ilg.DefineLabel();   // The first instruction after the loop
+                var lblLoopStart = ilg.DefineLabel();  // The first instruction within the loop
 
+                // Run the test first
                 ilg.Emit(OpCodes.Br, lblLoopTest);
 
+                // Mark the first instruction within the loop
                 ilg.MarkLabel(lblLoopStart);
 
-                // read the key
+                // Although MsgPack allows map keys to be of any arbitrary type, our convention
+                // is to require keys to be strings. We read the key here.
                 var key = ilg.DeclareLocal(typeof(string));
                 {
                     ilg.Emit(OpCodes.Ldarg_0); // unpacker
                     ilg.Emit(OpCodes.Ldloca, key);
                     ilg.Emit(OpCodes.Callvirt, typeof(Unpacker).GetMethod("ReadString"));
-                    // return value should be true
+
+                    // If false was returned, the data stream ended
                     var ifLabel = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Brtrue, ifLabel);
                     {
@@ -180,30 +190,36 @@ namespace MsgPack.Strict
                     ilg.MarkLabel(ifLabel);
                 }
 
+                // Build a chain of if/elseif/elseif... blocks for each of the expected fields.
+                // It could be slightly more efficient here to generate a O(log(N)) tree-based lookup,
+                // but that would take quite some engineering. Let's see if there's a significant perf
+                // hit here or not first.
                 Label? nextLabel = null;
                 for (var parameterIndex = 0; parameterIndex < parameters.Length; parameterIndex++)
                 {
-                    // wire up labels between consecutive cascading if/elif/elif... blocks
+                    // Mark the beginning of the next block, as used if the previous block's condition failed
                     if (nextLabel != null)
                         ilg.MarkLabel(nextLabel.Value);
                     nextLabel = ilg.DefineLabel();
 
-                    // compare map's key with this parameter's name in a case insensitive way
+                    // Compare map's key with this parameter's name in a case insensitive way
                     ilg.Emit(OpCodes.Ldloc, key);
                     ilg.Emit(OpCodes.Ldstr, parameters[parameterIndex].Name);
                     ilg.Emit(OpCodes.Ldc_I4_5);
                     ilg.Emit(OpCodes.Callvirt, typeof(string).GetMethod("Equals", new[] {typeof(string), typeof(StringComparison)}));
 
-                    // if the key doesn't match this property, go to the next block
+                    // If the key doesn't match this property, go to the next block
                     ilg.Emit(OpCodes.Brfalse, nextLabel.Value);
 
-                    // read value
+                    // Read value
                     MethodInfo methodInfo;
                     if (!_typeGetters.TryGetValue(parameters[parameterIndex].ParameterType, out methodInfo))
                         throw new NotImplementedException();
 
-                    // verify we haven't already seen a value for this parameter
+                    // Verify we haven't already seen a value for this parameter
                     {
+                        // Mask out the LSb and see if it is set. If so, we've seen this property
+                        // already in this message, which is invalid.
                         ilg.Emit(OpCodes.Ldloc, valueSetLocals[parameterIndex]);
                         ilg.Emit(OpCodes.Ldc_I4_1);
                         ilg.Emit(OpCodes.And);
@@ -218,21 +234,21 @@ namespace MsgPack.Strict
 
                         ilg.MarkLabel(notSeenLabel);
 
-                        // set 'seen' to true
+                        // Record the fact that we've seen this property
                         ilg.Emit(OpCodes.Ldloc, valueSetLocals[parameterIndex]);
                         ilg.Emit(OpCodes.Ldc_I4_1);
                         ilg.Emit(OpCodes.Or);
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
-                    // the 'type getter' expects the unpacker on the stack
+                    // The 'type getter' expects, on the stack, the unpacker and the address of the value to store to.
                     ilg.Emit(OpCodes.Ldarg_0); // unpacker
                     ilg.Emit(OpCodes.Ldloca, valueLocals[parameterIndex]);
+
+                    // Invoke the 'type getter', which pushes true (success) or false (failure)
                     ilg.Emit(OpCodes.Call, methodInfo);
 
-                    // the 'type getter' pushes true or false
-
-                    // TODO if fail, throw
+                    // If the 'type getter' failed, throw
                     {
                         var typeGetterSuccess = ilg.DefineLabel();
                         ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
@@ -249,24 +265,28 @@ namespace MsgPack.Strict
                 if (nextLabel != null)
                     ilg.MarkLabel(nextLabel.Value);
 
-                // increment the loop index
+                // Increment the loop index
                 ilg.Emit(OpCodes.Ldloc, loopIndex);
                 ilg.Emit(OpCodes.Ldc_I4_1);
                 ilg.Emit(OpCodes.Conv_I8);
                 ilg.Emit(OpCodes.Add);
                 ilg.Emit(OpCodes.Stloc, loopIndex);
 
-                // test loop condition
+                // Loop condition
                 ilg.MarkLabel(lblLoopTest);
                 ilg.Emit(OpCodes.Ldloc, loopIndex);
                 ilg.Emit(OpCodes.Ldloc, mapSize);
+                // If the loop is done, jump to the first instruction after the loop
                 ilg.Emit(OpCodes.Beq, lblLoopExit);
 
+                // Jump back to the start of the loop
                 ilg.Emit(OpCodes.Br, lblLoopStart);
+
+                // Mark the end of the loop
                 ilg.MarkLabel(lblLoopExit);
             }
 
-            #region Verify all required values specified
+            #region Verify all required values either specified or have a default value
 
             ilg.Emit(OpCodes.Ldc_I4_1);
             foreach (var valueSetLocal in valueSetLocals)
@@ -286,12 +306,17 @@ namespace MsgPack.Strict
 
             #endregion
 
+            // Push all values onto the execution stack
             foreach (var valueLocal in valueLocals)
                 ilg.Emit(OpCodes.Ldloc, valueLocal);
+
+            // Call the target type's constructor
             ilg.Emit(OpCodes.Newobj, ctor);
 
+            // Return the newly constructed object!
             ilg.Emit(OpCodes.Ret);
 
+            // Return a delegate that performs the above operations
             return (Func<Unpacker, object>)method.CreateDelegate(typeof(Func<Unpacker, object>));
         }
 
