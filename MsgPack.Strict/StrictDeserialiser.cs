@@ -68,7 +68,7 @@ namespace MsgPack.Strict
 
             var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (ctors.Length != 1)
-                throw new StrictDeserialisationException(type, "Type must have a single public constructor.");
+                throw new StrictDeserialisationException("Type must have a single public constructor.", type);
             var ctor = ctors[0];
 
             var parameters = ctor.GetParameters();
@@ -124,12 +124,11 @@ namespace MsgPack.Strict
 
             #endregion
 
-            Action<string> throwException = msg =>
+            Action throwException = () =>
             {
                 ilg.Emit(OpCodes.Ldtoken, type);
                 ilg.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
-                ilg.Emit(OpCodes.Ldstr, msg);
-                ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(Type), typeof(string)}));
+                ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             };
 
@@ -144,7 +143,10 @@ namespace MsgPack.Strict
                 // return value should be true
                 var ifLabel = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, ifLabel);
-                throwException("Data stream ended.");
+                {
+                    ilg.Emit(OpCodes.Ldstr, "Data stream ended.");
+                    throwException();
+                }
                 ilg.MarkLabel(ifLabel);
             }
 

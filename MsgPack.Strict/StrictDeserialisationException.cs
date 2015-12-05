@@ -6,7 +6,7 @@ namespace MsgPack.Strict
     {
         public Type TargetType { get; }
 
-        public StrictDeserialisationException(Type targetType, string message)
+        public StrictDeserialisationException(string message, Type targetType)
             : base(message)
         {
             TargetType = targetType;
