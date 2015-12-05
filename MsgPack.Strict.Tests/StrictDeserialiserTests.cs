@@ -228,6 +228,20 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
+        public void SpecifiedValueOverridesDefaultValue()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            .Pack("Name").Pack("Bob")
+            .Pack("Score").Pack(12345)); // score has a default of 100
+
+            var deserialiser = StrictDeserialiser.Get<UserScoreWithDefaultScore>();
+            var after = deserialiser.Deserialise(bytes);
+
+            Assert.Equal("Bob", after.Name);
+            Assert.Equal(12345, after.Score);
+        }
+
+        [Fact]
         public void ThrowsOnMultipleConstructors()
         {
             var ex = Assert.Throws<StrictDeserialisationException>(() => StrictDeserialiser.Get<MultipleConstructors>());

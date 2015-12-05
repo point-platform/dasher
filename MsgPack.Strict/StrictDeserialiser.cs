@@ -102,7 +102,7 @@ namespace MsgPack.Strict
                 var parameter = parameters[i];
 
                 valueLocals[i] = ilg.DeclareLocal(parameter.ParameterType);
-                valueSetLocals[i] = ilg.DeclareLocal(typeof(bool));
+                valueSetLocals[i] = ilg.DeclareLocal(typeof(int));
 
                 if (parameter.HasDefaultValue)
                 {
@@ -110,7 +110,8 @@ namespace MsgPack.Strict
                     StoreValue(ilg, parameter.DefaultValue);
                     ilg.Emit(OpCodes.Stloc, valueLocals[i]);
                     // set 'valueSet' to true
-                    ilg.Emit(OpCodes.Ldc_I4_1);
+                    // note we use the second LSb to indicate a default value
+                    ilg.Emit(OpCodes.Ldc_I4_2);
                     ilg.Emit(OpCodes.Stloc, valueSetLocals[i]);
                 }
                 else
@@ -224,6 +225,8 @@ namespace MsgPack.Strict
                     // verify we haven't already seen a value for this parameter
                     {
                         ilg.Emit(OpCodes.Ldloc, valueSetLocals[parameterIndex]);
+                        ilg.Emit(OpCodes.Ldc_I4_1);
+                        ilg.Emit(OpCodes.And);
                         var notSeenLabel = ilg.DefineLabel();
                         ilg.Emit(OpCodes.Brfalse, notSeenLabel);
                         {
@@ -236,7 +239,9 @@ namespace MsgPack.Strict
                         ilg.MarkLabel(notSeenLabel);
 
                         // set 'seen' to true
+                        ilg.Emit(OpCodes.Ldloc, valueSetLocals[parameterIndex]);
                         ilg.Emit(OpCodes.Ldc_I4_1);
+                        ilg.Emit(OpCodes.Or);
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
