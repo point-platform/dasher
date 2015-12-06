@@ -33,6 +33,18 @@ namespace MsgPack.Strict.Tests
             public int Score { get; }
         }
 
+        public sealed class UserScoreWrapper
+        {
+            public double Weight { get; }
+            public UserScore UserScore { get; }
+
+            public UserScoreWrapper(double weight, UserScore userScore)
+            {
+                Weight = weight;
+                UserScore = userScore;
+            }
+        }
+
         public sealed class TestDefaultParams
         {
             public byte    B   { get; }
@@ -272,6 +284,22 @@ namespace MsgPack.Strict.Tests
             var ex = Assert.Throws<StrictDeserialisationException>(
                 () => StrictDeserialiser.Get<NoPublicConstructors>());
             Assert.Equal("Type must have a single public constructor.", ex.Message);
+        }
+
+        [Fact]
+        public void HandlesNestedComplexTypes()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("Weight").Pack(0.5d)
+                .Pack("UserScore").PackMapHeader(2)
+                    .Pack("Name").Pack("Bob")
+                    .Pack("Score").Pack(123));
+
+            var after = StrictDeserialiser.Get<UserScoreWrapper>().Deserialise(bytes);
+
+            Assert.Equal(0.5d, after.Weight);
+            Assert.Equal("Bob", after.UserScore.Name);
+            Assert.Equal(123, after.UserScore.Score);
         }
     }
 }
