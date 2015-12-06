@@ -208,6 +208,21 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
+        public void ThrowsOnIncorrectDataType()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("Name").Pack("Bob")
+                .Pack("Score").Pack(123.4)); // double, should be int
+
+            var deserialiser = StrictDeserialiser.Get<UserScore>();
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => deserialiser.Deserialise(bytes));
+
+            Assert.Equal(typeof(UserScore), ex.TargetType);
+            Assert.Equal("Unexpected type for \"Score\". Expected int, got double.", ex.Message);
+        }
+
+        [Fact]
         public void ThrowsOnDuplicateField()
         {
             var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(3)
