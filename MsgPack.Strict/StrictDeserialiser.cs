@@ -210,11 +210,6 @@ namespace MsgPack.Strict
                     // If the key doesn't match this property, go to the next block
                     ilg.Emit(OpCodes.Brfalse, nextLabel.Value);
 
-                    // Read value
-                    MethodInfo methodInfo;
-                    if (!_typeGetters.TryGetValue(parameters[parameterIndex].ParameterType, out methodInfo))
-                        throw new NotImplementedException($"No support yet exists for reading values of type {parameters[parameterIndex].ParameterType} from MsgPack data");
-
                     // Verify we haven't already seen a value for this parameter
                     {
                         // Mask out the LSb and see if it is set. If so, we've seen this property
@@ -243,6 +238,11 @@ namespace MsgPack.Strict
                     // The 'type getter' expects, on the stack, the unpacker and the address of the value to store to.
                     ilg.Emit(OpCodes.Ldarg_0); // unpacker
                     ilg.Emit(OpCodes.Ldloca, valueLocals[parameterIndex]);
+
+                    // Read value
+                    MethodInfo methodInfo;
+                    if (!_typeGetters.TryGetValue(parameters[parameterIndex].ParameterType, out methodInfo))
+                        throw new NotImplementedException($"No support yet exists for reading values of type {parameters[parameterIndex].ParameterType} from MsgPack data");
 
                     // Invoke the 'type getter', which pushes true (success) or false (failure)
                     ilg.Emit(OpCodes.Call, methodInfo);
