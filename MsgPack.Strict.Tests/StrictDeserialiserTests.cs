@@ -3,6 +3,7 @@ using Xunit;
 
 namespace MsgPack.Strict.Tests
 {
+    // TODO enum fields
     // TODO class/ctor private
     // TODO mismatch between ctor args and properties (?)
 
