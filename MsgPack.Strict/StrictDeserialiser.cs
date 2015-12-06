@@ -225,10 +225,10 @@ namespace MsgPack.Strict
                         var notSeenLabel = ilg.DefineLabel();
                         ilg.Emit(OpCodes.Brfalse, notSeenLabel);
                         {
-                            // TODO throw better exception
-                            ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 3");
-                            ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
-                            ilg.Emit(OpCodes.Throw);
+                            ilg.Emit(OpCodes.Ldstr, "Encountered duplicate field \"{0}\".");
+                            ilg.Emit(OpCodes.Ldloc, key);
+                            ilg.Emit(OpCodes.Call, typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object) }));
+                            throwException();
                         }
 
                         ilg.MarkLabel(notSeenLabel);

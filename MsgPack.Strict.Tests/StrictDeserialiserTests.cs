@@ -194,7 +194,7 @@ namespace MsgPack.Strict.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Duplicate field \"Score\".", ex.Message);
+            Assert.Equal("Encountered duplicate field \"Score\".", ex.Message);
         }
 
         [Fact]
