@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.Collections.Generic;
+using Xunit;
 
 namespace MsgPack.Strict.Tests
 {
@@ -120,6 +121,19 @@ namespace MsgPack.Strict.Tests
             {
                 Number = number;
             }
+        }
+
+
+        public sealed class UserScoreList
+        {
+            public UserScoreList(string name, IReadOnlyList<int> scores)
+            {
+                Name = name;
+                Scores = scores;
+            }
+
+            public string Name { get; }
+            public IReadOnlyList<int> Scores { get; }
         }
 
         #endregion
@@ -300,6 +314,19 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(0.5d, after.Weight);
             Assert.Equal("Bob", after.UserScore.Name);
             Assert.Equal(123, after.UserScore.Score);
+        }
+
+        [Fact]
+        public void HandlesReadOnlyListProperty()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("Name").Pack("Bob")
+                .Pack("Scores").PackArrayHeader(3).Pack(1).Pack(2).Pack(3));
+
+            var after = StrictDeserialiser.Get<UserScoreList>().Deserialise(bytes);
+
+            Assert.Equal("Bob", after.Name);
+            Assert.Equal(new[] {1, 2, 3}, after.Scores);
         }
     }
 }
