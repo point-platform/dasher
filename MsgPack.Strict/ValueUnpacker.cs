@@ -76,6 +76,5 @@ namespace MsgPack.Strict
         }
 
         #endregion
-
     }
 }
