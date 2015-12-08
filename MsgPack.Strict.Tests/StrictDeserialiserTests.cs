@@ -1,6 +1,11 @@
 ﻿using System.Collections.Generic;
 using Xunit;
 
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable UnusedMember.Global
+
 namespace MsgPack.Strict.Tests
 {
     // TODO enum fields
