@@ -60,6 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MsgPackPackerTests.cs" />
     <Compile Include="MsgPackUnpackerTests.cs" />
     <Compile Include="StrictDeserialiserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

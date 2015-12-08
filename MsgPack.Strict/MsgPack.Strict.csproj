@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MsgPackPacker.cs" />
     <Compile Include="MsgPackUnpacker.cs" />
     <Compile Include="StrictDeserialisationException.cs" />
     <Compile Include="StrictDeserialiser.cs" />
