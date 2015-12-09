@@ -18,11 +18,6 @@ namespace MsgPack.Strict
             _stream = stream;
         }
 
-        public void Pack(bool value)
-        {
-            _stream.WriteByte(value ? (byte)0xC2 : (byte)0xC3);
-        }
-
         public void PackNull()
         {
             _stream.WriteByte(0xc0);
@@ -70,6 +65,11 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)(length >> 8));
                 _stream.WriteByte((byte)length);
             }
+        }
+
+        public void Pack(bool value)
+        {
+            _stream.WriteByte(value ? (byte)0xC3 : (byte)0xC2);
         }
 
         public void Pack(byte[] bytes)
