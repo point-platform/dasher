@@ -6,7 +6,7 @@ using Xunit;
 
 namespace MsgPack.Strict.Tests
 {
-    public class MsgPackPackerTests
+    public sealed class MsgPackPackerTests
     {
         [Fact]
         public void StreamWritePerfTest()
