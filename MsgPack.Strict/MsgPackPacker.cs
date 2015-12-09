@@ -83,16 +83,25 @@ namespace MsgPack.Strict
             if (bytes.Length <= 0xFF)
             {
                 _stream.WriteByte(0xC4);
+                _stream.WriteByte((byte)bytes.Length);
                 _stream.Write(bytes, 0, bytes.Length);
             }
             else if (bytes.Length <= 0xFFFF)
             {
                 _stream.WriteByte(0xC5);
+                var l = bytes.Length;
+                _stream.WriteByte((byte)(l >> 8));
+                _stream.WriteByte((byte)l);
                 _stream.Write(bytes, 0, bytes.Length);
             }
             else
             {
                 _stream.WriteByte(0xC6);
+                var l = bytes.Length;
+                _stream.WriteByte((byte)(l >> 24));
+                _stream.WriteByte((byte)(l >> 16));
+                _stream.WriteByte((byte)(l >> 8));
+                _stream.WriteByte((byte)l);
                 _stream.Write(bytes, 0, bytes.Length);
             }
         }
@@ -120,16 +129,25 @@ namespace MsgPack.Strict
             else if (bytes.Length <= 0xFF)
             {
                 _stream.WriteByte(0xD9);
+                _stream.WriteByte((byte)bytes.Length);
                 _stream.Write(bytes, 0, bytes.Length);
             }
             else if (bytes.Length <= 0xFFFF)
             {
                 _stream.WriteByte(0xDA);
+                var l = bytes.Length;
+                _stream.WriteByte((byte)(l >> 8));
+                _stream.WriteByte((byte)l);
                 _stream.Write(bytes, 0, bytes.Length);
             }
             else
             {
                 _stream.WriteByte(0xDB);
+                var l = bytes.Length;
+                _stream.WriteByte((byte)(l >> 24));
+                _stream.WriteByte((byte)(l >> 16));
+                _stream.WriteByte((byte)(l >> 8));
+                _stream.WriteByte((byte)l);
                 _stream.Write(bytes, 0, bytes.Length);
             }
         }
