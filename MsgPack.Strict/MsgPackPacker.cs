@@ -205,7 +205,7 @@ namespace MsgPack.Strict
             }
         }
 
-        private void Pack(int value)
+        public void Pack(int value)
         {
             if (value >= 0x00 && value <= sbyte.MaxValue)
             {
