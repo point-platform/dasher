@@ -155,7 +155,12 @@ namespace MsgPack.Strict
         public void Pack(float value)
         {
             _stream.WriteByte(0xCA);
-            _stream.Write(BitConverter.GetBytes(value), 0, 4);
+            // TODO this is a terrible, but probably correct, hack that technically could be broken by future releases of .NET, though that seems unlikely
+            var i = value.GetHashCode();
+            _stream.WriteByte((byte)(i >> 24));
+            _stream.WriteByte((byte)(i >> 16));
+            _stream.WriteByte((byte)(i >> 8));
+            _stream.WriteByte((byte)i);
         }
 
         public void Pack(double value)
