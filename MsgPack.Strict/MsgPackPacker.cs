@@ -75,7 +75,10 @@ namespace MsgPack.Strict
         public void Pack(byte[] bytes)
         {
             if (bytes == null)
-                throw new ArgumentNullException(nameof(bytes));
+            {
+                PackNull();
+                return;
+            }
 
             if (bytes.Length <= 0xFF)
             {
@@ -102,9 +105,10 @@ namespace MsgPack.Strict
         public void PackString(string value, Encoding encoding)
         {
             if (value == null)
-                throw new ArgumentNullException(nameof(value));
-            if (encoding == null)
-                throw new ArgumentNullException(nameof(encoding));
+            {
+                PackNull();
+                return;
+            }
 
             var bytes = encoding.GetBytes(value);
 
