@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace MsgPack.Strict.Tests
@@ -344,5 +346,44 @@ namespace MsgPack.Strict.Tests
             Assert.Equal("Bob", after.Name);
             Assert.Equal(new[] {1, 2, 3}, after.Scores);
         }
+
+        [Fact]
+        public void GenerateSchema()
+        {
+            Assert.Equal(
+                "name: System.String\r\nscore: System.Int32",
+                GenerateSchema(typeof(UserScore)));
+
+            Assert.Equal(
+                "name: System.String\r\nscore: System.Int32 = 100",
+                GenerateSchema(typeof(UserScoreWithDefaultScore)));
+
+            Assert.Equal(
+                @"sb: System.SByte = -12
+b: System.Byte = 12
+s: System.Int16 = -1234
+us: System.UInt16 = 1234
+i: System.Int32 = -12345
+ui: System.UInt32 = 12345
+l: System.Int64 = -12345678900
+ul: System.UInt64 = 12345678900
+str: System.String = str
+f: System.Single = 1.23
+d: System.Double = 1.23
+dc: System.Decimal = 1.23
+bo: System.Boolean = True
+o: System.Object = null",
+                GenerateSchema(typeof(TestDefaultParams)));
+        }
+
+        public static string GenerateSchema(Type type)
+            => string.Join(
+                Environment.NewLine,
+                type.GetConstructors().Single().GetParameters().Select(p =>
+                    string.Format(
+                        p.HasDefaultValue ? "{0}: {1} = {2}" : "{0}: {1}",
+                        p.Name,
+                        p.ParameterType,
+                        p.DefaultValue)));
     }
 }
