@@ -106,12 +106,12 @@ namespace MsgPack.Strict
             }
         }
 
-        public void PackString(string value)
+        public void Pack(string value)
         {
-            PackString(value, Encoding.UTF8);
+            Pack(value, Encoding.UTF8);
         }
 
-        public void PackString(string value, Encoding encoding)
+        public void Pack(string value, Encoding encoding)
         {
             if (value == null)
             {
