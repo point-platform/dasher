@@ -49,7 +49,12 @@ namespace MsgPack.Strict
             if (_typeGetters.TryGetValue(type, out methodInfo))
                 return methodInfo;
 
-            return typeof (ValueUnpacker).GetMethod(nameof(TryReadComplex), BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(type);
+//            return typeof (ValueUnpacker).GetMethod(nameof(TryReadComplex), BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(type);
+
+            if (type.IsClass && type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1)
+                return typeof(ValueUnpacker).GetMethod(nameof(TryReadType), BindingFlags.Static | BindingFlags.Public);
+
+            throw new NotImplementedException($"No support yet exists for reading values of type {type} from MsgPack data");
         }
 
         public static bool TryReadSByte(Unpacker unpacker, out sbyte value) => unpacker.ReadSByte(out value);
@@ -79,6 +84,13 @@ namespace MsgPack.Strict
         public static bool TryReadComplex<T>(Unpacker unpacker, out T value)
         {
             value = (T)StrictDeserialiser.Get(typeof(T)).Deserialise(unpacker);
+            return true;
+        }
+
+        public static bool TryReadType(Unpacker unpacker, Type type, out object value)
+        {
+            var serialiser = StrictDeserialiser.Get(type);
+            value = serialiser.Deserialise(unpacker);
             return true;
         }
 
