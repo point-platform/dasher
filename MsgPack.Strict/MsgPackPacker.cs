@@ -78,7 +78,7 @@ namespace MsgPack.Strict
             }
         }
 
-        public void PackBinary(byte[] bytes)
+        public void Pack(byte[] bytes)
         {
             if (bytes == null)
                 throw new ArgumentNullException(nameof(bytes));
