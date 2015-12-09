@@ -28,11 +28,8 @@ namespace MsgPack.Strict
             _stream.WriteByte(0xc0);
         }
 
-        public void PackArrayHeader(int length)
+        public void PackArrayHeader(uint length)
         {
-            if (length < 0)
-                throw new ArgumentOutOfRangeException(nameof(length), length, "Must be zero or greater.");
-
             if (length <= 0x0F)
             {
                 _stream.WriteByte((byte)(0x90 | length));
@@ -53,11 +50,8 @@ namespace MsgPack.Strict
             }
         }
 
-        public void PackMapHeader(int length)
+        public void PackMapHeader(uint length)
         {
-            if (length < 0)
-                throw new ArgumentOutOfRangeException(nameof(length), length, "Must be zero or greater.");
-
             if (length <= 0x0F)
             {
                 _stream.WriteByte((byte)(0x80 | length));
