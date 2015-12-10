@@ -22,7 +22,7 @@ namespace MsgPack.Strict
         mTypeHash[typeof(double)]=OpCodes.Ldind_R8;
         mTypeHash[typeof(float)]=OpCodes.Ldind_R4;
         */
-
+        public static string TryReadComplexName = nameof(TryReadComplex);
         private static readonly Dictionary<Type, MethodInfo> _typeGetters = new Dictionary<Type, MethodInfo>
         {
             // TODO DateTime, TimeSpan
@@ -48,7 +48,8 @@ namespace MsgPack.Strict
             MethodInfo methodInfo;
             if (_typeGetters.TryGetValue(type, out methodInfo))
                 return methodInfo;
-            throw new NotImplementedException($"No support yet exists for reading values of type {type} from MsgPack data");
+
+            return typeof (ValueUnpacker).GetMethod(nameof(TryReadComplex), BindingFlags.Static | BindingFlags.Public);
         }
 
         public static bool TryReadSByte(Unpacker unpacker, out sbyte value) => unpacker.ReadSByte(out value);
@@ -73,6 +74,12 @@ namespace MsgPack.Strict
                 return false;
             }
             return decimal.TryParse(s, out value);
+        }
+
+        public static bool TryReadComplex<T>(Unpacker unpacker, out T value)
+        {
+            value = (T)StrictDeserialiser.Get(typeof(T)).Deserialise(unpacker);
+            return true;
         }
 
         #endregion

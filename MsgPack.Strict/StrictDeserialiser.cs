@@ -53,7 +53,11 @@ namespace MsgPack.Strict
 
         public object Deserialise(byte[] bytes)
         {
-            var unpacker = Unpacker.Create(new MemoryStream(bytes));
+            return Deserialise(Unpacker.Create(new MemoryStream(bytes)));
+        }
+
+        public object Deserialise(Unpacker unpacker)
+        {
             return _func(unpacker);
         }
 
@@ -239,6 +243,10 @@ namespace MsgPack.Strict
                     ilg.Emit(OpCodes.Ldarg_0); // unpacker
                     ilg.Emit(OpCodes.Ldloca, valueLocals[parameterIndex]);
                     var unpackerMethod = ValueUnpacker.GetUnpackerMethodForType(parameters[parameterIndex].ParameterType);
+                    if (unpackerMethod.Name == ValueUnpacker.TryReadComplexName)
+                    {
+                        unpackerMethod = unpackerMethod.MakeGenericMethod(parameters[parameterIndex].ParameterType);
+                    }
                     ilg.Emit(OpCodes.Call, unpackerMethod);
 
                     // If the unpacker method failed (returned false), throw
