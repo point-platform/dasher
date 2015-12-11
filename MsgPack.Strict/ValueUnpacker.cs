@@ -51,6 +51,9 @@ namespace MsgPack.Strict
 
 //            return typeof (ValueUnpacker).GetMethod(nameof(TryReadComplex), BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(type);
 
+            if (type.IsEnum)
+                return typeof(ValueUnpacker).GetMethod(nameof(TryReadEnum), BindingFlags.Static | BindingFlags.Public);
+
             if (type.IsClass && type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1)
                 return typeof(ValueUnpacker).GetMethod(nameof(TryReadType), BindingFlags.Static | BindingFlags.Public);
 
@@ -91,6 +94,19 @@ namespace MsgPack.Strict
         {
             var serialiser = StrictDeserialiser.Get(type);
             value = serialiser.Deserialise(unpacker);
+            return true;
+        }
+
+        public static bool TryReadEnum(Unpacker unpacker, Type type, out object value)
+        {
+            string s;
+            if (!unpacker.ReadString(out s))
+            {
+                value = null;
+                return false;
+            }
+
+            value = Enum.Parse(type, s);
             return true;
         }
 
