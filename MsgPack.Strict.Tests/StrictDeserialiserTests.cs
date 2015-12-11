@@ -6,7 +6,6 @@ namespace MsgPack.Strict.Tests
     // TODO enum fields
     // TODO class/ctor private
     // TODO mismatch between ctor args and properties (?)
-    // TODO test deserialising to struct (zero allocation if all properties values?)
 
     public sealed class StrictDeserialiserTests
     {
@@ -15,6 +14,18 @@ namespace MsgPack.Strict.Tests
         public sealed class UserScore
         {
             public UserScore(string name, int score)
+            {
+                Name = name;
+                Score = score;
+            }
+
+            public string Name { get; }
+            public int Score { get; }
+        }
+
+        public struct UserScoreStruct
+        {
+            public UserScoreStruct(string name, int score)
             {
                 Name = name;
                 Score = score;
@@ -148,6 +159,19 @@ namespace MsgPack.Strict.Tests
                 .Pack("Score").Pack(123));
 
             var after = StrictDeserialiser.Get<UserScore>().Deserialise(bytes);
+
+            Assert.Equal("Bob", after.Name);
+            Assert.Equal(123, after.Score);
+        }
+
+        [Fact]
+        public void DeserialiseToStruct()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("Name").Pack("Bob")
+                .Pack("Score").Pack(123));
+
+            var after = StrictDeserialiser.Get<UserScoreStruct>().Deserialise(bytes);
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123, after.Score);
