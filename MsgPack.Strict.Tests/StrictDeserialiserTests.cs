@@ -206,7 +206,7 @@ namespace MsgPack.Strict.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Missing required field \"Score\".", ex.Message);
+            Assert.Equal("Missing required field \"score\".", ex.Message);
         }
 
         [Fact]
