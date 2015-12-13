@@ -92,6 +92,7 @@ namespace MsgPack.Strict
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
+                Debug.WriteLine("Param: " + parameter.ParameterType);
 
                 valueLocals[i] = ilg.DeclareLocal(parameter.ParameterType);
                 valueSetLocals[i] = ilg.DeclareLocal(typeof(int));
@@ -292,11 +293,17 @@ namespace MsgPack.Strict
             var lblValuesMissing = ilg.DefineLabel();
             var lblValuesOk = ilg.DefineLabel();
 
-            foreach (var valueSetLocal in valueSetLocals)
+            var paramName = ilg.DeclareLocal(typeof(string));
+            for (var i = 0; i < valueSetLocals.Length; i++)
             {
+                // Store the name of the parameter we are inspecting
+                // for use in the exception later.
+                ilg.Emit(OpCodes.Ldstr, parameters[i].Name);
+                ilg.Emit(OpCodes.Stloc, paramName);
+
                 // If any value is zero then neither a default nor specified value
                 // exists for that parameter, and we cannot continue.
-                ilg.Emit(OpCodes.Ldloc, valueSetLocal);
+                ilg.Emit(OpCodes.Ldloc, valueSetLocals[i]);
                 ilg.Emit(OpCodes.Ldc_I4_0);
                 ilg.Emit(OpCodes.Beq, lblValuesMissing);
             }
@@ -307,8 +314,9 @@ namespace MsgPack.Strict
             {
                 // If we got here then one or more values is missing.
                 ilg.MarkLabel(lblValuesMissing);
-                // TODO include more detailed information about the missing fields
-                ilg.Emit(OpCodes.Ldstr, "Missing one or more required fields");
+                ilg.Emit(OpCodes.Ldstr, "Missing required field \"{0}\".");
+                ilg.Emit(OpCodes.Ldloc, paramName);
+                ilg.Emit(OpCodes.Call, typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object) }));
                 throwException();
             }
             ilg.MarkLabel(lblValuesOk);
