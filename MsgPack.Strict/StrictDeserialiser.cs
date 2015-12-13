@@ -92,7 +92,6 @@ namespace MsgPack.Strict
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
-                Debug.WriteLine("Param: " + parameter.ParameterType);
 
                 valueLocals[i] = ilg.DeclareLocal(parameter.ParameterType);
                 valueSetLocals[i] = ilg.DeclareLocal(typeof(int));
