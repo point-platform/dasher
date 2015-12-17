@@ -96,11 +96,6 @@ namespace MsgPack.Strict
 
             var ilg = method.GetILGenerator();
 
-            var props = type
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => p.CanRead)
-                .ToList();
-
             // store packer in a local so we can pass it easily
             var packer = ilg.DeclareLocal(typeof(UnsafeMsgPackPacker));
             ilg.Emit(OpCodes.Ldarg_0); // packer
@@ -111,6 +106,23 @@ namespace MsgPack.Strict
             ilg.Emit(OpCodes.Ldarg_1); // value
             ilg.Emit(type.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
             ilg.Emit(OpCodes.Stloc, value);
+
+            WriteObject(ilg, packer, value);
+
+            ilg.Emit(OpCodes.Ret);
+
+            // Return a delegate that performs the above operations
+            return (Action<UnsafeMsgPackPacker, object>)method.CreateDelegate(typeof(Action<UnsafeMsgPackPacker, object>));
+        }
+
+        private static void WriteObject(ILGenerator ilg, LocalBuilder packer, LocalBuilder value)
+        {
+            var type = value.LocalType;
+
+            var props = type
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(p => p.CanRead)
+                .ToList();
 
             // write map header
             ilg.Emit(OpCodes.Ldloc, packer);
@@ -135,11 +147,6 @@ namespace MsgPack.Strict
                 // write property value
                 WriteValue(ilg, packer, propValue);
             }
-
-            ilg.Emit(OpCodes.Ret);
-
-            // Return a delegate that performs the above operations
-            return (Action<UnsafeMsgPackPacker, object>)method.CreateDelegate(typeof(Action<UnsafeMsgPackPacker, object>));
         }
 
         private static void WriteValue(ILGenerator ilg, LocalBuilder packer, LocalBuilder value)
