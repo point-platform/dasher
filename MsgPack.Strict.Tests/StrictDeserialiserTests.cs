@@ -62,6 +62,18 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        public sealed class UserScoreDecimal
+        {
+            public UserScoreDecimal(string name, decimal score)
+            {
+                Name = name;
+                Score = score;
+            }
+
+            public string Name { get; }
+            public decimal Score { get; }
+        }
+
         public enum TestEnum
         {
             Foo = 1,
@@ -183,6 +195,19 @@ namespace MsgPack.Strict.Tests
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123, after.Score);
+        }
+
+        [Fact]
+        public void HandlesDecimalProperty()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("Name").Pack("Bob")
+                .Pack("Score").Pack("123.4567"));
+
+            var after = StrictDeserialiser.Get<UserScoreDecimal>().Deserialise(bytes);
+
+            Assert.Equal("Bob", after.Name);
+            Assert.Equal(123.4567m, after.Score);
         }
 
         [Fact]

@@ -377,15 +377,15 @@ namespace MsgPack.Strict
                 // Read value as a string
                 var s = ilg.DeclareLocal(typeof(string));
 
-                ilg.Emit(OpCodes.Ldloc, s);
-                ilg.Emit(OpCodes.Ldloca, local);
+                ilg.Emit(OpCodes.Ldarg_0);
+                ilg.Emit(OpCodes.Ldloca, s);
                 ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
 
-                ilg.Emit(OpCodes.Ldarg_0); // unpacker
-                ilg.Emit(OpCodes.Ldloca, s);
+                ilg.Emit(OpCodes.Ldloc, s); // unpacker
+                ilg.Emit(OpCodes.Ldloca, local);
                 ilg.Emit(OpCodes.Call, typeof(decimal).GetMethod(nameof(decimal.TryParse), new[] { typeof(string), typeof(decimal).MakeByRefType() }));
 
-                ilg.Emit(OpCodes.Or);
+                ilg.Emit(OpCodes.And);
 
                 // If the unpacker method failed (returned false), throw
                 var typeGetterSuccess = ilg.DefineLabel();
