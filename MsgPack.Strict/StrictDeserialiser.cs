@@ -147,6 +147,13 @@ namespace MsgPack.Strict
                 var ifLabel = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, ifLabel);
                 {
+                    ilg.Emit(OpCodes.Ldarg_0); // unpacker
+                    ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetProperty(nameof(MsgPackUnpacker.HasStreamEnded)).GetMethod);
+                    var lblNotEmpty = ilg.DefineLabel();
+                    ilg.Emit(OpCodes.Brfalse, lblNotEmpty);
+                    ilg.Emit(OpCodes.Ldstr, "Data stream empty");
+                    throwException();
+                    ilg.MarkLabel(lblNotEmpty);
                     ilg.Emit(OpCodes.Ldstr, "Message must be encoded as a MsgPack map");
                     throwException();
                 }

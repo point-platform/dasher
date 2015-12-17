@@ -342,7 +342,7 @@ namespace MsgPack.Strict.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Data stream ended.", ex.Message);
+            Assert.Equal("Data stream empty", ex.Message);
         }
 
         [Fact]
