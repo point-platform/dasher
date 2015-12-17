@@ -319,6 +319,9 @@ namespace MsgPack.Strict
             // Call the target type's constructor
             ilg.Emit(OpCodes.Newobj, ctor);
 
+            if (type.IsValueType)
+                ilg.Emit(OpCodes.Box, type);
+
             // Return the newly constructed object!
             ilg.Emit(OpCodes.Ret);
 
