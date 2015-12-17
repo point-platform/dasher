@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
+using Xunit.Sdk;
 
 namespace MsgPack.Strict.Tests
 {
@@ -120,6 +122,213 @@ namespace MsgPack.Strict.Tests
                 int value;
                 Assert.True(unpacker.TryReadMapLength(out value), $"Processing {input}");
                 Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
+        public void Sequences()
+        {
+            var stream = new MemoryStream();
+            var packer = Packer.Create(stream);
+
+            var unpacker = new MsgPackUnpacker(stream);
+            var random = new Random();
+            var sequence = new List<string>();
+
+            Func<Action>[] scenarios =
+            {
+                // Array Header
+                () =>
+                {
+                    var input = random.Next();
+                    packer.PackArrayHeader(input);
+                    return () =>
+                    {
+                        sequence.Add($"Array Header {input}");
+                        int output;
+                        Assert.True(unpacker.TryReadArrayLength(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Map Header
+                () =>
+                {
+                    var input = random.Next();
+                    packer.PackMapHeader(input);
+                    return () =>
+                    {
+                        sequence.Add($"Map Header {input}");
+                        int output;
+                        Assert.True(unpacker.TryReadMapLength(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // SByte
+                () =>
+                {
+                    var input = (sbyte)random.Next();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"SByte {input}");
+                        sbyte output;
+                        Assert.True(unpacker.TryReadSByte(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Int16
+                () =>
+                {
+                    var input = (short)random.Next();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Int16 {input}");
+                        short output;
+                        Assert.True(unpacker.TryReadInt16(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // UInt16
+                () =>
+                {
+                    var input = (ushort)random.Next();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"UInt16 {input}");
+                        ushort output;
+                        Assert.True(unpacker.TryReadUInt16(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Int32
+                () =>
+                {
+                    var input = random.Next();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Int32 {input}");
+                        int output;
+                        Assert.True(unpacker.TryReadInt32(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // UInt32
+                () =>
+                {
+                    var input = (uint)random.Next();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"UInt32 {input}");
+                        uint output;
+                        Assert.True(unpacker.TryReadUInt32(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Int64
+                () =>
+                {
+                    var input = random.Next() | ((long)random.Next() << 32);
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Int64 {input}");
+                        long output;
+                        Assert.True(unpacker.TryReadInt64(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // UInt64
+                () =>
+                {
+                    var input = (ulong)random.Next() | ((ulong)random.Next() << 32);
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"UInt64 {input}");
+                        ulong output;
+                        Assert.True(unpacker.TryReadUInt64(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Bool
+                () =>
+                {
+                    var input = random.NextDouble() < 0.5;
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Bool {input}");
+                        bool output;
+                        Assert.True(unpacker.TryReadBool(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // String
+                () =>
+                {
+                    var input = random.NextDouble() < 0.5 ? "hello" : null;
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"String {input}");
+                        string output;
+                        Assert.True(unpacker.TryReadString(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+/*
+                // Single
+                () =>
+                {
+                    var input = (float)random.NextDouble();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Single {input}");
+                        float output;
+                        Assert.True(unpacker.TryReadSingle(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Double
+                () =>
+                {
+                    var input = random.NextDouble();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Double {input}");
+                        double output;
+                        Assert.True(unpacker.TryReadDouble(out output));
+                        Assert.Equal(input, output);
+                    };
+                }
+*/
+            };
+
+            var verifiers = Enumerable.Range(0, 10000)
+                .Select(_ => scenarios[random.Next()%scenarios.Length]())
+                .ToList();
+
+            stream.Position = 0;
+
+            foreach (var verifier in verifiers)
+            {
+                try
+                {
+                    verifier();
+                }
+                catch (XunitException)
+                {
+                    foreach (var step in sequence.Skip(sequence.Count - 10))
+                        Console.Out.WriteLine(step);
+
+                    throw;
+                }
             }
         }
 

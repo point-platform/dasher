@@ -351,6 +351,7 @@ namespace MsgPack.Strict
                 {
                     if (length > int.MaxValue)
                         throw new Exception("Array length too large");
+                    _nextByte = -1;
                     value = (int)length;
                     return true;
                 }
@@ -382,6 +383,7 @@ namespace MsgPack.Strict
                 {
                     if (length > int.MaxValue)
                         throw new Exception("Array length too large");
+                    _nextByte = -1;
                     value = (int)length;
                     return true;
                 }
