@@ -534,6 +534,7 @@ namespace MsgPack.Strict
 
             if (type.IsClass && type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1)
             {
+                // TODO should support complex structs too
                 // TODO cache subtype deserialiser instances in fields of generated class (requires moving away from DynamicMethod)
                 LoadType(ilg, type);
                 ilg.Emit(OpCodes.Call, typeof(StrictDeserialiser).GetMethod(nameof(StrictDeserialiser.Get), new[] {typeof(Type)}));
