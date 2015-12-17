@@ -45,7 +45,7 @@ namespace MsgPack.Strict.Tests
             Console.Out.WriteLine("inChunksTime = {0}", inChunksTime);
         }
 
-        [Fact]
+//        [Fact]
         public void PackPerfFaceOff()
         {
             var s = new MemoryStream();
