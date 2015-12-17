@@ -123,7 +123,7 @@ namespace MsgPack.Strict
             Action throwException = () =>
             {
                 ilg.Emit(OpCodes.Ldtoken, type);
-                ilg.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+                ilg.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
                 ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             };
@@ -140,7 +140,7 @@ namespace MsgPack.Strict
                 // within the map. We read this here.
                 ilg.Emit(OpCodes.Ldarg_0); // unpacker
                 ilg.Emit(OpCodes.Ldloca, mapSize);
-                ilg.Emit(OpCodes.Callvirt, typeof(Unpacker).GetMethod("ReadMapLength"));
+                ilg.Emit(OpCodes.Callvirt, typeof(Unpacker).GetMethod(nameof(Unpacker.ReadMapLength)));
 
                 // If false was returned, the data stream ended
                 var ifLabel = ilg.DefineLabel();
@@ -179,7 +179,7 @@ namespace MsgPack.Strict
                 {
                     ilg.Emit(OpCodes.Ldarg_0); // unpacker
                     ilg.Emit(OpCodes.Ldloca, key);
-                    ilg.Emit(OpCodes.Callvirt, typeof(Unpacker).GetMethod("ReadString"));
+                    ilg.Emit(OpCodes.Callvirt, typeof(Unpacker).GetMethod(nameof(Unpacker.ReadString)));
 
                     // If false was returned, the data stream ended
                     var ifLabel = ilg.DefineLabel();
@@ -225,7 +225,7 @@ namespace MsgPack.Strict
                         {
                             ilg.Emit(OpCodes.Ldstr, "Encountered duplicate field \"{0}\".");
                             ilg.Emit(OpCodes.Ldloc, key);
-                            ilg.Emit(OpCodes.Call, typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object) }));
+                            ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object) }));
                             throwException();
                         }
 
@@ -246,7 +246,7 @@ namespace MsgPack.Strict
                     {
                         // Method has three args, meaning the second one is the target type
                         ilg.Emit(OpCodes.Ldtoken, type);
-                        ilg.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+                        ilg.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
                     }
                     ilg.Emit(OpCodes.Ldloca, valueLocals[parameterIndex]);
 
@@ -272,7 +272,7 @@ namespace MsgPack.Strict
                 // If we got here then the property was not recognised. Throw.
                 ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\".");
                 ilg.Emit(OpCodes.Ldloc, key);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod("Format", new[] {typeof(string), typeof(object)}));
+                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)}));
                 throwException();
 
                 ilg.MarkLabel(lblEndIfChain);
@@ -326,7 +326,7 @@ namespace MsgPack.Strict
                 ilg.MarkLabel(lblValuesMissing);
                 ilg.Emit(OpCodes.Ldstr, "Missing required field \"{0}\".");
                 ilg.Emit(OpCodes.Ldloc, paramName);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object) }));
+                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object) }));
                 throwException();
             }
             ilg.MarkLabel(lblValuesOk);
