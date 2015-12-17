@@ -162,6 +162,16 @@ namespace MsgPack.Strict
                 return;
             }
 
+            if (type == typeof(decimal))
+            {
+                // write the string form of the value
+                ilg.Emit(OpCodes.Ldloc, packer);
+                ilg.Emit(OpCodes.Ldloca, value);
+                ilg.Emit(OpCodes.Call, typeof(decimal).GetMethod(nameof(decimal.ToString), new Type[0]));
+                ilg.Emit(OpCodes.Call, typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.Pack), new[] {typeof(string)}));
+                return;
+            }
+
             throw new NotSupportedException($"Cannot serialise property of type {type}");
         }
     }

@@ -114,7 +114,15 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(123, after.Score);
         }
 
-        // TODO decimal
+        [Fact]
+        public void HandlesDecimal()
+        {
+            var after = RoundTrip(new UserScoreDecimal("Bob", 123.456m));
+
+            Assert.Equal("Bob", after.Name);
+            Assert.Equal(123.456m, after.Score);
+        }
+
         // TODO complex
         // TODO IROL
 
