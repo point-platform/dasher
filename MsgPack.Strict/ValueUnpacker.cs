@@ -22,7 +22,7 @@ namespace MsgPack.Strict
         mTypeHash[typeof(double)]=OpCodes.Ldind_R8;
         mTypeHash[typeof(float)]=OpCodes.Ldind_R4;
         */
-        public static string TryReadComplexName = nameof(TryReadComplex);
+
         private static readonly Dictionary<Type, MethodInfo> _typeGetters = new Dictionary<Type, MethodInfo>
         {
             // TODO DateTime, TimeSpan
@@ -49,7 +49,7 @@ namespace MsgPack.Strict
             if (_typeGetters.TryGetValue(type, out methodInfo))
                 return methodInfo;
 
-            return typeof (ValueUnpacker).GetMethod(nameof(TryReadComplex), BindingFlags.Static | BindingFlags.Public);
+            return typeof (ValueUnpacker).GetMethod(nameof(TryReadComplex), BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(type);
         }
 
         public static bool TryReadSByte(Unpacker unpacker, out sbyte value) => unpacker.ReadSByte(out value);

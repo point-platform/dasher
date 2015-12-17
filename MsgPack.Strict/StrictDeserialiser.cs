@@ -243,10 +243,6 @@ namespace MsgPack.Strict
                     ilg.Emit(OpCodes.Ldarg_0); // unpacker
                     ilg.Emit(OpCodes.Ldloca, valueLocals[parameterIndex]);
                     var unpackerMethod = ValueUnpacker.GetUnpackerMethodForType(parameters[parameterIndex].ParameterType);
-                    if (unpackerMethod.Name == ValueUnpacker.TryReadComplexName)
-                    {
-                        unpackerMethod = unpackerMethod.MakeGenericMethod(parameters[parameterIndex].ParameterType);
-                    }
                     ilg.Emit(OpCodes.Call, unpackerMethod);
 
                     // If the unpacker method failed (returned false), throw
