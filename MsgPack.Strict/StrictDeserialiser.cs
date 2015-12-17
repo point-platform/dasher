@@ -442,8 +442,17 @@ namespace MsgPack.Strict
                 return;
             }
 
-//            if (type.IsClass && type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1)
-//                return typeof(ValueUnpacker).GetMethod(nameof(TryReadType), BindingFlags.Static | BindingFlags.Public);
+            if (type.IsClass && type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1)
+            {
+                // TODO cache subtype deserialiser instances in fields of generated class (requires moving away from DynamicMethod)
+                LoadType(ilg, type);
+                ilg.Emit(OpCodes.Call, typeof(StrictDeserialiser).GetMethod(nameof(StrictDeserialiser.Get), new[] {typeof(Type)}));
+                ilg.Emit(OpCodes.Ldarg_0); // unpacker
+                ilg.Emit(OpCodes.Call, typeof(StrictDeserialiser).GetMethod(nameof(StrictDeserialiser.Deserialise), new[] {typeof(MsgPackUnpacker)}));
+                ilg.Emit(OpCodes.Castclass, type);
+                ilg.Emit(OpCodes.Stloc, local);
+                return;
+            }
 
             throw new NotImplementedException($"No support yet exists for reading values of type {type} from MsgPack data");
         }
