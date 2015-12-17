@@ -158,7 +158,6 @@ namespace MsgPack.Strict.Tests
             }
         }
 
-
         public sealed class UserScoreList
         {
             public UserScoreList(string name, IReadOnlyList<int> scores)
