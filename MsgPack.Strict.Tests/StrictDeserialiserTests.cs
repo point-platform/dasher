@@ -336,12 +336,49 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void HandlesEnumPropertiesCorrectly()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("TestEnum").Pack("Bar"));
 
             var after = StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes);
 
             Assert.Equal(TestEnum.Bar, after.TestEnum);
+        }
+
+        [Fact]
+        public void DeserialisesEnumMembersCaseInsensitively()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("TestEnum").Pack("BAR"));
+
+            var after = StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes);
+
+            Assert.Equal(TestEnum.Bar, after.TestEnum);
+        }
+
+        [Fact]
+        public void ThrowsWhenEnumNotEncodedAsString()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("TestEnum").Pack(123));
+
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes));
+
+            Assert.Equal(typeof(WithEnumProperty), ex.TargetType);
+            Assert.Equal($"Unable to read string value for enum property testEnum of type {typeof(TestEnum)}", ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsWhenEnumStringNotValidMember()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("TestEnum").Pack("Rubbish"));
+
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes));
+
+            Assert.Equal(typeof(WithEnumProperty), ex.TargetType);
+            Assert.Equal($"Unable to parse value \"Rubbish\" as a member of enum type {typeof(TestEnum)}", ex.Message);
         }
 
         [Fact]

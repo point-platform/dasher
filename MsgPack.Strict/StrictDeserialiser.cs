@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -123,8 +124,7 @@ namespace MsgPack.Strict
 
             Action throwException = () =>
             {
-                ilg.Emit(OpCodes.Ldtoken, type);
-                ilg.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
+                LoadType(ilg, type);
                 ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             };
@@ -239,7 +239,7 @@ namespace MsgPack.Strict
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
-                    ReadPropertyValue(ilg, valueLocals[parameterIndex]);
+                    ReadPropertyValue(ilg, valueLocals[parameterIndex], parameters[parameterIndex].Name, type);
 
                     ilg.Emit(OpCodes.Br, lblEndIfChain);
                 }
@@ -344,7 +344,7 @@ namespace MsgPack.Strict
             {typeof(string), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] {typeof(string).MakeByRefType()})}
         };
 
-        private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local)
+        private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local, string name, Type targetType)
         {
             // TODO DateTime, TimeSpan
             // TODO IReadOnlyList<T>
@@ -400,15 +400,58 @@ namespace MsgPack.Strict
                 return;
             }
 
-//            return typeof (ValueUnpacker).GetMethod(nameof(TryReadComplex), BindingFlags.Static | BindingFlags.Public).MakeGenericMethod(type);
+            if (type.IsEnum)
+            {
+                // Read value as a string
+                var s = ilg.DeclareLocal(typeof(string));
 
-//            if (type.IsEnum)
-//                return typeof(ValueUnpacker).GetMethod(nameof(TryReadEnum), BindingFlags.Static | BindingFlags.Public);
-//
+                ilg.Emit(OpCodes.Ldarg_0);
+                ilg.Emit(OpCodes.Ldloca, s);
+                ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
+
+                var lbl1 = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Brtrue, lbl1);
+                {
+                    ilg.Emit(OpCodes.Ldstr, "Unable to read string value for enum property {0} of type {1}");
+                    ilg.Emit(OpCodes.Ldstr, name);
+                    LoadType(ilg, type);
+                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
+                    LoadType(ilg, targetType);
+                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                    ilg.Emit(OpCodes.Throw);
+                }
+                ilg.MarkLabel(lbl1);
+
+                ilg.Emit(OpCodes.Ldloc, s);
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                ilg.Emit(OpCodes.Ldloca, local);
+                ilg.Emit(OpCodes.Call, typeof(Enum).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(m => m.Name == "TryParse" && m.GetParameters().Length == 3).MakeGenericMethod(type));
+
+                var lbl2 = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Brtrue, lbl2);
+                {
+                    ilg.Emit(OpCodes.Ldstr, "Unable to parse value \"{0}\" as a member of enum type {1}");
+                    ilg.Emit(OpCodes.Ldloc, s);
+                    LoadType(ilg, type);
+                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
+                    LoadType(ilg, targetType);
+                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                    ilg.Emit(OpCodes.Throw);
+                }
+                ilg.MarkLabel(lbl2);
+                return;
+            }
+
 //            if (type.IsClass && type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1)
 //                return typeof(ValueUnpacker).GetMethod(nameof(TryReadType), BindingFlags.Static | BindingFlags.Public);
 
             throw new NotImplementedException($"No support yet exists for reading values of type {type} from MsgPack data");
+        }
+
+        private static void LoadType(ILGenerator ilg, Type type)
+        {
+            ilg.Emit(OpCodes.Ldtoken, type);
+            ilg.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
         }
 
         #endregion
