@@ -96,6 +96,36 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
+        public void TryReadSingle()
+        {
+            var inputs = new[] {0.0f, 1.0f, 0.5f, -1.5f, float.NaN, float.MinValue, float.MaxValue, float.PositiveInfinity, float.NegativeInfinity};
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                float value;
+                Assert.True(unpacker.TryReadSingle(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
+        public void TryReadDouble()
+        {
+            var inputs = new[] {0.0d, 1.0d, 0.5d, -1.5d, double.NaN, double.MinValue, double.MaxValue, double.PositiveInfinity, double.NegativeInfinity};
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                double value;
+                Assert.True(unpacker.TryReadDouble(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
         public void TryReadArrayLength()
         {
             var inputs = new[] {0, 1, 2, 8, 50, 127, 128, 255, 256, short.MaxValue, ushort.MaxValue, int.MaxValue};
@@ -284,7 +314,6 @@ namespace MsgPack.Strict.Tests
                         Assert.Equal(input, output);
                     };
                 },
-/*
                 // Single
                 () =>
                 {
@@ -311,7 +340,6 @@ namespace MsgPack.Strict.Tests
                         Assert.Equal(input, output);
                     };
                 }
-*/
             };
 
             var verifiers = Enumerable.Range(0, 10000)
