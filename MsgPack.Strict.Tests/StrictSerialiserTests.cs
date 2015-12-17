@@ -152,7 +152,13 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(new[] {4, 5, 6}, after.Jagged[1]);
         }
 
-        // TODO enum
+        [Fact]
+        public void HandlesEnum()
+        {
+            var after = RoundTrip(new WithEnumProperty(TestEnum.Bar));
+
+            Assert.Equal(TestEnum.Bar, after.TestEnum);
+        }
 
         #region Test helpers
 

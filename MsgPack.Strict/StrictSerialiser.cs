@@ -139,6 +139,17 @@ namespace MsgPack.Strict
                 return;
             }
 
+            if (type.IsEnum)
+            {
+                // write the string form of the value
+                ilg.Emit(OpCodes.Ldloc, packer);
+                ilg.Emit(OpCodes.Ldloca, value);
+                ilg.Emit(OpCodes.Constrained, type);
+                ilg.Emit(OpCodes.Callvirt, typeof(object).GetMethod(nameof(ToString), new Type[0]));
+                ilg.Emit(OpCodes.Call, typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.Pack), new[] { typeof(string) }));
+                return;
+            }
+
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>))
             {
                 var elementType = type.GetGenericArguments().Single();
