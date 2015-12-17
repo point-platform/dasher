@@ -64,22 +64,39 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        public enum TestEnum
+        {
+            Foo = 1,
+            Bar = 2
+        }
+
+        public sealed class WithEnumProperty
+        {
+            public WithEnumProperty(TestEnum testEnum)
+            {
+                TestEnum = testEnum;
+            }
+
+            public TestEnum TestEnum { get; }
+        }
+
         public sealed class TestDefaultParams
         {
-            public byte    B   { get; }
-            public sbyte   Sb  { get; }
-            public short   S   { get; }
-            public ushort  Us  { get; }
-            public int     I   { get; }
-            public uint    Ui  { get; }
-            public long    L   { get; }
-            public ulong   Ul  { get; }
-            public string  Str { get; }
-            public float   F   { get; }
-            public double  D   { get; }
-            public decimal Dc  { get; }
-            public bool    Bo  { get; }
-            public object  O   { get; }
+            public byte     B   { get; }
+            public sbyte    Sb  { get; }
+            public short    S   { get; }
+            public ushort   Us  { get; }
+            public int      I   { get; }
+            public uint     Ui  { get; }
+            public long     L   { get; }
+            public ulong    Ul  { get; }
+            public string   Str { get; }
+            public float    F   { get; }
+            public double   D   { get; }
+            public decimal  Dc  { get; }
+            public bool     Bo  { get; }
+            public object   O   { get; }
+            public TestEnum E   { get; }
 
             public TestDefaultParams(
                 sbyte sb = -12,
@@ -95,7 +112,8 @@ namespace MsgPack.Strict.Tests
                 double d = 1.23,
                 decimal dc = 1.23M,
                 bool bo = true,
-                object o = null)
+                object o = null,
+                TestEnum e = TestEnum.Bar)
             {
                 B = b;
                 Sb = sb;
@@ -111,6 +129,7 @@ namespace MsgPack.Strict.Tests
                 Dc = dc;
                 Bo = bo;
                 O = o;
+                E = e;
             }
         }
 
@@ -290,6 +309,17 @@ namespace MsgPack.Strict.Tests
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
             Assert.Equal("Data stream ended.", ex.Message);
+        }
+
+        [Fact]
+        public void HandlesEnumPropertiesCorrectly()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("TestEnum").Pack("Bar"));
+
+            var after = StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes);
+
+            Assert.Equal(TestEnum.Bar, after.TestEnum);
         }
 
         [Fact]
