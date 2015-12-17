@@ -2,6 +2,9 @@
 using System.IO;
 using Xunit;
 
+// ReSharper disable UnusedMember.Global
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace MsgPack.Strict.Tests
 {
     public sealed class StrictSerialiserTests
