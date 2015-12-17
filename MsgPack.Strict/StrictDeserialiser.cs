@@ -347,8 +347,6 @@ namespace MsgPack.Strict
         private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local, string name, Type targetType)
         {
             // TODO DateTime, TimeSpan
-            // TODO IReadOnlyList<T>
-            // TODO complex types
 
             var type = local.LocalType;
 
