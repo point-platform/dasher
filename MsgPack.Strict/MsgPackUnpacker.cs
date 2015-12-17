@@ -306,7 +306,7 @@ namespace MsgPack.Strict
 
         #endregion
 
-        public bool TryReadBool(out bool value)
+        public bool TryReadBoolean(out bool value)
         {
             if (TryPrepareNextByte())
             {

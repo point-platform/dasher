@@ -267,7 +267,7 @@ namespace MsgPack.Strict.Tests
                     {
                         sequence.Add($"Bool {input}");
                         bool output;
-                        Assert.True(unpacker.TryReadBool(out output));
+                        Assert.True(unpacker.TryReadBoolean(out output));
                         Assert.Equal(input, output);
                     };
                 },
