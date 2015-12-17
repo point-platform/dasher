@@ -133,7 +133,25 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(123, after.UserScore.Score);
         }
 
-        // TODO IROL
+        [Fact]
+        public void HandlesList()
+        {
+            var after = RoundTrip(new UserScoreList("Bob", new[] {1, 2, 3, 4}));
+
+            Assert.Equal("Bob", after.Name);
+            Assert.Equal(new[] {1, 2, 3, 4}, after.Scores);
+        }
+
+        [Fact]
+        public void HandlesListOfList()
+        {
+            var after = RoundTrip(new ListOfList(new [] {new [] {1, 2, 3}, new [] {4, 5, 6}}));
+
+            Assert.Equal(2, after.Jagged.Count);
+            Assert.Equal(new[] {1, 2, 3}, after.Jagged[0]);
+            Assert.Equal(new[] {4, 5, 6}, after.Jagged[1]);
+        }
+
         // TODO enum
 
         #region Test helpers

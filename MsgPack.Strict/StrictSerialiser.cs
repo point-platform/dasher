@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -119,6 +120,79 @@ namespace MsgPack.Strict
         {
             var type = value.LocalType;
 
+            var packerMethod = typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.Pack), new[] { type });
+            if (packerMethod != null)
+            {
+                ilg.Emit(OpCodes.Ldloc, packer);
+                ilg.Emit(OpCodes.Ldloc, value);
+                ilg.Emit(OpCodes.Call, packerMethod);
+                return;
+            }
+
+            if (type == typeof(decimal))
+            {
+                // write the string form of the value
+                ilg.Emit(OpCodes.Ldloc, packer);
+                ilg.Emit(OpCodes.Ldloca, value);
+                ilg.Emit(OpCodes.Call, typeof(decimal).GetMethod(nameof(decimal.ToString), new Type[0]));
+                ilg.Emit(OpCodes.Call, typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.Pack), new[] { typeof(string) }));
+                return;
+            }
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>))
+            {
+                var elementType = type.GetGenericArguments().Single();
+
+                // read list length
+                var count = ilg.DeclareLocal(typeof(int));
+                ilg.Emit(OpCodes.Ldloc, value);
+                ilg.Emit(OpCodes.Callvirt, typeof(IReadOnlyCollection<>).MakeGenericType(elementType).GetProperty(nameof(IReadOnlyList<int>.Count)).GetMethod);
+                ilg.Emit(OpCodes.Stloc, count);
+
+                // write array header
+                ilg.Emit(OpCodes.Ldloc, packer);
+                ilg.Emit(OpCodes.Ldloc, count);
+                ilg.Emit(OpCodes.Call, typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.PackArrayHeader)));
+
+                // begin loop
+                var loopStart = ilg.DefineLabel();
+                var loopTest = ilg.DefineLabel();
+                var loopEnd = ilg.DefineLabel();
+
+                var i = ilg.DeclareLocal(typeof(int));
+                ilg.Emit(OpCodes.Ldc_I4_0);
+                ilg.Emit(OpCodes.Stloc, i);
+
+                ilg.Emit(OpCodes.Br, loopTest);
+                ilg.MarkLabel(loopStart);
+
+                // loop body
+                ilg.Emit(OpCodes.Ldloc, value);
+                ilg.Emit(OpCodes.Ldloc, i);
+                ilg.Emit(OpCodes.Callvirt, type.GetProperties(BindingFlags.Public|BindingFlags.Instance).Single(p => p.Name == "Item" && p.GetIndexParameters().Length == 1).GetMethod);
+                var elementValue = ilg.DeclareLocal(elementType);
+                ilg.Emit(OpCodes.Stloc, elementValue);
+                WriteObject(ilg, packer, elementValue);
+
+                // loop counter increment
+                ilg.Emit(OpCodes.Ldloc, i);
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                ilg.Emit(OpCodes.Add);
+                ilg.Emit(OpCodes.Stloc, i);
+
+                // loop test
+                ilg.MarkLabel(loopTest);
+                ilg.Emit(OpCodes.Ldloc, i);
+                ilg.Emit(OpCodes.Ldloc, count);
+                ilg.Emit(OpCodes.Clt);
+                ilg.Emit(OpCodes.Brtrue, loopStart);
+
+                // after loop
+                ilg.MarkLabel(loopEnd);
+                return;
+            }
+
+            // treat as complex object and recur
             var props = type
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .Where(p => p.CanRead)
@@ -145,35 +219,8 @@ namespace MsgPack.Strict
                 ilg.Emit(OpCodes.Stloc, propValue);
 
                 // write property value
-                WriteValue(ilg, packer, propValue);
+                WriteObject(ilg, packer, propValue);
             }
-        }
-
-        private static void WriteValue(ILGenerator ilg, LocalBuilder packer, LocalBuilder value)
-        {
-            var type = value.LocalType;
-
-            var packerMethod = typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.Pack), new[] {type});
-            if (packerMethod != null)
-            {
-                ilg.Emit(OpCodes.Ldloc, packer);
-                ilg.Emit(OpCodes.Ldloc, value);
-                ilg.Emit(OpCodes.Call, packerMethod);
-                return;
-            }
-
-            if (type == typeof(decimal))
-            {
-                // write the string form of the value
-                ilg.Emit(OpCodes.Ldloc, packer);
-                ilg.Emit(OpCodes.Ldloca, value);
-                ilg.Emit(OpCodes.Call, typeof(decimal).GetMethod(nameof(decimal.ToString), new Type[0]));
-                ilg.Emit(OpCodes.Call, typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.Pack), new[] {typeof(string)}));
-                return;
-            }
-
-            // treat as complex object and recur
-            WriteObject(ilg, packer, value);
         }
     }
 }
