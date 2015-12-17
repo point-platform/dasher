@@ -476,6 +476,70 @@ namespace MsgPack.Strict
             return false;
         }
 
+        public bool TryPeekFormat(out Format format)
+        {
+            if (TryPrepareNextByte())
+            {
+                format = DecodeFormat((byte)_nextByte);
+                return format != Format.Unknown;
+            }
+
+            format = default(Format);
+            return false;
+        }
+
+        private static Format DecodeFormat(byte b)
+        {
+            if (b <= 0x7f)
+                return Format.PositiveFixInt;
+            if (b >= 0x80 && b <= 0x8f)
+                return Format.FixMap;
+            if (b >= 0x90 && b <= 0x9f)
+                return Format.FixArray;
+            if (b >= 0xa0 && b <= 0xbf)
+                return Format.FixStr;
+            if (b >= 0xe0)
+                return Format.NegativeFixInt;
+
+            switch (b)
+            {
+                case 0xc0: return Format.Null;
+                case 0xc2: return Format.False;
+                case 0xc3: return Format.True;
+                case 0xc4: return Format.Bin8;
+                case 0xc5: return Format.Bin16;
+                case 0xc6: return Format.Bin32;
+                case 0xc7: return Format.Ext8;
+                case 0xc8: return Format.Ext16;
+                case 0xc9: return Format.Ext32;
+                case 0xca: return Format.Float32;
+                case 0xcb: return Format.Float64;
+                case 0xcc: return Format.UInt8;
+                case 0xcd: return Format.UInt16;
+                case 0xce: return Format.UInt32;
+                case 0xcf: return Format.UInt64;
+                case 0xd0: return Format.Int8;
+                case 0xd1: return Format.Int16;
+                case 0xd2: return Format.Int32;
+                case 0xd3: return Format.Int64;
+                case 0xd4: return Format.FixExt1;
+                case 0xd5: return Format.FixExt2;
+                case 0xd6: return Format.FixExt4;
+                case 0xd7: return Format.FixExt8;
+                case 0xd8: return Format.FixExt16;
+                case 0xd9: return Format.Str8;
+                case 0xda: return Format.Str16;
+                case 0xdb: return Format.Str32;
+                case 0xdc: return Format.Array16;
+                case 0xdd: return Format.Array32;
+                case 0xde: return Format.Map16;
+                case 0xdf: return Format.Map32;
+
+                default:
+                    return Format.Unknown;
+            }
+        }
+
         #region Reading strings
 
         public bool TryReadString(out string value)

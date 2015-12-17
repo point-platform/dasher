@@ -188,6 +188,56 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
+        public void TryPeekFormat()
+        {
+            TestFormat(p => p.PackMapHeader(1), Format.FixMap);
+            TestFormat(p => p.PackMapHeader(ushort.MaxValue), Format.Map16);
+            TestFormat(p => p.PackMapHeader(ushort.MaxValue + 1), Format.Map32);
+
+            TestFormat(p => p.PackArrayHeader(1), Format.FixArray);
+            TestFormat(p => p.PackArrayHeader(ushort.MaxValue), Format.Array16);
+            TestFormat(p => p.PackArrayHeader(ushort.MaxValue + 1), Format.Array32);
+
+            TestFormat(p => p.Pack(0), Format.PositiveFixInt);
+            TestFormat(p => p.Pack(1), Format.PositiveFixInt);
+            TestFormat(p => p.Pack(-1), Format.NegativeFixInt);
+            TestFormat(p => p.Pack(127), Format.PositiveFixInt);
+            TestFormat(p => p.Pack(-127), Format.Int8);
+            TestFormat(p => p.Pack(127u), Format.PositiveFixInt);
+            TestFormat(p => p.Pack(128u), Format.UInt8);
+            TestFormat(p => p.Pack(255u), Format.UInt8);
+            TestFormat(p => p.Pack(-128), Format.Int8);
+            TestFormat(p => p.Pack(128), Format.Int16);
+            TestFormat(p => p.Pack(256), Format.Int16);
+            TestFormat(p => p.Pack(256u), Format.UInt16);
+            TestFormat(p => p.Pack(short.MaxValue), Format.Int16);
+            TestFormat(p => p.Pack(ushort.MaxValue), Format.UInt16);
+            TestFormat(p => p.Pack(short.MaxValue + 1), Format.Int32);
+            TestFormat(p => p.Pack(ushort.MaxValue + 1u), Format.UInt32);
+            TestFormat(p => p.Pack(int.MaxValue + 1L), Format.Int64);
+            TestFormat(p => p.Pack(uint.MaxValue + 1UL), Format.UInt64);
+
+            TestFormat(p => p.Pack(0.0f), Format.Float32);
+            TestFormat(p => p.Pack(0.0d), Format.Float64);
+            TestFormat(p => p.Pack(float.NaN), Format.Float32);
+            TestFormat(p => p.Pack(double.NaN), Format.Float64);
+
+            TestFormat(p => p.Pack(true), Format.True);
+            TestFormat(p => p.Pack(false), Format.False);
+
+            TestFormat(p => p.PackNull(), Format.Null);
+
+            TestFormat(p => p.Pack("Hello"), Format.FixStr);
+            TestFormat(p => p.Pack(new string('!', 255)), Format.Str8);
+            TestFormat(p => p.Pack(new string('!', 256)), Format.Str16);
+            TestFormat(p => p.Pack(new string('!', ushort.MaxValue + 1)), Format.Str32);
+
+            TestFormat(p => p.Pack(new byte[255]), Format.Bin8);
+            TestFormat(p => p.Pack(new byte[256]), Format.Bin16);
+            TestFormat(p => p.Pack(new byte[ushort.MaxValue + 1]), Format.Bin32);
+        }
+
+        [Fact]
         public void Sequences()
         {
             var stream = new MemoryStream();
@@ -417,6 +467,19 @@ namespace MsgPack.Strict.Tests
 
             FormatFamily actual;
             Assert.True(unpacker.TryPeekFormatFamily(out actual));
+            Assert.Equal(expected, actual);
+        }
+
+        private static void TestFormat(Action<Packer> packerAction, Format expected)
+        {
+            var stream = new MemoryStream();
+            packerAction(Packer.Create(stream, PackerCompatibilityOptions.None));
+            stream.Position = 0;
+
+            var unpacker = new MsgPackUnpacker(stream);
+
+            Format actual;
+            Assert.True(unpacker.TryPeekFormat(out actual));
             Assert.Equal(expected, actual);
         }
 
