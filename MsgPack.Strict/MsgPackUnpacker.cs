@@ -508,7 +508,9 @@ namespace MsgPack.Strict
             var b8 = _stream.ReadByte();
             if (b8 == -1)
                 throw new IOException("Unexpected end of stream.");
+            #pragma warning disable CS0675
             return (ulong)b1 << 56 | (ulong)b2 << 48 | (ulong)b3 << 40 | (ulong)b4 << 32 | (ulong)b5 << 24 | (ulong)b6 << 16 | (ulong)b7 << 8 | (ulong)b8;
+            #pragma warning restore CS0675
         }
 
         private short ReadInt16()

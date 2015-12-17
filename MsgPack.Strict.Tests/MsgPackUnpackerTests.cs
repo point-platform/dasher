@@ -231,7 +231,9 @@ namespace MsgPack.Strict.Tests
                 // Int64
                 () =>
                 {
+                    #pragma warning disable CS0675
                     var input = random.Next() | ((long)random.Next() << 32);
+                    #pragma warning restore CS0675
                     packer.Pack(input);
                     return () =>
                     {
@@ -244,7 +246,9 @@ namespace MsgPack.Strict.Tests
                 // UInt64
                 () =>
                 {
+                    #pragma warning disable CS0675
                     var input = (ulong)random.Next() | ((ulong)random.Next() << 32);
+                    #pragma warning restore CS0675
                     packer.Pack(input);
                     return () =>
                     {
