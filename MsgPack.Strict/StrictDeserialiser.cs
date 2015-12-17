@@ -442,6 +442,77 @@ namespace MsgPack.Strict
                 return;
             }
 
+            var listType = type.GetInterfaces().SingleOrDefault(i => i.Name == "IReadOnlyCollection`1" && i.Namespace == "System.Collections.Generic");
+            if (listType != null)
+            {
+                var elementType = listType.GetGenericArguments().Single();
+
+                // read list length
+                var count = ilg.DeclareLocal(typeof(int));
+                ilg.Emit(OpCodes.Ldarg_0);
+                ilg.Emit(OpCodes.Ldloca, count);
+                ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadArrayLength)));
+
+                // verify read correctly
+                var lbl1 = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Brtrue, lbl1);
+                {
+                    ilg.Emit(OpCodes.Ldstr, "Expecting collection data to be encoded as array");
+                    LoadType(ilg, targetType);
+                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                    ilg.Emit(OpCodes.Throw);
+                }
+                ilg.MarkLabel(lbl1);
+
+                // create an array to store values
+                ilg.Emit(OpCodes.Ldloc, count);
+                ilg.Emit(OpCodes.Newarr, elementType);
+
+                var array = ilg.DeclareLocal(elementType.MakeArrayType());
+                ilg.Emit(OpCodes.Stloc, array);
+
+                // begin loop
+                var loopStart = ilg.DefineLabel();
+                var loopTest = ilg.DefineLabel();
+                var loopEnd = ilg.DefineLabel();
+
+                var i = ilg.DeclareLocal(typeof(int));
+                ilg.Emit(OpCodes.Ldc_I4_0);
+                ilg.Emit(OpCodes.Stloc, i);
+
+                ilg.Emit(OpCodes.Br, loopTest);
+                ilg.MarkLabel(loopStart);
+
+                // loop body
+                var element = ilg.DeclareLocal(elementType);
+                ReadPropertyValue(ilg, element, name, targetType);
+
+                ilg.Emit(OpCodes.Ldloc, array);
+                ilg.Emit(OpCodes.Ldloc, i);
+                ilg.Emit(OpCodes.Ldloc, element);
+                ilg.Emit(OpCodes.Stelem, elementType);
+
+                // loop counter increment
+                ilg.Emit(OpCodes.Ldloc, i);
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                ilg.Emit(OpCodes.Add);
+                ilg.Emit(OpCodes.Stloc, i);
+
+                // loop test
+                ilg.MarkLabel(loopTest);
+                ilg.Emit(OpCodes.Ldloc, i);
+                ilg.Emit(OpCodes.Ldloc, count);
+                ilg.Emit(OpCodes.Clt);
+                ilg.Emit(OpCodes.Brtrue, loopStart);
+
+                // after loop
+                ilg.MarkLabel(loopEnd);
+
+                ilg.Emit(OpCodes.Ldloc, array);
+                ilg.Emit(OpCodes.Stloc, local);
+                return;
+            }
+
             if (type.IsClass && type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1)
             {
                 // TODO cache subtype deserialiser instances in fields of generated class (requires moving away from DynamicMethod)

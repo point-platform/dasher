@@ -182,6 +182,16 @@ namespace MsgPack.Strict.Tests
             public IReadOnlyList<int> Scores { get; }
         }
 
+        public sealed class ListOfList
+        {
+            public IReadOnlyList<IReadOnlyList<int>> Jagged { get; }
+
+            public ListOfList(IReadOnlyList<IReadOnlyList<int>> jagged)
+            {
+                Jagged = jagged;
+            }
+        }
+
         #endregion
 
         [Fact]
@@ -462,6 +472,21 @@ namespace MsgPack.Strict.Tests
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(new[] {1, 2, 3}, after.Scores);
+        }
+
+        [Fact]
+        public void HandlesListOfListProperty()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("Jagged").PackArrayHeader(2)
+                    .PackArrayHeader(3).Pack(1).Pack(2).Pack(3)
+                    .PackArrayHeader(3).Pack(4).Pack(5).Pack(6));
+
+            var after = StrictDeserialiser.Get<ListOfList>().Deserialise(bytes);
+
+            Assert.Equal(2, after.Jagged.Count);
+            Assert.Equal(new[] {1, 2, 3}, after.Jagged[0]);
+            Assert.Equal(new[] {4, 5, 6}, after.Jagged[1]);
         }
     }
 }
