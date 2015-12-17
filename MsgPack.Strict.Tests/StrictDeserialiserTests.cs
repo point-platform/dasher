@@ -327,7 +327,9 @@ namespace MsgPack.Strict.Tests
                 .Pack("Name").Pack(123));
 
             var deserialiser = StrictDeserialiser.Get<UserScore>();
-            Assert.Throws<MessageTypeException>(() => deserialiser.Deserialise(bytes));
+            var ex = Assert.Throws<StrictDeserialisationException>(() => deserialiser.Deserialise(bytes));
+            Assert.Equal("Message must be encoded as a MsgPack map", ex.Message);
+            Assert.Equal(typeof(UserScore), ex.TargetType);
         }
 
         [Fact]

@@ -147,7 +147,7 @@ namespace MsgPack.Strict
                 var ifLabel = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, ifLabel);
                 {
-                    ilg.Emit(OpCodes.Ldstr, "Data stream ended.");
+                    ilg.Emit(OpCodes.Ldstr, "Message must be encoded as a MsgPack map");
                     throwException();
                 }
                 ilg.MarkLabel(ifLabel);
