@@ -301,7 +301,7 @@ namespace MsgPack.Strict.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Unexpected type for \"Score\". Expected int, got double.", ex.Message);
+            Assert.Equal("Unexpected type for \"score\". Expected Int32, got Float64.", ex.Message);
         }
 
         [Fact]

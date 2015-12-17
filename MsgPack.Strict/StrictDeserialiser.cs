@@ -361,9 +361,20 @@ namespace MsgPack.Strict
                 var typeGetterSuccess = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
                 {
-                    // TODO throw better exception
-                    ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 4a");
-                    ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
+                    var format = ilg.DeclareLocal(typeof(Format));
+                    ilg.Emit(OpCodes.Ldarg_0);
+                    ilg.Emit(OpCodes.Ldloca, format);
+                    ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryPeekFormat)));
+                    ilg.Emit(OpCodes.Pop);
+
+                    ilg.Emit(OpCodes.Ldstr, "Unexpected type for \"{0}\". Expected {1}, got {2}.");
+                    ilg.Emit(OpCodes.Ldstr, name);
+                    ilg.Emit(OpCodes.Ldstr, type.Name);
+                    ilg.Emit(OpCodes.Ldloc, format);
+                    ilg.Emit(OpCodes.Box, typeof(Format));
+                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object), typeof(object) }));
+                    LoadType(ilg, targetType);
+                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                     ilg.Emit(OpCodes.Throw);
                 }
                 ilg.MarkLabel(typeGetterSuccess);
