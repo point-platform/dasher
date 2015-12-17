@@ -123,7 +123,16 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(123.456m, after.Score);
         }
 
-        // TODO complex
+        [Fact]
+        public void HandlesComplex()
+        {
+            var after = RoundTrip(new UserScoreWrapper(1.0, new UserScore("Bob", 123)));
+
+            Assert.Equal(1.0, after.Weight);
+            Assert.Equal("Bob", after.UserScore.Name);
+            Assert.Equal(123, after.UserScore.Score);
+        }
+
         // TODO IROL
 
         #region Test helpers

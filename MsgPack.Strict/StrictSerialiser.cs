@@ -172,7 +172,8 @@ namespace MsgPack.Strict
                 return;
             }
 
-            throw new NotSupportedException($"Cannot serialise property of type {type}");
+            // treat as complex object and recur
+            WriteObject(ilg, packer, value);
         }
     }
 }
