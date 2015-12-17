@@ -103,7 +103,7 @@ namespace MsgPack.Strict
                 if (parameter.HasDefaultValue)
                 {
                     // set default values on params
-                    StoreValue(ilg, parameter.DefaultValue);
+                    LoadConstant(ilg, parameter.DefaultValue);
                     ilg.Emit(OpCodes.Stloc, valueLocals[i]);
                     // set 'valueSet' to true
                     // note we use the second LSb to indicate a default value
@@ -347,7 +347,7 @@ namespace MsgPack.Strict
             return (Func<Unpacker, object>)method.CreateDelegate(typeof(Func<Unpacker, object>));
         }
 
-        private static void StoreValue(ILGenerator ilg, object value)
+        private static void LoadConstant(ILGenerator ilg, object value)
         {
             if (value == null)
                 ilg.Emit(OpCodes.Ldnull);
