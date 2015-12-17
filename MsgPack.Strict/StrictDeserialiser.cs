@@ -578,6 +578,11 @@ namespace MsgPack.Strict
                 }
                 ilg.Emit(OpCodes.Newobj, typeof(decimal).GetConstructor(new[] {typeof(int[])}));
             }
+            else if (value.GetType().IsEnum)
+            {
+                // TODO test and cater for non-4-byte enums too
+                ilg.Emit(OpCodes.Ldc_I4, (int)value);
+            }
             else
             {
                 throw new NotImplementedException($"No support for default values of type {value?.GetType().Name} (yet).");
