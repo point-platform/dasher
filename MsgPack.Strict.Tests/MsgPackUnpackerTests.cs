@@ -156,6 +156,38 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
+        public void TryPeekFormatFamily()
+        {
+            TestFamily(p => p.PackMapHeader(1),   FormatFamily.Map);
+            TestFamily(p => p.PackMapHeader(200), FormatFamily.Map);
+
+            TestFamily(p => p.PackArrayHeader(1),   FormatFamily.Array);
+            TestFamily(p => p.PackArrayHeader(200), FormatFamily.Array);
+
+            TestFamily(p => p.Pack(0), FormatFamily.Integer);
+            TestFamily(p => p.Pack(1), FormatFamily.Integer);
+            TestFamily(p => p.Pack(-1), FormatFamily.Integer);
+            TestFamily(p => p.Pack(128), FormatFamily.Integer);
+            TestFamily(p => p.Pack(-128), FormatFamily.Integer);
+            TestFamily(p => p.Pack(256), FormatFamily.Integer);
+            TestFamily(p => p.Pack(int.MaxValue), FormatFamily.Integer);
+            TestFamily(p => p.Pack(int.MinValue), FormatFamily.Integer);
+
+            TestFamily(p => p.Pack(0.0f), FormatFamily.Float);
+            TestFamily(p => p.Pack(0.0d), FormatFamily.Float);
+            TestFamily(p => p.Pack(double.NaN), FormatFamily.Float);
+            TestFamily(p => p.Pack(float.NaN), FormatFamily.Float);
+
+            TestFamily(p => p.Pack(true), FormatFamily.Boolean);
+            TestFamily(p => p.Pack(false), FormatFamily.Boolean);
+
+            TestFamily(p => p.PackNull(), FormatFamily.Null);
+
+            TestFamily(p => p.Pack("Hello"), FormatFamily.String);
+            TestFamily(p => p.Pack(""), FormatFamily.String);
+        }
+
+        [Fact]
         public void Sequences()
         {
             var stream = new MemoryStream();
@@ -288,7 +320,7 @@ namespace MsgPack.Strict.Tests
                         Assert.Equal(input, output);
                     };
                 },
-                // Bool
+                // Boolean
                 () =>
                 {
                     var input = random.NextDouble() < 0.5;
@@ -373,6 +405,19 @@ namespace MsgPack.Strict.Tests
             stream.Position = 0;
 
             return new MsgPackUnpacker(stream);
+        }
+
+        private static void TestFamily(Action<Packer> packerAction, FormatFamily expected)
+        {
+            var stream = new MemoryStream();
+            packerAction(Packer.Create(stream, PackerCompatibilityOptions.None));
+            stream.Position = 0;
+
+            var unpacker = new MsgPackUnpacker(stream);
+
+            FormatFamily actual;
+            Assert.True(unpacker.TryPeekFormatFamily(out actual));
+            Assert.Equal(expected, actual);
         }
 
         #endregion

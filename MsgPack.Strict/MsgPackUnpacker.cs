@@ -427,6 +427,55 @@ namespace MsgPack.Strict
             return false;
         }
 
+        public bool TryPeekFormatFamily(out FormatFamily family)
+        {
+            if (TryPrepareNextByte())
+            {
+                if ((_nextByte >= 0 && _nextByte <= 0x7f) || (_nextByte >= 0xcc && _nextByte <= 0xd3) || (_nextByte >= 0xe0 && _nextByte <= 0xff))
+                {
+                    family = FormatFamily.Integer;
+                    return true;
+                }
+                if ((_nextByte >= 0x80 && _nextByte <= 0x8f) || _nextByte == 0xde || _nextByte == 0xdf)
+                {
+                    family = FormatFamily.Map;
+                    return true;
+                }
+                if ((_nextByte >= 0x90 && _nextByte <= 0x9f) || _nextByte == 0xdc || _nextByte == 0xdd)
+                {
+                    family = FormatFamily.Array;
+                    return true;
+                }
+                if ((_nextByte >= 0xa0 && _nextByte <= 0xbf) || (_nextByte >= 0xd9 && _nextByte <= 0xdb))
+                {
+                    family = FormatFamily.String;
+                    return true;
+                }
+                switch (_nextByte)
+                {
+                    case 0xc0:
+                        family = FormatFamily.Null;
+                        return true;
+                    case 0xc2:
+                    case 0xc3:
+                        family = FormatFamily.Boolean;
+                        return true;
+                    case 0xc4:
+                    case 0xc5:
+                    case 0xc6:
+                        family = FormatFamily.Binary;
+                        return true;
+                    case 0xca:
+                    case 0xcb:
+                        family = FormatFamily.Float;
+                        return true;
+                }
+            }
+
+            family = default(FormatFamily);
+            return false;
+        }
+
         #region Reading strings
 
         public bool TryReadString(out string value)
