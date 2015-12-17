@@ -7,7 +7,7 @@ using Xunit;
 
 namespace MsgPack.Strict.Tests
 {
-    public sealed class UnsafeUnsafeMsgPackPackerTests
+    public sealed class UnsafeMsgPackPackerTests
     {
         [Fact]
         public void PackPerfFaceOff()
