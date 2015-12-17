@@ -82,21 +82,21 @@ namespace MsgPack.Strict.Tests
 
         public sealed class TestDefaultParams
         {
-            public byte     B   { get; }
-            public sbyte    Sb  { get; }
-            public short    S   { get; }
-            public ushort   Us  { get; }
-            public int      I   { get; }
-            public uint     Ui  { get; }
-            public long     L   { get; }
-            public ulong    Ul  { get; }
-            public string   Str { get; }
-            public float    F   { get; }
-            public double   D   { get; }
-            public decimal  Dc  { get; }
-            public bool     Bo  { get; }
-            public object   O   { get; }
-            public TestEnum E   { get; }
+            public byte      B       { get; }
+            public sbyte     Sb      { get; }
+            public short     S       { get; }
+            public ushort    Us      { get; }
+            public int       I       { get; }
+            public uint      Ui      { get; }
+            public long      L       { get; }
+            public ulong     Ul      { get; }
+            public string    Str     { get; }
+            public float     F       { get; }
+            public double    D       { get; }
+            public decimal   Dc      { get; }
+            public bool      Bo      { get; }
+            public TestEnum  E       { get; }
+            public UserScore Complex { get; }
 
             public TestDefaultParams(
                 sbyte sb = -12,
@@ -112,8 +112,8 @@ namespace MsgPack.Strict.Tests
                 double d = 1.23,
                 decimal dc = 1.23M,
                 bool bo = true,
-                object o = null,
-                TestEnum e = TestEnum.Bar)
+                TestEnum e = TestEnum.Bar,
+                UserScore complex = null)
             {
                 B = b;
                 Sb = sb;
@@ -128,8 +128,8 @@ namespace MsgPack.Strict.Tests
                 D = d;
                 Dc = dc;
                 Bo = bo;
-                O = o;
                 E = e;
+                Complex = complex;
             }
         }
 
@@ -343,7 +343,7 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(1.23, after.D);
             Assert.Equal(1.23M, after.Dc);
             Assert.Equal(true, after.Bo);
-            Assert.Equal(null, after.O);
+            Assert.Equal(null, after.Complex);
         }
 
         [Fact]
