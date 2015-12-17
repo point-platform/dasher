@@ -134,6 +134,7 @@ namespace MsgPack.Strict.Tests
         }
 
         // TODO IROL
+        // TODO enum
 
         #region Test helpers
 
