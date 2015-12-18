@@ -63,9 +63,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MsgPackPackerTests.cs" />
+    <Compile Include="MsgPackUnpackerTests.cs" />
     <Compile Include="StrictDeserialiserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestUtil.cs" />
+    <Compile Include="UnsafeMsgPackPackerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
