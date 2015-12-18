@@ -164,6 +164,21 @@ namespace MsgPack.Strict.Tests
             Assert.Equal("world", world);
         }
 
+        [Fact]
+        public void TryReadBool()
+        {
+            var inputs = new[] { true, false};
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                bool value;
+                Assert.True(unpacker.TryReadBool(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
         #region Test support
 
         private static MsgPackUnpacker InitTest(Action<Packer> packerAction)

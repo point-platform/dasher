@@ -317,7 +317,7 @@ namespace MsgPack.Strict
                     return true;
                 }
 
-                if (_nextByte == MsgPackCode.FalseValue)
+                if (_nextByte == MsgPackCode.TrueValue)
                 {
                     value = true;
                     _nextByte = -1;
