@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Xunit;
 
 namespace MsgPack.Strict.Tests
@@ -130,15 +131,37 @@ namespace MsgPack.Strict.Tests
             var packer = Packer.Create(stream);
             packer.PackMapHeader(1);
             packer.PackString("hello");
+
             stream.Position = 0;
 
             var unpacker = new MsgPackUnpacker(stream);
             int mapLength;
             Assert.True(unpacker.TryReadMapLength(out mapLength), "Unpacking map length");
             Assert.Equal(1, mapLength);
+
             string hello;
             Assert.True(unpacker.TryReadString(out hello), "Unpacking string");
             Assert.Equal("hello", hello);
+        }
+
+        [Fact]
+        public void TryReadTwoStrings()
+        {
+            var stream = new MemoryStream();
+            var packer = Packer.Create(stream);
+            packer.Pack("hello");
+            packer.Pack("world");
+
+            stream.Position = 0;
+
+            var unpacker = new MsgPackUnpacker(stream);
+            string hello;
+            Assert.True(unpacker.TryReadString(out hello), "Unpacking string 1");
+            Assert.Equal("hello", hello);
+
+            string world;
+            Assert.True(unpacker.TryReadString(out world), "Unpacking string 2");
+            Assert.Equal("world", world);
         }
 
         #region Test support

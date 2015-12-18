@@ -310,14 +310,14 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == 0xc2)
+                if (_nextByte == MsgPackCode.FalseValue)
                 {
                     value = false;
                     _nextByte = -1;
                     return true;
                 }
 
-                if (_nextByte == 0xc3)
+                if (_nextByte == MsgPackCode.FalseValue)
                 {
                     value = true;
                     _nextByte = -1;
@@ -334,7 +334,7 @@ namespace MsgPack.Strict
             if (TryPrepareNextByte())
             {
                 uint? length = null;
-                if ((_nextByte & 0xF0) == 0x90)
+                if ((_nextByte & 0xF0) == MsgPackCode.MinimumFixedArray)
                 {
                     length = (uint?)(_nextByte & 0x0F);
                 }
@@ -342,8 +342,8 @@ namespace MsgPack.Strict
                 {
                     switch (_nextByte)
                     {
-                        case 0xDC: length = ReadUInt16(); break;
-                        case 0xDD: length = ReadUInt32(); break;
+                        case MsgPackCode.Array16: length = ReadUInt16(); break;
+                        case MsgPackCode.Array32: length = ReadUInt32(); break;
                     }
                 }
 
@@ -352,6 +352,7 @@ namespace MsgPack.Strict
                     if (length > int.MaxValue)
                         throw new Exception("Array length too large");
                     value = (int)length;
+                    _nextByte = -1;
                     return true;
                 }
             }
@@ -365,7 +366,7 @@ namespace MsgPack.Strict
             if (TryPrepareNextByte())
             {
                 uint? length = null;
-                if ((_nextByte & 0xF0) == 0x80)
+                if ((_nextByte & 0xF0) == MsgPackCode.MinimumFixedMap)
                 {
                     length = (uint?)(_nextByte & 0x0F);
                 }
@@ -373,8 +374,8 @@ namespace MsgPack.Strict
                 {
                     switch (_nextByte)
                     {
-                        case 0xDE: length = ReadUInt16(); break;
-                        case 0xDF: length = ReadUInt32(); break;
+                        case MsgPackCode.Map16: length = ReadUInt16(); break;
+                        case MsgPackCode.Map32: length = ReadUInt32(); break;
                     }
                 }
 
@@ -383,6 +384,7 @@ namespace MsgPack.Strict
                     if (length > int.MaxValue)
                         throw new Exception("Array length too large");
                     value = (int)length;
+                    _nextByte = -1;
                     return true;
                 }
             }
@@ -402,7 +404,7 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == 0xc0)
+                if (_nextByte == MsgPackCode.NilValue)
                 {
                     value = null;
                     _nextByte = -1;
@@ -410,7 +412,7 @@ namespace MsgPack.Strict
                 }
 
                 uint? length = null;
-                if ((_nextByte & 0xE0) == 0xA0)
+                if ((_nextByte & 0xE0) == MsgPackCode.MinimumFixedRaw)
                 {
                     length = (uint)(_nextByte & 0x1F);
                 }
@@ -418,9 +420,9 @@ namespace MsgPack.Strict
                 {
                     switch (_nextByte)
                     {
-                        case 0xD9: length = ReadByte();  break;
-                        case 0xDA: length = ReadUInt16(); break;
-                        case 0xDB: length = ReadUInt32(); break;
+                        case MsgPackCode.Str8: length = ReadByte();  break;
+                        case MsgPackCode.Raw16: length = ReadUInt16(); break;
+                        case MsgPackCode.Raw32: length = ReadUInt32(); break;
                     }
                 }
 
