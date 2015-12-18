@@ -123,6 +123,24 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        [Fact]
+        public void TryReadMapLengthThenString()
+        {
+            var stream = new MemoryStream();
+            var packer = Packer.Create(stream);
+            packer.PackMapHeader(1);
+            packer.PackString("hello");
+            stream.Position = 0;
+
+            var unpacker = new MsgPackUnpacker(stream);
+            int mapLength;
+            Assert.True(unpacker.TryReadMapLength(out mapLength), "Unpacking map length");
+            Assert.Equal(1, mapLength);
+            string hello;
+            Assert.True(unpacker.TryReadString(out hello), "Unpacking string");
+            Assert.Equal("hello", hello);
+        }
+
         #region Test support
 
         private static MsgPackUnpacker InitTest(Action<Packer> packerAction)
