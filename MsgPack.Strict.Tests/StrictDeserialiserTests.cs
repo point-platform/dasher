@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Xunit;
 
 namespace MsgPack.Strict.Tests
@@ -344,6 +346,25 @@ namespace MsgPack.Strict.Tests
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(new[] {1, 2, 3}, after.Scores);
+        }
+
+        [Fact]
+        public void TryReadMapLengthThenString()
+        {
+            var stream = new MemoryStream();
+            var packer = Packer.Create(stream);
+            packer.PackMapHeader(1);
+            packer.PackString("hello");
+
+            stream.Position = 0;
+
+            var unpacker = Unpacker.Create(stream);
+            long mapLength;
+            Assert.True(unpacker.ReadMapLength(out mapLength), "Unpacking map length");
+            Assert.Equal(1, mapLength);
+            string hello;
+            Assert.True(unpacker.ReadString(out hello), "Unpacking string");
+            Assert.Equal("hello", hello);
         }
     }
 }
