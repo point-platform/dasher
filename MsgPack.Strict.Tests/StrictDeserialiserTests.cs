@@ -145,6 +145,17 @@ namespace MsgPack.Strict.Tests
             public IReadOnlyList<int> Scores { get; }
         }
 
+        public sealed class FloatAndDouble
+        {
+            public FloatAndDouble(float floatField, double doubleField)
+            {
+                FloatField = floatField;
+                DoubleField = doubleField;
+            }
+            public float FloatField { get; }
+            public double DoubleField { get; }
+        }
+
         #endregion
 
         [Fact]
@@ -370,6 +381,19 @@ namespace MsgPack.Strict.Tests
             string hello;
             Assert.True(unpacker.TryReadString(out hello), "Unpacking string");
             Assert.Equal("hello", hello);
+        }
+
+        [Fact]
+        public void FloatAndDoubleFields()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("FloatField").Pack(123.4f)
+                .Pack("DoubleField").Pack(567.89d));
+
+            var after = StrictDeserialiser.Get<FloatAndDouble>().Deserialise(bytes);
+
+            Assert.Equal(123.4f, after.FloatField);
+            Assert.Equal(567.89d, after.DoubleField);
         }
     }
 }
