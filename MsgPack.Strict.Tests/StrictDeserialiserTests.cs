@@ -254,7 +254,7 @@ namespace MsgPack.Strict.Tests
                 .Pack("Name").Pack(123));
 
             var deserialiser = StrictDeserialiser.Get<UserScore>();
-            Assert.Throws<MessageTypeException>(() => deserialiser.Deserialise(bytes));
+            Assert.Throws<StrictDeserialisationException>(() => deserialiser.Deserialise(bytes));
         }
 
         [Fact]
@@ -357,18 +357,18 @@ namespace MsgPack.Strict.Tests
         public void TryReadMapLengthThenString()
         {
             var stream = new MemoryStream();
-            var packer = Packer.Create(stream);
+            var packer = MsgPackPacker.Create(stream);
             packer.PackMapHeader(1);
-            packer.PackString("hello");
+            packer.Pack("hello");
 
             stream.Position = 0;
 
-            var unpacker = Unpacker.Create(stream);
-            long mapLength;
-            Assert.True(unpacker.ReadMapLength(out mapLength), "Unpacking map length");
+            var unpacker = MsgPackUnpacker.Create(stream);
+            int mapLength;
+            Assert.True(unpacker.TryReadMapLength(out mapLength), "Unpacking map length");
             Assert.Equal(1, mapLength);
             string hello;
-            Assert.True(unpacker.ReadString(out hello), "Unpacking string");
+            Assert.True(unpacker.TryReadString(out hello), "Unpacking string");
             Assert.Equal("hello", hello);
         }
     }

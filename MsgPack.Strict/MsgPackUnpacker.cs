@@ -4,6 +4,8 @@ using System.Text;
 
 namespace MsgPack.Strict
 {
+    // TODO binary reading
+
     public sealed class MsgPackUnpacker
     {
         private readonly Stream _stream;
@@ -486,6 +488,12 @@ namespace MsgPack.Strict
         }
 
         #endregion
+
+        public bool TryReadBinary(out byte[] value)
+        {
+            value = new byte[] { };
+            return false;
+        }
 
         private byte[] Read(int length)
         {

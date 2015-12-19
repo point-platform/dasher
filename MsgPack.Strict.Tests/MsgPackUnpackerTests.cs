@@ -158,9 +158,9 @@ namespace MsgPack.Strict.Tests
         public void TryReadMapLengthThenString()
         {
             var stream = new MemoryStream();
-            var packer = Packer.Create(stream);
+            var packer = MsgPackPacker.Create(stream);
             packer.PackMapHeader(1);
-            packer.PackString("hello");
+            packer.Pack("hello");
 
             stream.Position = 0;
 
@@ -178,7 +178,7 @@ namespace MsgPack.Strict.Tests
         public void TryReadTwoStrings()
         {
             var stream = new MemoryStream();
-            var packer = Packer.Create(stream);
+            var packer = MsgPackPacker.Create(stream);
             packer.Pack("hello");
             packer.Pack("world");
 
@@ -211,10 +211,10 @@ namespace MsgPack.Strict.Tests
 
         #region Test support
 
-        private static MsgPackUnpacker InitTest(Action<Packer> packerAction)
+        private static MsgPackUnpacker InitTest(Action<MsgPackPacker> packerAction)
         {
             var stream = new MemoryStream();
-            packerAction(Packer.Create(stream));
+            packerAction(MsgPackPacker.Create(stream));
             stream.Position = 0;
 
             return new MsgPackUnpacker(stream);

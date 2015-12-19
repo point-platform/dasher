@@ -18,12 +18,18 @@ namespace MsgPack.Strict
             _stream = stream;
         }
 
-        public void PackNull()
+        public static MsgPackPacker Create(Stream stream)
         {
-            _stream.WriteByte(0xc0);
+            return new MsgPackPacker(stream);
         }
 
-        public void PackArrayHeader(uint length)
+        public MsgPackPacker PackNull()
+        {
+            _stream.WriteByte(0xc0);
+            return this;
+        }
+
+        public MsgPackPacker PackArrayHeader(int length)
         {
             if (length <= 0x0F)
             {
@@ -43,9 +49,10 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)(length >> 8));
                 _stream.WriteByte((byte)length);
             }
+            return this;
         }
 
-        public void PackMapHeader(uint length)
+        public MsgPackPacker PackMapHeader(int length)
         {
             if (length <= 0x0F)
             {
@@ -65,19 +72,21 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)(length >> 8));
                 _stream.WriteByte((byte)length);
             }
+            return this;
         }
 
-        public void Pack(bool value)
+        public MsgPackPacker Pack(bool value)
         {
             _stream.WriteByte(value ? (byte)0xC3 : (byte)0xC2);
+            return this;
         }
 
-        public void Pack(byte[] bytes)
+        public MsgPackPacker Pack(byte[] bytes)
         {
             if (bytes == null)
             {
                 PackNull();
-                return;
+                return this;
             }
 
             if (bytes.Length <= 0xFF)
@@ -104,19 +113,20 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)l);
                 _stream.Write(bytes, 0, bytes.Length);
             }
+            return this;
         }
 
-        public void Pack(string value)
+        public MsgPackPacker Pack(string value)
         {
-            Pack(value, Encoding.UTF8);
+            return Pack(value, Encoding.UTF8);
         }
 
-        public void Pack(string value, Encoding encoding)
+        public MsgPackPacker Pack(string value, Encoding encoding)
         {
             if (value == null)
             {
                 PackNull();
-                return;
+                return this;
             }
 
             var bytes = encoding.GetBytes(value);
@@ -150,9 +160,10 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)l);
                 _stream.Write(bytes, 0, bytes.Length);
             }
+            return this;
         }
 
-        public void Pack(float value)
+        public MsgPackPacker Pack(float value)
         {
             _stream.WriteByte(0xCA);
             // TODO this is a terrible, but probably correct, hack that technically could be broken by future releases of .NET, though that seems unlikely
@@ -161,9 +172,10 @@ namespace MsgPack.Strict
             _stream.WriteByte((byte)(i >> 16));
             _stream.WriteByte((byte)(i >> 8));
             _stream.WriteByte((byte)i);
+            return this;
         }
 
-        public void Pack(double value)
+        public MsgPackPacker Pack(double value)
         {
             _stream.WriteByte(0xCB);
             var l = BitConverter.DoubleToInt64Bits(value);
@@ -175,9 +187,10 @@ namespace MsgPack.Strict
             _stream.WriteByte((byte)(l >> 16));
             _stream.WriteByte((byte)(l >> 8));
             _stream.WriteByte((byte)l);
+            return this;
         }
 
-        public void Pack(byte value)
+        public MsgPackPacker Pack(byte value)
         {
             if (value <= 0x7F)
             {
@@ -189,9 +202,10 @@ namespace MsgPack.Strict
                 _stream.WriteByte(0xCC);
                 _stream.WriteByte(value);
             }
+            return this;
         }
 
-        public void Pack(sbyte value)
+        public MsgPackPacker Pack(sbyte value)
         {
             if (value >= 0x00)
             {
@@ -208,9 +222,10 @@ namespace MsgPack.Strict
                 _stream.WriteByte(0xD0);
                 _stream.WriteByte((byte)value);
             }
+            return this;
         }
 
-        public void Pack(ushort value)
+        public MsgPackPacker Pack(ushort value)
         {
             if (value <= 0x7F)
             {
@@ -228,9 +243,10 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
+            return this;
         }
 
-        public void Pack(short value)
+        public MsgPackPacker Pack(short value)
         {
             if (value >= 0x00 && value <= sbyte.MaxValue)
             {
@@ -253,9 +269,10 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
+            return this;
         }
 
-        public void Pack(uint value)
+        public MsgPackPacker Pack(uint value)
         {
             if (value <= 0x7F)
             {
@@ -281,9 +298,10 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
+            return this;
         }
 
-        public void Pack(int value)
+        public MsgPackPacker Pack(int value)
         {
             if (value >= 0x00 && value <= sbyte.MaxValue)
             {
@@ -314,9 +332,10 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
+            return this;
         }
 
-        public void Pack(long value)
+        public MsgPackPacker Pack(long value)
         {
             if (value >= 0x00 && value <= sbyte.MaxValue)
             {
@@ -359,9 +378,10 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
+            return this;
         }
 
-        public void Pack(ulong value)
+        public MsgPackPacker Pack(ulong value)
         {
             if (value <= 0x7F)
             {
@@ -399,6 +419,7 @@ namespace MsgPack.Strict
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
+            return this;
         }
     }
 }
