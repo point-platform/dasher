@@ -50,105 +50,105 @@ namespace MsgPack.Strict.Tests
         {
             var s = new MemoryStream();
 
-            var thisPacker = new MsgPackPacker(s);
-            var thisUnsafePacker = new UnsafeMsgPackPacker(s);
-            var thatPacker = MsgPackPacker.Create(s);
+            var customSafePacker = new MsgPackPacker(s);
+            var customUnsafePacker = new UnsafeMsgPackPacker(s);
+            var msgpack_cli_Packer = Packer.Create(s);
 
             var str = new string('a', 256);
             var bytes = new byte[256];
 
             const int loopCount = 1024 * 1024;
 
-            Action thisBytePack = () =>
+            Action customSafePackerPack = () =>
             {
                 s.Position = 0;
-                thisPacker.Pack(false);
-                thisPacker.Pack(true);
-                thisPacker.Pack((byte)1);
-                thisPacker.Pack((sbyte)-1);
-                thisPacker.Pack(1.1f);
-                thisPacker.Pack(1.1d);
-                thisPacker.Pack((short)1234);
-                thisPacker.Pack((ushort)1234);
-                thisPacker.Pack((int)1234);
-                thisPacker.Pack((uint)1234);
-                thisPacker.Pack((long)1234);
-                thisPacker.Pack((ulong)1234);
-                thisPacker.Pack("Hello World");
-//                thisPacker.Pack(str);
-//                thisPacker.Pack(bytes);
+                customSafePacker.Pack(false);
+                customSafePacker.Pack(true);
+                customSafePacker.Pack((byte)1);
+                customSafePacker.Pack((sbyte)-1);
+                customSafePacker.Pack(1.1f);
+                customSafePacker.Pack(1.1d);
+                customSafePacker.Pack((short)1234);
+                customSafePacker.Pack((ushort)1234);
+                customSafePacker.Pack((int)1234);
+                customSafePacker.Pack((uint)1234);
+                customSafePacker.Pack((long)1234);
+                customSafePacker.Pack((ulong)1234);
+                customSafePacker.Pack("Hello World");
+                customSafePacker.Pack(str);
+                customSafePacker.Pack(bytes);
             };
 
-            Action thisUnsafePack = () =>
+            Action customUnsafePackerPack = () =>
             {
                 s.Position = 0;
-                thisUnsafePacker.Pack(false);
-                thisUnsafePacker.Pack(true);
-                thisUnsafePacker.Pack((byte)1);
-                thisUnsafePacker.Pack((sbyte)-1);
-                thisUnsafePacker.Pack(1.1f);
-                thisUnsafePacker.Pack(1.1d);
-                thisUnsafePacker.Pack((short)1234);
-                thisUnsafePacker.Pack((ushort)1234);
-                thisUnsafePacker.Pack((int)1234);
-                thisUnsafePacker.Pack((uint)1234);
-                thisUnsafePacker.Pack((long)1234);
-                thisUnsafePacker.Pack((ulong)1234);
-                thisUnsafePacker.Pack("Hello World");
-//                thisUnsafePacker.Pack(str);
-//                thisUnsafePacker.Pack(bytes);
-                thisUnsafePacker.Flush();
+                customUnsafePacker.Pack(false);
+                customUnsafePacker.Pack(true);
+                customUnsafePacker.Pack((byte)1);
+                customUnsafePacker.Pack((sbyte)-1);
+                customUnsafePacker.Pack(1.1f);
+                customUnsafePacker.Pack(1.1d);
+                customUnsafePacker.Pack((short)1234);
+                customUnsafePacker.Pack((ushort)1234);
+                customUnsafePacker.Pack((int)1234);
+                customUnsafePacker.Pack((uint)1234);
+                customUnsafePacker.Pack((long)1234);
+                customUnsafePacker.Pack((ulong)1234);
+                customUnsafePacker.Pack("Hello World");
+                customUnsafePacker.Pack(str);
+                customUnsafePacker.Pack(bytes);
+                customUnsafePacker.Flush();
             };
 
-            Action thatPack = () =>
+            Action msgpack_cli_PackerPack = () =>
             {
                 s.Position = 0;
-                thatPacker.Pack(false);
-                thatPacker.Pack(true);
-                thatPacker.Pack((byte)1);
-                thatPacker.Pack((sbyte)-1);
-                thatPacker.Pack(1.1f);
-                thatPacker.Pack(1.1d);
-                thatPacker.Pack((short)1234);
-                thatPacker.Pack((ushort)1234);
-                thatPacker.Pack((int)1234);
-                thatPacker.Pack((uint)1234);
-                thatPacker.Pack((long)1234);
-                thatPacker.Pack((ulong)1234);
-                thatPacker.Pack("Hello World");
-//                thatPacker.Pack(str);
-//                thatPacker.Pack(bytes);
+                msgpack_cli_Packer.Pack(false);
+                msgpack_cli_Packer.Pack(true);
+                msgpack_cli_Packer.Pack((byte)1);
+                msgpack_cli_Packer.Pack((sbyte)-1);
+                msgpack_cli_Packer.Pack(1.1f);
+                msgpack_cli_Packer.Pack(1.1d);
+                msgpack_cli_Packer.Pack((short)1234);
+                msgpack_cli_Packer.Pack((ushort)1234);
+                msgpack_cli_Packer.Pack((int)1234);
+                msgpack_cli_Packer.Pack((uint)1234);
+                msgpack_cli_Packer.Pack((long)1234);
+                msgpack_cli_Packer.Pack((ulong)1234);
+                msgpack_cli_Packer.Pack("Hello World");
+                msgpack_cli_Packer.Pack(str);
+                msgpack_cli_Packer.Pack(bytes);
             };
 
             for (var i = 0; i < 10; i++)
             {
-                thisBytePack();
-                thisUnsafePack();
-                thatPack();
+                customSafePackerPack();
+                customUnsafePackerPack();
+                msgpack_cli_PackerPack();
             }
 
             var sw = Stopwatch.StartNew();
 
             for (var i = 0; i < loopCount; i++)
-                thisBytePack();
+                customSafePackerPack();
 
-            var thisBytePackTime = sw.Elapsed.TotalMilliseconds;
-
-            sw.Restart();
-
-            for (var i = 0; i < loopCount; i++)
-                thisUnsafePack();
-
-            var thisUnsafeTime = sw.Elapsed.TotalMilliseconds;
+            var customSafePackerPackTime = sw.Elapsed.TotalMilliseconds;
 
             sw.Restart();
 
             for (var i = 0; i < loopCount; i++)
-                thatPack();
+                customUnsafePackerPack();
 
-            var thatPackTime = sw.Elapsed.TotalMilliseconds;
+            var customUnsafePackerPackTime = sw.Elapsed.TotalMilliseconds;
 
-            Assert.True(false, $"thisBytePackTime={thisBytePackTime}, thisUnsafeTime={thisUnsafeTime}, thatPackTime={thatPackTime}");
+            sw.Restart();
+
+            for (var i = 0; i < loopCount; i++)
+                msgpack_cli_PackerPack();
+
+            var msgpack_cli_PackerPackTime = sw.Elapsed.TotalMilliseconds;
+
+            Assert.True(false, $"custom safe packer time = {customSafePackerPackTime}, customer unsafe packer time = {customUnsafePackerPackTime}, MsgPack-cli packer time = {msgpack_cli_PackerPackTime}");
         }
 
         [Fact]
