@@ -4,8 +4,6 @@ using System.Text;
 
 namespace MsgPack.Strict
 {
-    // TODO float/double support
-
     public sealed class MsgPackUnpacker
     {
         private readonly Stream _stream;
@@ -307,6 +305,46 @@ namespace MsgPack.Strict
 
             _nextByte = -1;
             return true;
+        }
+
+        #endregion
+
+        #region TryRead float/double
+
+        public bool TryReadFloat(out float value)
+        {
+            if (TryPrepareNextByte())
+            {
+                if (_nextByte == MsgPackCode.Real32)
+                {
+                    var bytes = Read(sizeof(float));
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        Array.Reverse(bytes);
+                    }
+                    value = BitConverter.ToSingle(bytes, 0);
+                    _nextByte = -1;
+                    return true;
+                }
+            }
+            value = default(float);
+            return false;
+        }
+
+        public bool TryReadDouble(out double value)
+        {
+            if (TryPrepareNextByte())
+            {
+                if (_nextByte == MsgPackCode.Real64)
+                {
+                    var longValue = ReadInt64();
+                    value = BitConverter.Int64BitsToDouble(longValue);
+                    _nextByte = -1;
+                    return true;
+                }
+            }
+            value = default(double);
+            return false;
         }
 
         #endregion

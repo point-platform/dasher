@@ -80,6 +80,36 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
+        public void TryReadFloat()
+        {
+            var inputs = new[] { 123.4f, float.MinValue, float.MaxValue, 0.0f, 1.0f, -1.0f, 0.1f, -0.1f, float.NaN, float.PositiveInfinity, float.NegativeInfinity, float.Epsilon };
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                float value;
+                Assert.True(unpacker.TryReadFloat(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
+        public void TryReadDouble()
+        {
+            var inputs = new[] { 123.4d, double.MinValue, double.MaxValue, 0.0f, 1.0f, -1.0f, 0.1f, -0.1f, double.NaN, double.PositiveInfinity, double.NegativeInfinity, double.Epsilon };
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                double value;
+                Assert.True(unpacker.TryReadDouble(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
         public void TryReadString()
         {
             var inputs = new[] {null, "", "hello", "world"};
