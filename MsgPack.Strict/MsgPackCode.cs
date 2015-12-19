@@ -91,7 +91,7 @@ namespace MsgPack.Strict
                     }
                 case 0xD0:
                     {
-                        return "SingnedInt8";
+                        return "SignedInt8";
                     }
                 case 0xCC:
                     {
