@@ -1,5 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Xunit;
+
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+// ReSharper disable UnusedMember.Global
 
 namespace MsgPack.Strict.Tests
 {
@@ -50,20 +57,20 @@ namespace MsgPack.Strict.Tests
 
         public sealed class TestDefaultParams
         {
-            public byte    B   { get; }
-            public sbyte   Sb  { get; }
-            public short   S   { get; }
-            public ushort  Us  { get; }
-            public int     I   { get; }
-            public uint    Ui  { get; }
-            public long    L   { get; }
-            public ulong   Ul  { get; }
-            public string  Str { get; }
-            public float   F   { get; }
-            public double  D   { get; }
-            public decimal Dc  { get; }
-            public bool    Bo  { get; }
-            public object  O   { get; }
+            public byte      B       { get; }
+            public sbyte     Sb      { get; }
+            public short     S       { get; }
+            public ushort    Us      { get; }
+            public int       I       { get; }
+            public uint      Ui      { get; }
+            public long      L       { get; }
+            public ulong     Ul      { get; }
+            public string    Str     { get; }
+            public float     F       { get; }
+            public double    D       { get; }
+            public decimal   Dc      { get; }
+            public bool      Bo      { get; }
+            public UserScore Complex { get; }
 
             public TestDefaultParams(
                 sbyte sb = -12,
@@ -79,7 +86,7 @@ namespace MsgPack.Strict.Tests
                 double d = 1.23,
                 decimal dc = 1.23M,
                 bool bo = true,
-                object o = null)
+                UserScore complex = null)
             {
                 B = b;
                 Sb = sb;
@@ -94,7 +101,7 @@ namespace MsgPack.Strict.Tests
                 D = d;
                 Dc = dc;
                 Bo = bo;
-                O = o;
+                Complex = complex;
             }
         }
 
@@ -136,6 +143,17 @@ namespace MsgPack.Strict.Tests
 
             public string Name { get; }
             public IReadOnlyList<int> Scores { get; }
+        }
+
+        public sealed class FloatAndDouble
+        {
+            public FloatAndDouble(float floatField, double doubleField)
+            {
+                FloatField = floatField;
+                DoubleField = doubleField;
+            }
+            public float FloatField { get; }
+            public double DoubleField { get; }
         }
 
         #endregion
@@ -247,7 +265,7 @@ namespace MsgPack.Strict.Tests
                 .Pack("Name").Pack(123));
 
             var deserialiser = StrictDeserialiser.Get<UserScore>();
-            Assert.Throws<MessageTypeException>(() => deserialiser.Deserialise(bytes));
+            Assert.Throws<StrictDeserialisationException>(() => deserialiser.Deserialise(bytes));
         }
 
         [Fact]
@@ -284,7 +302,7 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(1.23, after.D);
             Assert.Equal(1.23M, after.Dc);
             Assert.Equal(true, after.Bo);
-            Assert.Equal(null, after.O);
+            Assert.Equal(null, after.Complex);
         }
 
         [Fact]
@@ -344,6 +362,38 @@ namespace MsgPack.Strict.Tests
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(new[] {1, 2, 3}, after.Scores);
+        }
+
+        [Fact]
+        public void TryReadMapLengthThenString()
+        {
+            var stream = new MemoryStream();
+            var packer = MsgPackPacker.Create(stream);
+            packer.PackMapHeader(1);
+            packer.Pack("hello");
+
+            stream.Position = 0;
+
+            var unpacker = MsgPackUnpacker.Create(stream);
+            int mapLength;
+            Assert.True(unpacker.TryReadMapLength(out mapLength), "Unpacking map length");
+            Assert.Equal(1, mapLength);
+            string hello;
+            Assert.True(unpacker.TryReadString(out hello), "Unpacking string");
+            Assert.Equal("hello", hello);
+        }
+
+        [Fact]
+        public void FloatAndDoubleFields()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("FloatField").Pack(123.4f)
+                .Pack("DoubleField").Pack(567.89d));
+
+            var after = StrictDeserialiser.Get<FloatAndDouble>().Deserialise(bytes);
+
+            Assert.Equal(123.4f, after.FloatField);
+            Assert.Equal(567.89d, after.DoubleField);
         }
     }
 }

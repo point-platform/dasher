@@ -52,23 +52,23 @@ namespace MsgPack.Strict
             return typeof (ValueUnpacker).GetMethod(nameof(TryReadComplex), BindingFlags.Static | BindingFlags.Public);
         }
 
-        public static bool TryReadSByte(Unpacker unpacker, out sbyte value) => unpacker.ReadSByte(out value);
-        public static bool TryReadByte(Unpacker unpacker, out byte value) => unpacker.ReadByte(out value);
-        public static bool TryReadShort(Unpacker unpacker, out short value) => unpacker.ReadInt16(out value);
-        public static bool TryReadUShort(Unpacker unpacker, out ushort value) => unpacker.ReadUInt16(out value);
-        public static bool TryReadInt(Unpacker unpacker, out int value) => unpacker.ReadInt32(out value);
-        public static bool TryReadUInt(Unpacker unpacker, out uint value) => unpacker.ReadUInt32(out value);
-        public static bool TryReadLong(Unpacker unpacker, out long value) => unpacker.ReadInt64(out value);
-        public static bool TryReadULong(Unpacker unpacker, out ulong value) => unpacker.ReadUInt64(out value);
-        public static bool TryReadBool(Unpacker unpacker, out bool value) => unpacker.ReadBoolean(out value);
-        public static bool TryReadFloat(Unpacker unpacker, out float value) => unpacker.ReadSingle(out value);
-        public static bool TryReadDouble(Unpacker unpacker, out double value) => unpacker.ReadDouble(out value);
-        public static bool TryReadString(Unpacker unpacker, out string value) => unpacker.ReadString(out value);
+        public static bool TryReadSByte(MsgPackUnpacker unpacker, out sbyte value) => unpacker.TryReadSByte(out value);
+        public static bool TryReadByte(MsgPackUnpacker unpacker, out byte value) => unpacker.TryReadByte(out value);
+        public static bool TryReadShort(MsgPackUnpacker unpacker, out short value) => unpacker.TryReadInt16(out value);
+        public static bool TryReadUShort(MsgPackUnpacker unpacker, out ushort value) => unpacker.TryReadUInt16(out value);
+        public static bool TryReadInt(MsgPackUnpacker unpacker, out int value) => unpacker.TryReadInt32(out value);
+        public static bool TryReadUInt(MsgPackUnpacker unpacker, out uint value) => unpacker.TryReadUInt32(out value);
+        public static bool TryReadLong(MsgPackUnpacker unpacker, out long value) => unpacker.TryReadInt64(out value);
+        public static bool TryReadULong(MsgPackUnpacker unpacker, out ulong value) => unpacker.TryReadUInt64(out value);
+        public static bool TryReadBool(MsgPackUnpacker unpacker, out bool value) => unpacker.TryReadBool(out value);
+        public static bool TryReadFloat(MsgPackUnpacker unpacker, out float value) => unpacker.TryReadFloat(out value);
+        public static bool TryReadDouble(MsgPackUnpacker unpacker, out double value) => unpacker.TryReadDouble(out value);
+        public static bool TryReadString(MsgPackUnpacker unpacker, out string value) => unpacker.TryReadString(out value);
 
-        public static bool TryReadDecimal(Unpacker unpacker, out decimal value)
+        public static bool TryReadDecimal(MsgPackUnpacker unpacker, out decimal value)
         {
             string s;
-            if (!unpacker.ReadString(out s))
+            if (!unpacker.TryReadString(out s))
             {
                 value = default(decimal);
                 return false;
@@ -76,7 +76,7 @@ namespace MsgPack.Strict
             return decimal.TryParse(s, out value);
         }
 
-        public static bool TryReadComplex<T>(Unpacker unpacker, out T value)
+        public static bool TryReadComplex<T>(MsgPackUnpacker unpacker, out T value)
         {
             value = (T)StrictDeserialiser.Get(typeof(T)).Deserialise(unpacker);
             return true;
