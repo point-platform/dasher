@@ -253,10 +253,11 @@ namespace MsgPack.Strict
                     var typeGetterSuccess = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
                     {
-                        // TODO throw better exception
-                        ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 4");
-                        ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
-                        ilg.Emit(OpCodes.Throw);
+                        // TODO get reason unpacker failed
+                        ilg.Emit(OpCodes.Ldstr, "Failed to unpack field \"{0}\".  Check types match.");
+                        ilg.Emit(OpCodes.Ldloc, key);
+                        ilg.Emit(OpCodes.Call, typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object) }));
+                        throwException();
                     }
                     ilg.MarkLabel(typeGetterSuccess);
 
