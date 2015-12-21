@@ -193,7 +193,7 @@ namespace MsgPack.Strict
                     return true;
                 }
 
-                if ((_nextByte & (byte)Format.MaximumPositiveFixInt) == (byte)Format.MaximumPositiveFixInt)
+                if ((_nextByte & (byte)Format.MinimumNegativeFixInt) == (byte)Format.MinimumNegativeFixInt)
                 {
                     value = (sbyte)_nextByte;
                     _nextByte = -1;
@@ -402,7 +402,7 @@ namespace MsgPack.Strict
                 uint? length = null;
                 if ((_nextByte & 0xF0) == (byte)Format.MinimumFixMap)
                 {
-                    length = (uint?)(_nextByte & (byte)Format.MinimumFixMap);
+                    length = (uint?)(_nextByte & 0x0F);
                 }
                 else
                 {
@@ -431,7 +431,7 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if ((_nextByte >= 0 && _nextByte <= (byte)Format.MaximumPositiveFixInt) || (_nextByte >= (byte)Format.UInt8 && _nextByte <= (byte)Format.Int64) || (_nextByte >= (byte)Format.MaximumPositiveFixInt && _nextByte <= 0xff))
+                if ((_nextByte >= 0 && _nextByte <= (byte)Format.MaximumPositiveFixInt) || (_nextByte >= (byte)Format.UInt8 && _nextByte <= (byte)Format.Int64) || (_nextByte >= (byte)Format.MinimumNegativeFixInt && _nextByte <= 0xff))
                 {
                     family = FormatFamily.Integer;
                     return true;
@@ -561,7 +561,7 @@ namespace MsgPack.Strict
                 }
 
                 uint? length = null;
-                if ((_nextByte & (byte)Format.MaximumPositiveFixInt) == (byte)Format.MinimumFixedRaw)
+                if ((_nextByte & (byte)Format.MinimumNegativeFixInt) == (byte)Format.MinimumFixedRaw)
                 {
                     length = (uint)(_nextByte & 0x1F);
                 }
