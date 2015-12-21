@@ -500,7 +500,7 @@ namespace MsgPack.Strict.Tests
         private static MsgPackUnpacker InitTest(Action<Packer> packerAction)
         {
             var stream = new MemoryStream();
-            packerAction(Packer.Create(stream));
+            packerAction(Packer.Create(stream, PackerCompatibilityOptions.None));
             stream.Position = 0;
 
             return new MsgPackUnpacker(stream);
