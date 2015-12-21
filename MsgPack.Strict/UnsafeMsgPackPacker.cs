@@ -71,7 +71,7 @@ namespace MsgPack.Strict
                 *(b + _offset++) = 0xc0;
         }
 
-        public void PackArrayHeader(int length)
+        public void PackArrayHeader(uint length)
         {
             CheckBuffer(5);
 
@@ -102,7 +102,7 @@ namespace MsgPack.Strict
             }
         }
 
-        public void PackMapHeader(int length)
+        public void PackMapHeader(uint length)
         {
             CheckBuffer(5);
 

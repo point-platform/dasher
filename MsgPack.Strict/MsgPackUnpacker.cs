@@ -4,17 +4,10 @@ using System.Text;
 
 namespace MsgPack.Strict
 {
-    // TODO binary reading
-
     public sealed class MsgPackUnpacker
     {
         private readonly Stream _stream;
         private int _nextByte = -1;
-
-        public static MsgPackUnpacker Create(Stream stream)
-        {
-            return new MsgPackUnpacker(stream);
-        }
 
         public MsgPackUnpacker(Stream stream)
         {
@@ -311,58 +304,54 @@ namespace MsgPack.Strict
 
         #endregion
 
-        #region TryRead float/double
-
-        public bool TryReadFloat(out float value)
+        public unsafe bool TryReadSingle(out float value)
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == MsgPackCode.Real32)
+                if (_nextByte == 0xca)
                 {
-                    var bytes = Read(sizeof(float));
-                    if (BitConverter.IsLittleEndian)
-                    {
-                        Array.Reverse(bytes);
-                    }
-                    value = BitConverter.ToSingle(bytes, 0);
+                    // big-endian 32-bit IEEE 754 floating point
+                    var bits = ReadUInt32();
+                    value = *(float*)&bits;
                     _nextByte = -1;
                     return true;
                 }
             }
+
             value = default(float);
             return false;
         }
 
-        public bool TryReadDouble(out double value)
+        public unsafe bool TryReadDouble(out double value)
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == MsgPackCode.Real64)
+                if (_nextByte == 0xcb)
                 {
-                    var longValue = ReadInt64();
-                    value = BitConverter.Int64BitsToDouble(longValue);
+                    // big-endian 64-bit IEEE 754 floating point
+                    var bits = ReadUInt64();
+                    value = *(double*)&bits;
                     _nextByte = -1;
                     return true;
                 }
             }
+
             value = default(double);
             return false;
         }
 
-        #endregion
-
-        public bool TryReadBool(out bool value)
+        public bool TryReadBoolean(out bool value)
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == MsgPackCode.FalseValue)
+                if (_nextByte == 0xc2)
                 {
                     value = false;
                     _nextByte = -1;
                     return true;
                 }
 
-                if (_nextByte == MsgPackCode.TrueValue)
+                if (_nextByte == 0xc3)
                 {
                     value = true;
                     _nextByte = -1;
@@ -379,7 +368,7 @@ namespace MsgPack.Strict
             if (TryPrepareNextByte())
             {
                 uint? length = null;
-                if ((_nextByte & 0xF0) == MsgPackCode.MinimumFixedArray)
+                if ((_nextByte & 0xF0) == 0x90)
                 {
                     length = (uint?)(_nextByte & 0x0F);
                 }
@@ -387,8 +376,8 @@ namespace MsgPack.Strict
                 {
                     switch (_nextByte)
                     {
-                        case MsgPackCode.Array16: length = ReadUInt16(); break;
-                        case MsgPackCode.Array32: length = ReadUInt32(); break;
+                        case 0xDC: length = ReadUInt16(); break;
+                        case 0xDD: length = ReadUInt32(); break;
                     }
                 }
 
@@ -396,8 +385,8 @@ namespace MsgPack.Strict
                 {
                     if (length > int.MaxValue)
                         throw new Exception("Array length too large");
-                    value = (int)length;
                     _nextByte = -1;
+                    value = (int)length;
                     return true;
                 }
             }
@@ -411,7 +400,7 @@ namespace MsgPack.Strict
             if (TryPrepareNextByte())
             {
                 uint? length = null;
-                if ((_nextByte & 0xF0) == MsgPackCode.MinimumFixedMap)
+                if ((_nextByte & 0xF0) == 0x80)
                 {
                     length = (uint?)(_nextByte & 0x0F);
                 }
@@ -419,8 +408,8 @@ namespace MsgPack.Strict
                 {
                     switch (_nextByte)
                     {
-                        case MsgPackCode.Map16: length = ReadUInt16(); break;
-                        case MsgPackCode.Map32: length = ReadUInt32(); break;
+                        case 0xDE: length = ReadUInt16(); break;
+                        case 0xDF: length = ReadUInt32(); break;
                     }
                 }
 
@@ -428,14 +417,127 @@ namespace MsgPack.Strict
                 {
                     if (length > int.MaxValue)
                         throw new Exception("Array length too large");
-                    value = (int)length;
                     _nextByte = -1;
+                    value = (int)length;
                     return true;
                 }
             }
 
             value = default(int);
             return false;
+        }
+
+        public bool TryPeekFormatFamily(out FormatFamily family)
+        {
+            if (TryPrepareNextByte())
+            {
+                if ((_nextByte >= 0 && _nextByte <= 0x7f) || (_nextByte >= 0xcc && _nextByte <= 0xd3) || (_nextByte >= 0xe0 && _nextByte <= 0xff))
+                {
+                    family = FormatFamily.Integer;
+                    return true;
+                }
+                if ((_nextByte >= 0x80 && _nextByte <= 0x8f) || _nextByte == 0xde || _nextByte == 0xdf)
+                {
+                    family = FormatFamily.Map;
+                    return true;
+                }
+                if ((_nextByte >= 0x90 && _nextByte <= 0x9f) || _nextByte == 0xdc || _nextByte == 0xdd)
+                {
+                    family = FormatFamily.Array;
+                    return true;
+                }
+                if ((_nextByte >= 0xa0 && _nextByte <= 0xbf) || (_nextByte >= 0xd9 && _nextByte <= 0xdb))
+                {
+                    family = FormatFamily.String;
+                    return true;
+                }
+                switch (_nextByte)
+                {
+                    case 0xc0:
+                        family = FormatFamily.Null;
+                        return true;
+                    case 0xc2:
+                    case 0xc3:
+                        family = FormatFamily.Boolean;
+                        return true;
+                    case 0xc4:
+                    case 0xc5:
+                    case 0xc6:
+                        family = FormatFamily.Binary;
+                        return true;
+                    case 0xca:
+                    case 0xcb:
+                        family = FormatFamily.Float;
+                        return true;
+                }
+            }
+
+            family = default(FormatFamily);
+            return false;
+        }
+
+        public bool TryPeekFormat(out Format format)
+        {
+            if (TryPrepareNextByte())
+            {
+                format = DecodeFormat((byte)_nextByte);
+                return format != Format.Unknown;
+            }
+
+            format = default(Format);
+            return false;
+        }
+
+        private static Format DecodeFormat(byte b)
+        {
+            if (b <= 0x7f)
+                return Format.PositiveFixInt;
+            if (b >= 0x80 && b <= 0x8f)
+                return Format.FixMap;
+            if (b >= 0x90 && b <= 0x9f)
+                return Format.FixArray;
+            if (b >= 0xa0 && b <= 0xbf)
+                return Format.FixStr;
+            if (b >= 0xe0)
+                return Format.NegativeFixInt;
+
+            switch (b)
+            {
+                case 0xc0: return Format.Null;
+                case 0xc2: return Format.False;
+                case 0xc3: return Format.True;
+                case 0xc4: return Format.Bin8;
+                case 0xc5: return Format.Bin16;
+                case 0xc6: return Format.Bin32;
+                case 0xc7: return Format.Ext8;
+                case 0xc8: return Format.Ext16;
+                case 0xc9: return Format.Ext32;
+                case 0xca: return Format.Float32;
+                case 0xcb: return Format.Float64;
+                case 0xcc: return Format.UInt8;
+                case 0xcd: return Format.UInt16;
+                case 0xce: return Format.UInt32;
+                case 0xcf: return Format.UInt64;
+                case 0xd0: return Format.Int8;
+                case 0xd1: return Format.Int16;
+                case 0xd2: return Format.Int32;
+                case 0xd3: return Format.Int64;
+                case 0xd4: return Format.FixExt1;
+                case 0xd5: return Format.FixExt2;
+                case 0xd6: return Format.FixExt4;
+                case 0xd7: return Format.FixExt8;
+                case 0xd8: return Format.FixExt16;
+                case 0xd9: return Format.Str8;
+                case 0xda: return Format.Str16;
+                case 0xdb: return Format.Str32;
+                case 0xdc: return Format.Array16;
+                case 0xdd: return Format.Array32;
+                case 0xde: return Format.Map16;
+                case 0xdf: return Format.Map32;
+
+                default:
+                    return Format.Unknown;
+            }
         }
 
         #region Reading strings
@@ -449,7 +551,7 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == MsgPackCode.NilValue)
+                if (_nextByte == 0xc0)
                 {
                     value = null;
                     _nextByte = -1;
@@ -457,7 +559,7 @@ namespace MsgPack.Strict
                 }
 
                 uint? length = null;
-                if ((_nextByte & 0xE0) == MsgPackCode.MinimumFixedRaw)
+                if ((_nextByte & 0xE0) == 0xA0)
                 {
                     length = (uint)(_nextByte & 0x1F);
                 }
@@ -465,9 +567,9 @@ namespace MsgPack.Strict
                 {
                     switch (_nextByte)
                     {
-                        case MsgPackCode.Str8: length = ReadByte();  break;
-                        case MsgPackCode.Raw16: length = ReadUInt16(); break;
-                        case MsgPackCode.Raw32: length = ReadUInt32(); break;
+                        case 0xD9: length = ReadByte();  break;
+                        case 0xDA: length = ReadUInt16(); break;
+                        case 0xDB: length = ReadUInt32(); break;
                     }
                 }
 
@@ -488,38 +590,6 @@ namespace MsgPack.Strict
         }
 
         #endregion
-
-        public bool TryReadBinary(out byte[] value)
-        {
-            if (TryPrepareNextByte())
-            {
-                if (_nextByte == MsgPackCode.NilValue)
-                {
-                    value = null;
-                    _nextByte = -1;
-                    return true;
-                }
-
-                uint? length = null;
-                switch (_nextByte)
-                {
-                    case MsgPackCode.Bin8: length = ReadByte(); break;
-                    case MsgPackCode.Bin16: length = ReadUInt16(); break;
-                    case MsgPackCode.Bin32: length = ReadUInt32(); break;
-                }
-                if (length != null)
-                {
-                    if (length > int.MaxValue)
-                        throw new Exception("Byte array length is too long to read");
-                    value = Read((int)length);
-                    _nextByte = -1;
-                    return true;
-                }
-            }
-
-            value = default(byte[]);
-            return false;
-        }
 
         private byte[] Read(int length)
         {
@@ -585,7 +655,9 @@ namespace MsgPack.Strict
             var b8 = _stream.ReadByte();
             if (b8 == -1)
                 throw new IOException("Unexpected end of stream.");
+            #pragma warning disable CS0675
             return (ulong)b1 << 56 | (ulong)b2 << 48 | (ulong)b3 << 40 | (ulong)b4 << 32 | (ulong)b5 << 24 | (ulong)b6 << 16 | (ulong)b7 << 8 | (ulong)b8;
+            #pragma warning restore CS0675
         }
 
         private short ReadInt16()

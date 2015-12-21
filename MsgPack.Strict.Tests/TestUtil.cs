@@ -5,10 +5,10 @@ namespace MsgPack.Strict.Tests
 {
     public static class TestUtil
     {
-        public static byte[] PackBytes(Action<MsgPackPacker> packAction)
+        public static byte[] PackBytes(Action<Packer> packAction)
         {
             var stream = new MemoryStream();
-            var packer = MsgPackPacker.Create(stream);
+            var packer = Packer.Create(stream);
             packAction(packer);
             stream.Position = 0;
             return stream.GetBuffer();

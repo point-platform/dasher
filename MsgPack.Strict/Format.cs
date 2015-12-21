@@ -1,0 +1,43 @@
+﻿namespace MsgPack.Strict
+{
+    public enum Format
+    {
+        Unknown = 0,
+        PositiveFixInt,
+        FixMap,
+        FixArray,
+        FixStr,
+        Null,
+        False,
+        True,
+        Bin8,
+        Bin16,
+        Bin32,
+        Ext8,
+        Ext16,
+        Ext32,
+        Float32,
+        Float64,
+        UInt8,
+        UInt16,
+        UInt32,
+        UInt64,
+        Int8,
+        Int16,
+        Int32,
+        Int64,
+        FixExt1,
+        FixExt2,
+        FixExt4,
+        FixExt8,
+        FixExt16,
+        Str8,
+        Str16,
+        Str32,
+        Array16,
+        Array32,
+        Map16,
+        Map32,
+        NegativeFixInt
+    }
+}

@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Xunit;
+using Xunit.Sdk;
 
 namespace MsgPack.Strict.Tests
 {
@@ -80,36 +81,6 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
-        public void TryReadFloat()
-        {
-            var inputs = new[] { 123.4f, float.MinValue, float.MaxValue, 0.0f, 1.0f, -1.0f, 0.1f, -0.1f, float.NaN, float.PositiveInfinity, float.NegativeInfinity, float.Epsilon };
-
-            foreach (var input in inputs)
-            {
-                var unpacker = InitTest(p => p.Pack(input));
-
-                float value;
-                Assert.True(unpacker.TryReadFloat(out value), $"Processing {input}");
-                Assert.Equal(input, value);
-            }
-        }
-
-        [Fact]
-        public void TryReadDouble()
-        {
-            var inputs = new[] { 123.4d, double.MinValue, double.MaxValue, 0.0f, 1.0f, -1.0f, 0.1f, -0.1f, double.NaN, double.PositiveInfinity, double.NegativeInfinity, double.Epsilon };
-
-            foreach (var input in inputs)
-            {
-                var unpacker = InitTest(p => p.Pack(input));
-
-                double value;
-                Assert.True(unpacker.TryReadDouble(out value), $"Processing {input}");
-                Assert.Equal(input, value);
-            }
-        }
-
-        [Fact]
         public void TryReadString()
         {
             var inputs = new[] {null, "", "hello", "world"};
@@ -120,6 +91,36 @@ namespace MsgPack.Strict.Tests
 
                 string value;
                 Assert.True(unpacker.TryReadString(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
+        public void TryReadSingle()
+        {
+            var inputs = new[] {0.0f, 1.0f, 0.5f, -1.5f, float.NaN, float.MinValue, float.MaxValue, float.PositiveInfinity, float.NegativeInfinity};
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                float value;
+                Assert.True(unpacker.TryReadSingle(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
+        public void TryReadDouble()
+        {
+            var inputs = new[] {0.0d, 1.0d, 0.5d, -1.5d, double.NaN, double.MinValue, double.MaxValue, double.PositiveInfinity, double.NegativeInfinity};
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                double value;
+                Assert.True(unpacker.TryReadDouble(out value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -155,69 +156,331 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
-        public void TryReadMapLengthThenString()
+        public void TryPeekFormatFamily()
         {
-            var stream = new MemoryStream();
-            var packer = MsgPackPacker.Create(stream);
-            packer.PackMapHeader(1);
-            packer.Pack("hello");
+            TestFamily(p => p.PackMapHeader(1),   FormatFamily.Map);
+            TestFamily(p => p.PackMapHeader(200), FormatFamily.Map);
 
-            stream.Position = 0;
+            TestFamily(p => p.PackArrayHeader(1),   FormatFamily.Array);
+            TestFamily(p => p.PackArrayHeader(200), FormatFamily.Array);
 
-            var unpacker = new MsgPackUnpacker(stream);
-            int mapLength;
-            Assert.True(unpacker.TryReadMapLength(out mapLength), "Unpacking map length");
-            Assert.Equal(1, mapLength);
+            TestFamily(p => p.Pack(0), FormatFamily.Integer);
+            TestFamily(p => p.Pack(1), FormatFamily.Integer);
+            TestFamily(p => p.Pack(-1), FormatFamily.Integer);
+            TestFamily(p => p.Pack(128), FormatFamily.Integer);
+            TestFamily(p => p.Pack(-128), FormatFamily.Integer);
+            TestFamily(p => p.Pack(256), FormatFamily.Integer);
+            TestFamily(p => p.Pack(int.MaxValue), FormatFamily.Integer);
+            TestFamily(p => p.Pack(int.MinValue), FormatFamily.Integer);
 
-            string hello;
-            Assert.True(unpacker.TryReadString(out hello), "Unpacking string");
-            Assert.Equal("hello", hello);
+            TestFamily(p => p.Pack(0.0f), FormatFamily.Float);
+            TestFamily(p => p.Pack(0.0d), FormatFamily.Float);
+            TestFamily(p => p.Pack(double.NaN), FormatFamily.Float);
+            TestFamily(p => p.Pack(float.NaN), FormatFamily.Float);
+
+            TestFamily(p => p.Pack(true), FormatFamily.Boolean);
+            TestFamily(p => p.Pack(false), FormatFamily.Boolean);
+
+            TestFamily(p => p.PackNull(), FormatFamily.Null);
+
+            TestFamily(p => p.Pack("Hello"), FormatFamily.String);
+            TestFamily(p => p.Pack(""), FormatFamily.String);
         }
 
         [Fact]
-        public void TryReadTwoStrings()
+        public void TryPeekFormat()
         {
-            var stream = new MemoryStream();
-            var packer = MsgPackPacker.Create(stream);
-            packer.Pack("hello");
-            packer.Pack("world");
+            TestFormat(p => p.PackMapHeader(1), Format.FixMap);
+            TestFormat(p => p.PackMapHeader(ushort.MaxValue), Format.Map16);
+            TestFormat(p => p.PackMapHeader(ushort.MaxValue + 1), Format.Map32);
 
-            stream.Position = 0;
+            TestFormat(p => p.PackArrayHeader(1), Format.FixArray);
+            TestFormat(p => p.PackArrayHeader(ushort.MaxValue), Format.Array16);
+            TestFormat(p => p.PackArrayHeader(ushort.MaxValue + 1), Format.Array32);
 
-            var unpacker = new MsgPackUnpacker(stream);
-            string hello;
-            Assert.True(unpacker.TryReadString(out hello), "Unpacking string 1");
-            Assert.Equal("hello", hello);
+            TestFormat(p => p.Pack(0), Format.PositiveFixInt);
+            TestFormat(p => p.Pack(1), Format.PositiveFixInt);
+            TestFormat(p => p.Pack(-1), Format.NegativeFixInt);
+            TestFormat(p => p.Pack(127), Format.PositiveFixInt);
+            TestFormat(p => p.Pack(-127), Format.Int8);
+            TestFormat(p => p.Pack(127u), Format.PositiveFixInt);
+            TestFormat(p => p.Pack(128u), Format.UInt8);
+            TestFormat(p => p.Pack(255u), Format.UInt8);
+            TestFormat(p => p.Pack(-128), Format.Int8);
+            TestFormat(p => p.Pack(128), Format.Int16);
+            TestFormat(p => p.Pack(256), Format.Int16);
+            TestFormat(p => p.Pack(256u), Format.UInt16);
+            TestFormat(p => p.Pack(short.MaxValue), Format.Int16);
+            TestFormat(p => p.Pack(ushort.MaxValue), Format.UInt16);
+            TestFormat(p => p.Pack(short.MaxValue + 1), Format.Int32);
+            TestFormat(p => p.Pack(ushort.MaxValue + 1u), Format.UInt32);
+            TestFormat(p => p.Pack(int.MaxValue + 1L), Format.Int64);
+            TestFormat(p => p.Pack(uint.MaxValue + 1UL), Format.UInt64);
 
-            string world;
-            Assert.True(unpacker.TryReadString(out world), "Unpacking string 2");
-            Assert.Equal("world", world);
+            TestFormat(p => p.Pack(0.0f), Format.Float32);
+            TestFormat(p => p.Pack(0.0d), Format.Float64);
+            TestFormat(p => p.Pack(float.NaN), Format.Float32);
+            TestFormat(p => p.Pack(double.NaN), Format.Float64);
+
+            TestFormat(p => p.Pack(true), Format.True);
+            TestFormat(p => p.Pack(false), Format.False);
+
+            TestFormat(p => p.PackNull(), Format.Null);
+
+            TestFormat(p => p.Pack("Hello"), Format.FixStr);
+            TestFormat(p => p.Pack(new string('!', 255)), Format.Str8);
+            TestFormat(p => p.Pack(new string('!', 256)), Format.Str16);
+            TestFormat(p => p.Pack(new string('!', ushort.MaxValue + 1)), Format.Str32);
+
+            TestFormat(p => p.Pack(new byte[255]), Format.Bin8);
+            TestFormat(p => p.Pack(new byte[256]), Format.Bin16);
+            TestFormat(p => p.Pack(new byte[ushort.MaxValue + 1]), Format.Bin32);
         }
 
         [Fact]
-        public void TryReadBool()
+        public void Sequences()
         {
-            var inputs = new[] { true, false};
+            var stream = new MemoryStream();
+            var packer = Packer.Create(stream);
 
-            foreach (var input in inputs)
+            var unpacker = new MsgPackUnpacker(stream);
+            var random = new Random();
+            var sequence = new List<string>();
+
+            Func<Action>[] scenarios =
             {
-                var unpacker = InitTest(p => p.Pack(input));
+                // Array Header
+                () =>
+                {
+                    var input = random.Next();
+                    packer.PackArrayHeader(input);
+                    return () =>
+                    {
+                        sequence.Add($"Array Header {input}");
+                        int output;
+                        Assert.True(unpacker.TryReadArrayLength(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Map Header
+                () =>
+                {
+                    var input = random.Next();
+                    packer.PackMapHeader(input);
+                    return () =>
+                    {
+                        sequence.Add($"Map Header {input}");
+                        int output;
+                        Assert.True(unpacker.TryReadMapLength(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // SByte
+                () =>
+                {
+                    var input = (sbyte)random.Next();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"SByte {input}");
+                        sbyte output;
+                        Assert.True(unpacker.TryReadSByte(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Int16
+                () =>
+                {
+                    var input = (short)random.Next();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Int16 {input}");
+                        short output;
+                        Assert.True(unpacker.TryReadInt16(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // UInt16
+                () =>
+                {
+                    var input = (ushort)random.Next();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"UInt16 {input}");
+                        ushort output;
+                        Assert.True(unpacker.TryReadUInt16(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Int32
+                () =>
+                {
+                    var input = random.Next();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Int32 {input}");
+                        int output;
+                        Assert.True(unpacker.TryReadInt32(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // UInt32
+                () =>
+                {
+                    var input = (uint)random.Next();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"UInt32 {input}");
+                        uint output;
+                        Assert.True(unpacker.TryReadUInt32(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Int64
+                () =>
+                {
+                    #pragma warning disable CS0675
+                    var input = random.Next() | ((long)random.Next() << 32);
+                    #pragma warning restore CS0675
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Int64 {input}");
+                        long output;
+                        Assert.True(unpacker.TryReadInt64(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // UInt64
+                () =>
+                {
+                    #pragma warning disable CS0675
+                    var input = (ulong)random.Next() | ((ulong)random.Next() << 32);
+                    #pragma warning restore CS0675
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"UInt64 {input}");
+                        ulong output;
+                        Assert.True(unpacker.TryReadUInt64(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Boolean
+                () =>
+                {
+                    var input = random.NextDouble() < 0.5;
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Bool {input}");
+                        bool output;
+                        Assert.True(unpacker.TryReadBoolean(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // String
+                () =>
+                {
+                    var input = random.NextDouble() < 0.5 ? "hello" : null;
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"String {input}");
+                        string output;
+                        Assert.True(unpacker.TryReadString(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Single
+                () =>
+                {
+                    var input = (float)random.NextDouble();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Single {input}");
+                        float output;
+                        Assert.True(unpacker.TryReadSingle(out output));
+                        Assert.Equal(input, output);
+                    };
+                },
+                // Double
+                () =>
+                {
+                    var input = random.NextDouble();
+                    packer.Pack(input);
+                    return () =>
+                    {
+                        sequence.Add($"Double {input}");
+                        double output;
+                        Assert.True(unpacker.TryReadDouble(out output));
+                        Assert.Equal(input, output);
+                    };
+                }
+            };
 
-                bool value;
-                Assert.True(unpacker.TryReadBool(out value), $"Processing {input}");
-                Assert.Equal(input, value);
+            var verifiers = Enumerable.Range(0, 10000)
+                .Select(_ => scenarios[random.Next()%scenarios.Length]())
+                .ToList();
+
+            stream.Position = 0;
+
+            foreach (var verifier in verifiers)
+            {
+                try
+                {
+                    verifier();
+                }
+                catch (XunitException)
+                {
+                    foreach (var step in sequence.Skip(sequence.Count - 10))
+                        Console.Out.WriteLine(step);
+
+                    throw;
+                }
             }
         }
 
         #region Test support
 
-        private static MsgPackUnpacker InitTest(Action<MsgPackPacker> packerAction)
+        private static MsgPackUnpacker InitTest(Action<Packer> packerAction)
         {
             var stream = new MemoryStream();
-            packerAction(MsgPackPacker.Create(stream));
+            packerAction(Packer.Create(stream));
             stream.Position = 0;
 
             return new MsgPackUnpacker(stream);
+        }
+
+        private static void TestFamily(Action<Packer> packerAction, FormatFamily expected)
+        {
+            var stream = new MemoryStream();
+            packerAction(Packer.Create(stream, PackerCompatibilityOptions.None));
+            stream.Position = 0;
+
+            var unpacker = new MsgPackUnpacker(stream);
+
+            FormatFamily actual;
+            Assert.True(unpacker.TryPeekFormatFamily(out actual));
+            Assert.Equal(expected, actual);
+        }
+
+        private static void TestFormat(Action<Packer> packerAction, Format expected)
+        {
+            var stream = new MemoryStream();
+            packerAction(Packer.Create(stream, PackerCompatibilityOptions.None));
+            stream.Position = 0;
+
+            var unpacker = new MsgPackUnpacker(stream);
+
+            Format actual;
+            Assert.True(unpacker.TryPeekFormat(out actual));
+            Assert.Equal(expected, actual);
         }
 
         #endregion
