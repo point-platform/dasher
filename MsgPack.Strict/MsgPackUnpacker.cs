@@ -46,14 +46,14 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if ((_nextByte & 0x80) == 0)
+                if (_nextByte <= (byte)Format.MaximumPositiveFixInt)
                 {
-                    value = (byte)(_nextByte & 0x7F);
+                    value = (byte)(_nextByte & (byte)Format.MaximumPositiveFixInt);
                     _nextByte = -1;
                     return true;
                 }
 
-                if (_nextByte == 0xCC)
+                if (_nextByte == (byte)Format.UInt8)
                 {
                     value = ReadByte();
                     _nextByte = -1;
@@ -73,14 +73,14 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if (_nextByte <= (byte)Format.MaximumPositiveFixInt)
             {
-                value = (short)(_nextByte & 0x7F);
+                value = (short)(_nextByte & (byte)Format.MaximumPositiveFixInt);
                 _nextByte = -1;
                 return true;
             }
 
-            if ((_nextByte & 0xE0) == 0xE0)
+            if ((_nextByte & (byte)Format.MinimumNegativeFixInt) == (byte)Format.MinimumNegativeFixInt)
             {
                 value = (sbyte)_nextByte;
                 _nextByte = -1;
@@ -89,9 +89,9 @@ namespace MsgPack.Strict
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xD0: value = ReadSByte(); break;
-                case 0xD1: value = ReadInt16(); break;
+                case (byte)Format.UInt8: value = ReadByte(); break;
+                case (byte)Format.Int8: value = ReadSByte(); break;
+                case (byte)Format.Int16: value = ReadInt16(); break;
 
                 default:
                     value = default(short);
@@ -110,14 +110,14 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if (_nextByte <= (byte)Format.MaximumPositiveFixInt)
             {
-                value = _nextByte & 0x7F;
+                value = (_nextByte & (byte)Format.MaximumPositiveFixInt);
                 _nextByte = -1;
                 return true;
             }
 
-            if ((_nextByte & 0xE0) == 0xE0)
+            if ((_nextByte & (byte)Format.MinimumNegativeFixInt) == (byte)Format.MinimumNegativeFixInt)
             {
                 value = (sbyte)_nextByte;
                 _nextByte = -1;
@@ -126,11 +126,11 @@ namespace MsgPack.Strict
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xCD: value = ReadUInt16(); break;
-                case 0xD0: value = ReadSByte(); break;
-                case 0xD1: value = ReadInt16(); break;
-                case 0xD2: value = ReadInt32(); break;
+                case (byte)Format.UInt8: value = ReadByte(); break;
+                case (byte)Format.UInt16: value = ReadUInt16(); break;
+                case (byte)Format.Int8: value = ReadSByte(); break;
+                case (byte)Format.Int16: value = ReadInt16(); break;
+                case (byte)Format.Int32: value = ReadInt32(); break;
 
                 default:
                     value = default(int);
@@ -149,14 +149,14 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if (_nextByte <= (byte)Format.MaximumPositiveFixInt)
             {
-                value = _nextByte & 0x7F;
+                value = (_nextByte & (byte)Format.MaximumPositiveFixInt);
                 _nextByte = -1;
                 return true;
             }
 
-            if ((_nextByte & 0xE0) == 0xE0)
+            if ((_nextByte & (byte)Format.MaximumPositiveFixInt) == (byte)Format.MaximumPositiveFixInt)
             {
                 value = (sbyte)_nextByte;
                 _nextByte = -1;
@@ -165,13 +165,13 @@ namespace MsgPack.Strict
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xCD: value = ReadUInt16(); break;
-                case 0xCE: value = ReadUInt32(); break;
-                case 0xD0: value = ReadSByte(); break;
-                case 0xD1: value = ReadInt16(); break;
-                case 0xD2: value = ReadInt32(); break;
-                case 0xD3: value = ReadInt64(); break;
+                case (byte)Format.UInt8: value = ReadByte(); break;
+                case (byte)Format.UInt16: value = ReadUInt16(); break;
+                case (byte)Format.UInt32: value = ReadUInt32(); break;
+                case (byte)Format.Int8: value = ReadSByte(); break;
+                case (byte)Format.Int16: value = ReadInt16(); break;
+                case (byte)Format.Int32: value = ReadInt32(); break;
+                case (byte)Format.Int64: value = ReadInt64(); break;
 
                 default:
                     value = default(long);
@@ -186,21 +186,21 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if ((_nextByte & 0x80) == 0)
+                if (_nextByte <= (byte)Format.MaximumPositiveFixInt)
                 {
-                    value = (sbyte)(_nextByte & 0x7F);
+                    value = (sbyte)(_nextByte & (byte)Format.MaximumPositiveFixInt);
                     _nextByte = -1;
                     return true;
                 }
 
-                if ((_nextByte & 0xE0) == 0xE0)
+                if ((_nextByte & (byte)Format.MinimumNegativeFixInt) == (byte)Format.MinimumNegativeFixInt)
                 {
                     value = (sbyte)_nextByte;
                     _nextByte = -1;
                     return true;
                 }
 
-                if (_nextByte == 0xD0)
+                if (_nextByte == (byte)Format.Int8)
                 {
                     value = ReadSByte();
                     _nextByte = -1;
@@ -220,17 +220,17 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if (_nextByte <= (byte)Format.MaximumPositiveFixInt)
             {
-                value = (ushort)(_nextByte & 0x7F);
+                value = (ushort)(_nextByte & (byte)Format.MaximumPositiveFixInt);
                 _nextByte = -1;
                 return true;
             }
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xCD: value = ReadUInt16(); break;
+                case (byte)Format.UInt8: value = ReadByte(); break;
+                case (byte)Format.UInt16: value = ReadUInt16(); break;
 
                 default:
                     value = default(ushort);
@@ -249,18 +249,18 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if (_nextByte <= (byte)Format.MaximumPositiveFixInt)
             {
-                value = (uint)(_nextByte & 0x7F);
+                value = (uint)(_nextByte & (byte)Format.MaximumPositiveFixInt);
                 _nextByte = -1;
                 return true;
             }
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xCD: value = ReadUInt16(); break;
-                case 0xCE: value = ReadUInt32(); break;
+                case (byte)Format.UInt8: value = ReadByte(); break;
+                case (byte)Format.UInt16: value = ReadUInt16(); break;
+                case (byte)Format.UInt32: value = ReadUInt32(); break;
 
                 default:
                     value = default(uint);
@@ -279,19 +279,19 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if (_nextByte <= (byte)Format.MaximumPositiveFixInt)
             {
-                value = (ulong)(_nextByte & 0x7F);
+                value = (ulong)(_nextByte & (byte)Format.MaximumPositiveFixInt);
                 _nextByte = -1;
                 return true;
             }
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xCD: value = ReadUInt16(); break;
-                case 0xCE: value = ReadUInt32(); break;
-                case 0xCF: value = ReadUInt64(); break;
+                case (byte)Format.UInt8: value = ReadByte(); break;
+                case (byte)Format.UInt16: value = ReadUInt16(); break;
+                case (byte)Format.UInt32: value = ReadUInt32(); break;
+                case (byte)Format.UInt64: value = ReadUInt64(); break;
 
                 default:
                     value = default(ulong);
@@ -308,7 +308,7 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == 0xca)
+                if (_nextByte == (byte)Format.Float32)
                 {
                     // big-endian 32-bit IEEE 754 floating point
                     var bits = ReadUInt32();
@@ -326,7 +326,7 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == 0xcb)
+                if (_nextByte == (byte)Format.Float64)
                 {
                     // big-endian 64-bit IEEE 754 floating point
                     var bits = ReadUInt64();
@@ -344,14 +344,14 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == 0xc2)
+                if (_nextByte == (byte)Format.False)
                 {
                     value = false;
                     _nextByte = -1;
                     return true;
                 }
 
-                if (_nextByte == 0xc3)
+                if (_nextByte == (byte)Format.True)
                 {
                     value = true;
                     _nextByte = -1;
@@ -368,7 +368,7 @@ namespace MsgPack.Strict
             if (TryPrepareNextByte())
             {
                 uint? length = null;
-                if ((_nextByte & 0xF0) == 0x90)
+                if ((_nextByte & 0xF0) == (byte)Format.MinimumFixArray)
                 {
                     length = (uint?)(_nextByte & 0x0F);
                 }
@@ -376,8 +376,8 @@ namespace MsgPack.Strict
                 {
                     switch (_nextByte)
                     {
-                        case 0xDC: length = ReadUInt16(); break;
-                        case 0xDD: length = ReadUInt32(); break;
+                        case (byte)Format.Array16: length = ReadUInt16(); break;
+                        case (byte)Format.Array32: length = ReadUInt32(); break;
                     }
                 }
 
@@ -400,7 +400,7 @@ namespace MsgPack.Strict
             if (TryPrepareNextByte())
             {
                 uint? length = null;
-                if ((_nextByte & 0xF0) == 0x80)
+                if ((_nextByte & 0xF0) == (byte)Format.MinimumFixMap)
                 {
                     length = (uint?)(_nextByte & 0x0F);
                 }
@@ -408,8 +408,8 @@ namespace MsgPack.Strict
                 {
                     switch (_nextByte)
                     {
-                        case 0xDE: length = ReadUInt16(); break;
-                        case 0xDF: length = ReadUInt32(); break;
+                        case (byte)Format.Map16: length = ReadUInt16(); break;
+                        case (byte)Format.Map32: length = ReadUInt32(); break;
                     }
                 }
 
@@ -431,42 +431,42 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if ((_nextByte >= 0 && _nextByte <= 0x7f) || (_nextByte >= 0xcc && _nextByte <= 0xd3) || (_nextByte >= 0xe0 && _nextByte <= 0xff))
+                if ((_nextByte >= 0 && _nextByte <= (byte)Format.MaximumPositiveFixInt) || (_nextByte >= (byte)Format.UInt8 && _nextByte <= (byte)Format.Int64) || (_nextByte >= (byte)Format.MinimumNegativeFixInt && _nextByte <= 0xff))
                 {
                     family = FormatFamily.Integer;
                     return true;
                 }
-                if ((_nextByte >= 0x80 && _nextByte <= 0x8f) || _nextByte == 0xde || _nextByte == 0xdf)
+                if ((_nextByte >= (byte)Format.MinimumFixMap && _nextByte <= (byte)Format.MaximumFixMap) || _nextByte == (byte)Format.Map16 || _nextByte == (byte)Format.Map32)
                 {
                     family = FormatFamily.Map;
                     return true;
                 }
-                if ((_nextByte >= 0x90 && _nextByte <= 0x9f) || _nextByte == 0xdc || _nextByte == 0xdd)
+                if ((_nextByte >= (byte)Format.MinimumFixArray && _nextByte <= (byte)Format.MaximumFixArray) || _nextByte == (byte)Format.Array16 || _nextByte == (byte)Format.Array32)
                 {
                     family = FormatFamily.Array;
                     return true;
                 }
-                if ((_nextByte >= 0xa0 && _nextByte <= 0xbf) || (_nextByte >= 0xd9 && _nextByte <= 0xdb))
+                if ((_nextByte >= (byte)Format.MinimumFixedRaw && _nextByte <= (byte)Format.MaximumFixedRaw) || (_nextByte >= (byte)Format.Str8 && _nextByte <= (byte)Format.Str32))
                 {
                     family = FormatFamily.String;
                     return true;
                 }
                 switch (_nextByte)
                 {
-                    case 0xc0:
+                    case (byte)Format.Null:
                         family = FormatFamily.Null;
                         return true;
-                    case 0xc2:
-                    case 0xc3:
+                    case (byte)Format.False:
+                    case (byte)Format.True:
                         family = FormatFamily.Boolean;
                         return true;
-                    case 0xc4:
-                    case 0xc5:
-                    case 0xc6:
+                    case (byte)Format.Bin8:
+                    case (byte)Format.Bin16:
+                    case (byte)Format.Bin32:
                         family = FormatFamily.Binary;
                         return true;
-                    case 0xca:
-                    case 0xcb:
+                    case (byte)Format.Float32:
+                    case (byte)Format.Float64:
                         family = FormatFamily.Float;
                         return true;
                 }
@@ -490,50 +490,52 @@ namespace MsgPack.Strict
 
         private static Format DecodeFormat(byte b)
         {
-            if (b <= 0x7f)
+            if (b <= (byte)Format.MaximumPositiveFixInt)
                 return Format.PositiveFixInt;
-            if (b >= 0x80 && b <= 0x8f)
+            if (b >= (byte)Format.MinimumFixMap && b <= (byte)Format.MaximumFixMap)
                 return Format.FixMap;
-            if (b >= 0x90 && b <= 0x9f)
+            if (b >= (byte)Format.MinimumFixArray && b <= (byte)Format.MaximumFixArray)
                 return Format.FixArray;
-            if (b >= 0xa0 && b <= 0xbf)
+            if (b >= (byte)Format.MinimumFixStr && b <= (byte)Format.MaximumFixStr)
                 return Format.FixStr;
-            if (b >= 0xe0)
+            if (b >= (byte)Format.MinimumNegativeFixInt)
                 return Format.NegativeFixInt;
 
-            switch (b)
+            Format format = (Format)b;
+            switch (format)
             {
-                case 0xc0: return Format.Null;
-                case 0xc2: return Format.False;
-                case 0xc3: return Format.True;
-                case 0xc4: return Format.Bin8;
-                case 0xc5: return Format.Bin16;
-                case 0xc6: return Format.Bin32;
-                case 0xc7: return Format.Ext8;
-                case 0xc8: return Format.Ext16;
-                case 0xc9: return Format.Ext32;
-                case 0xca: return Format.Float32;
-                case 0xcb: return Format.Float64;
-                case 0xcc: return Format.UInt8;
-                case 0xcd: return Format.UInt16;
-                case 0xce: return Format.UInt32;
-                case 0xcf: return Format.UInt64;
-                case 0xd0: return Format.Int8;
-                case 0xd1: return Format.Int16;
-                case 0xd2: return Format.Int32;
-                case 0xd3: return Format.Int64;
-                case 0xd4: return Format.FixExt1;
-                case 0xd5: return Format.FixExt2;
-                case 0xd6: return Format.FixExt4;
-                case 0xd7: return Format.FixExt8;
-                case 0xd8: return Format.FixExt16;
-                case 0xd9: return Format.Str8;
-                case 0xda: return Format.Str16;
-                case 0xdb: return Format.Str32;
-                case 0xdc: return Format.Array16;
-                case 0xdd: return Format.Array32;
-                case 0xde: return Format.Map16;
-                case 0xdf: return Format.Map32;
+                case Format.Null:
+                case Format.False:
+                case Format.True:
+                case Format.Bin8:
+                case Format.Bin16:
+                case Format.Bin32:
+                case Format.Ext8:
+                case Format.Ext16:
+                case Format.Ext32:
+                case Format.Float32:
+                case Format.Float64:
+                case Format.UInt8:
+                case Format.UInt16:
+                case Format.UInt32:
+                case Format.UInt64:
+                case Format.Int8:
+                case Format.Int16:
+                case Format.Int32:
+                case Format.Int64:
+                case Format.FixExt1:
+                case Format.FixExt2:
+                case Format.FixExt4:
+                case Format.FixExt8:
+                case Format.FixExt16:
+                case Format.Str8:
+                case Format.Str16:
+                case Format.Str32:
+                case Format.Array16:
+                case Format.Array32:
+                case Format.Map16:
+                case Format.Map32:
+                    return format;
 
                 default:
                     return Format.Unknown;
@@ -551,7 +553,7 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == 0xc0)
+                if (_nextByte == (byte)Format.Null)
                 {
                     value = null;
                     _nextByte = -1;
@@ -559,7 +561,7 @@ namespace MsgPack.Strict
                 }
 
                 uint? length = null;
-                if ((_nextByte & 0xE0) == 0xA0)
+                if ((_nextByte & (byte)Format.MinimumNegativeFixInt) == (byte)Format.MinimumFixedRaw)
                 {
                     length = (uint)(_nextByte & 0x1F);
                 }
@@ -567,9 +569,9 @@ namespace MsgPack.Strict
                 {
                     switch (_nextByte)
                     {
-                        case 0xD9: length = ReadByte();  break;
-                        case 0xDA: length = ReadUInt16(); break;
-                        case 0xDB: length = ReadUInt32(); break;
+                        case (byte)Format.Str8: length = ReadByte();  break;
+                        case (byte)Format.Str16: length = ReadUInt16(); break;
+                        case (byte)Format.Str32: length = ReadUInt32(); break;
                     }
                 }
 
@@ -590,6 +592,38 @@ namespace MsgPack.Strict
         }
 
         #endregion
+
+        public bool TryReadBinary(out byte[] value)
+        {
+            if (TryPrepareNextByte())
+            {
+                if (_nextByte == (byte)Format.Null)
+                {
+                    value = null;
+                    _nextByte = -1;
+                    return true;
+                }
+
+                uint? length = null;
+                switch (_nextByte)
+                {
+                    case (byte)Format.Bin8: length = ReadByte(); break;
+                    case (byte)Format.Bin16: length = ReadUInt16(); break;
+                    case (byte)Format.Bin32: length = ReadUInt32(); break;
+                }
+                if (length != null)
+                {
+                    if (length > int.MaxValue)
+                        throw new Exception("Byte array length is too long to read");
+                    value = Read((int)length);
+                    _nextByte = -1;
+                    return true;
+                }
+            }
+
+            value = default(byte[]);
+            return false;
+        }
 
         private byte[] Read(int length)
         {
