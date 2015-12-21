@@ -10,52 +10,6 @@ namespace MsgPack.Strict.Tests
     public sealed class UnsafeMsgPackPackerTests
     {
         [Fact]
-        public void PackPerfFaceOff()
-        {
-            var s = new MemoryStream();
-
-            var thisUnsafePacker = new UnsafeMsgPackPacker(s);
-
-            var str = new string('a', 256);
-            var bytes = new byte[256];
-
-            const int loopCount = 1024 * 1024;
-
-            Action thisUnsafePack = () =>
-            {
-                s.Position = 0;
-                thisUnsafePacker.Pack(false);
-                thisUnsafePacker.Pack(true);
-                thisUnsafePacker.Pack((byte)1);
-                thisUnsafePacker.Pack((sbyte)-1);
-                thisUnsafePacker.Pack(1.1f);
-                thisUnsafePacker.Pack(1.1d);
-                thisUnsafePacker.Pack((short)1234);
-                thisUnsafePacker.Pack((ushort)1234);
-                thisUnsafePacker.Pack((int)1234);
-                thisUnsafePacker.Pack((uint)1234);
-                thisUnsafePacker.Pack((long)1234);
-                thisUnsafePacker.Pack((ulong)1234);
-                thisUnsafePacker.Pack("Hello World");
-//                thisUnsafePacker.Pack(str);
-//                thisUnsafePacker.Pack(bytes);
-                thisUnsafePacker.Flush();
-            };
-
-            for (var i = 0; i < 10; i++)
-            {
-                thisUnsafePack();
-            }
-
-            var sw = Stopwatch.StartNew();
-
-            for (var i = 0; i < loopCount; i++)
-                thisUnsafePack();
-
-            var thisUnsafeTime = sw.Elapsed.TotalMilliseconds;
-        }
-
-        [Fact]
         public void PacksByte()
         {
             var stream = new MemoryStream();
