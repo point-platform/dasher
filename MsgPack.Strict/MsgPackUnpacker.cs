@@ -593,6 +593,38 @@ namespace MsgPack.Strict
 
         #endregion
 
+        public bool TryReadBinary(out byte[] value)
+        {
+            if (TryPrepareNextByte())
+            {
+                if (_nextByte == (byte)Format.Null)
+                {
+                    value = null;
+                    _nextByte = -1;
+                    return true;
+                }
+
+                uint? length = null;
+                switch (_nextByte)
+                {
+                    case (byte)Format.Bin8: length = ReadByte(); break;
+                    case (byte)Format.Bin16: length = ReadUInt16(); break;
+                    case (byte)Format.Bin32: length = ReadUInt32(); break;
+                }
+                if (length != null)
+                {
+                    if (length > int.MaxValue)
+                        throw new Exception("Byte array length is too long to read");
+                    value = Read((int)length);
+                    _nextByte = -1;
+                    return true;
+                }
+            }
+
+            value = default(byte[]);
+            return false;
+        }
+
         private byte[] Read(int length)
         {
             var bytes = new byte[length];

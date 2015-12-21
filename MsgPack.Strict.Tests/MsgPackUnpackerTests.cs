@@ -156,6 +156,55 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
+        public void TryReadBoolean()
+        {
+            var inputs = new[] { true, false };
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                bool value;
+                Assert.True(unpacker.TryReadBoolean(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
+        public void TryReadBinary()
+        {
+            var inputs = new[] { null, new byte[0], new byte[0xFF], new byte[0xFFFF], new byte[0x10000], new byte[] { 1, 2, 3 } };
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                byte[] value;
+                Assert.True(unpacker.TryReadBinary(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
+        public void TryReadBinaryWhenPackedWithCustomPacker()
+        {
+            var inputs = new[] { null, new byte[0], new byte[0xFF], new byte[0xFFFF], new byte[0x10000], new byte[] { 1, 2, 3 } };
+
+            foreach (var input in inputs)
+            {
+                var stream = new MemoryStream();
+                new MsgPackPacker(stream).Pack(input);
+                stream.Position = 0;
+
+                var unpacker = new MsgPackUnpacker(stream);
+
+                byte[] value;
+                Assert.True(unpacker.TryReadBinary(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
         public void TryPeekFormatFamily()
         {
             TestFamily(p => p.PackMapHeader(1),   FormatFamily.Map);
