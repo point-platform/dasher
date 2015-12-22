@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Xunit;
 
 // ReSharper disable UnusedMember.Global
@@ -97,6 +98,16 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        public sealed class WithBinary
+        {
+            public byte[] Bytes { get; }
+
+            public WithBinary(byte[] bytes)
+            {
+                Bytes = bytes;
+            }
+        }
+
         #endregion
 
         [Fact]
@@ -134,6 +145,16 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(1.0, after.Weight);
             Assert.Equal("Bob", after.UserScore.Name);
             Assert.Equal(123, after.UserScore.Score);
+        }
+
+        [Fact]
+        public void HandlesBinary()
+        {
+            var after = RoundTrip(new WithBinary(Enumerable.Range(0, byte.MaxValue).Select(i => (byte)i).ToArray()));
+
+            Assert.Equal(
+                Enumerable.Range(0, byte.MaxValue).Select(i => (byte)i).ToArray(),
+                after.Bytes);
         }
 
         [Fact]

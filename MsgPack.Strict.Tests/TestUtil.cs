@@ -8,7 +8,7 @@ namespace MsgPack.Strict.Tests
         public static byte[] PackBytes(Action<Packer> packAction)
         {
             var stream = new MemoryStream();
-            var packer = Packer.Create(stream);
+            var packer = Packer.Create(stream, PackerCompatibilityOptions.None);
             packAction(packer);
             stream.Position = 0;
             return stream.GetBuffer();

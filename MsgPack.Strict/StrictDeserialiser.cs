@@ -351,7 +351,8 @@ namespace MsgPack.Strict
             {typeof(float),  typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadSingle))},
             {typeof(double), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadDouble))},
             {typeof(bool),   typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadBoolean))},
-            {typeof(string), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] {typeof(string).MakeByRefType()})}
+            {typeof(string), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] {typeof(string).MakeByRefType()})},
+            {typeof(byte[]), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadBinary))}
         };
 
         private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local, string name, Type targetType)

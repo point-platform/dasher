@@ -192,6 +192,16 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        public sealed class WithBinary
+        {
+            public byte[] Bytes { get; }
+
+            public WithBinary(byte[] bytes)
+            {
+                Bytes = bytes;
+            }
+        }
+
         #endregion
 
         [Fact]
@@ -489,6 +499,17 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(2, after.Jagged.Count);
             Assert.Equal(new[] {1, 2, 3}, after.Jagged[0]);
             Assert.Equal(new[] {4, 5, 6}, after.Jagged[1]);
+        }
+
+        [Fact]
+        public void HandlesBinary()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("Bytes").PackBinary(new byte[] {1,2,3,4}));
+
+            var after = StrictDeserialiser.Get<WithBinary>().Deserialise(bytes);
+
+            Assert.Equal(new byte[] {1, 2, 3, 4}, after.Bytes);
         }
     }
 }
