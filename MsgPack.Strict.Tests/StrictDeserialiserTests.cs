@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Xunit;
 
 // ReSharper disable ClassNeverInstantiated.Global
@@ -94,20 +95,20 @@ namespace MsgPack.Strict.Tests
 
         public sealed class TestDefaultParams
         {
-            public byte      B       { get; }
-            public sbyte     Sb      { get; }
-            public short     S       { get; }
-            public ushort    Us      { get; }
-            public int       I       { get; }
-            public uint      Ui      { get; }
-            public long      L       { get; }
-            public ulong     Ul      { get; }
-            public string    Str     { get; }
-            public float     F       { get; }
-            public double    D       { get; }
-            public decimal   Dc      { get; }
-            public bool      Bo      { get; }
-            public TestEnum  E       { get; }
+            public byte B { get; }
+            public sbyte Sb { get; }
+            public short S { get; }
+            public ushort Us { get; }
+            public int I { get; }
+            public uint Ui { get; }
+            public long L { get; }
+            public ulong Ul { get; }
+            public string Str { get; }
+            public float F { get; }
+            public double D { get; }
+            public decimal Dc { get; }
+            public bool Bo { get; }
+            public TestEnum E { get; }
             public UserScore Complex { get; }
 
             public TestDefaultParams(
@@ -123,9 +124,9 @@ namespace MsgPack.Strict.Tests
                 float f = 1.23f,
                 double d = 1.23,
                 decimal dc = 1.23M,
-                bool bo = true,
                 TestEnum e = TestEnum.Bar,
-                UserScore complex = null)
+                UserScore complex = null,
+                bool bo = true)
             {
                 B = b;
                 Sb = sb;
@@ -475,7 +476,7 @@ namespace MsgPack.Strict.Tests
             var after = StrictDeserialiser.Get<UserScoreList>().Deserialise(bytes);
 
             Assert.Equal("Bob", after.Name);
-            Assert.Equal(new[] {1, 2, 3}, after.Scores);
+            Assert.Equal(new[] { 1, 2, 3 }, after.Scores);
         }
 
         [Fact]
@@ -489,8 +490,112 @@ namespace MsgPack.Strict.Tests
             var after = StrictDeserialiser.Get<ListOfList>().Deserialise(bytes);
 
             Assert.Equal(2, after.Jagged.Count);
-            Assert.Equal(new[] {1, 2, 3}, after.Jagged[0]);
-            Assert.Equal(new[] {4, 5, 6}, after.Jagged[1]);
+            Assert.Equal(new[] { 1, 2, 3 }, after.Jagged[0]);
+            Assert.Equal(new[] { 4, 5, 6 }, after.Jagged[1]);
         }
+
+        [Fact]
+        public void GenerateSchemaForSimpleType()
+        {
+            var expected = String.Join(
+                Environment.NewLine,
+                "UserScore",
+                "{",
+                "    name: System.String",
+                "    score: System.Int32",
+                "}");
+            var actual = GenerateSchema(typeof(UserScore));
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void GenerateSchemaForSimpleTypeWithDefaults()
+        {
+
+            var expected = String.Join(
+                Environment.NewLine,
+                "UserScoreWithDefaultScore",
+                "{",
+                "    name: System.String",
+                "    score: System.Int32 = 100",
+                "}");
+            var actual = GenerateSchema(typeof(UserScoreWithDefaultScore));
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void GenerateSchemaForTypeContainingComplexType()
+        {
+            var expected = @"TestDefaultParams
+{
+    sb: System.SByte = -12
+    b: System.Byte = 12
+    s: System.Int16 = -1234
+    us: System.UInt16 = 1234
+    i: System.Int32 = -12345
+    ui: System.UInt32 = 12345
+    l: System.Int64 = -12345678900
+    ul: System.UInt64 = 12345678900
+    str: System.String = str
+    f: System.Single = 1.23
+    d: System.Double = 1.23
+    dc: System.Decimal = 1.23
+    e: MsgPack.Strict.Tests.StrictDeserialiserTests+TestEnum = Bar
+    complex: UserScore
+    {
+        name: System.String
+        score: System.Int32
+    }
+    bo: System.Boolean = True
+}";
+            var actual = GenerateSchema(typeof(TestDefaultParams));
+
+            Assert.Equal(expected, actual);
+        }
+
+        public static StringBuilder indent(StringBuilder sb, int indentLevel)
+        {
+            for (var i = 0; i < indentLevel; ++i)
+                sb.Append("    ");
+            return sb;
+        }
+        public static string GenerateSchema(Type type, int indentLevel = 0)
+        {
+            var result = new StringBuilder();
+            result.AppendFormat("{0}", type.Name).AppendLine();
+            indent(result, indentLevel).AppendLine("{");
+            foreach (var ctorArg in type.GetConstructors().Single().GetParameters())
+            {
+                var ctorArgType = ctorArg.ParameterType;
+                if (ctorArgType.Namespace == "System" || ctorArgType.IsValueType || ctorArgType.IsEnum)
+                {
+                    indent(result, indentLevel+1).AppendFormat(
+                              ctorArg.HasDefaultValue ? "{0}: {1} = {2}" : "{0}: {1}",
+                              ctorArg.Name,
+                              ctorArg.ParameterType,
+                              ctorArg.DefaultValue == null ? "null" : ctorArg.DefaultValue);
+                    result.AppendLine();
+                }
+                else
+                {
+                    indent(result, indentLevel + 1).AppendFormat("{0}: ", ctorArg.Name).Append(GenerateSchema(ctorArg.ParameterType, indentLevel + 1));
+                    result.AppendLine();
+                }
+            }
+            indent(result, indentLevel).Append("}");
+
+            return result.ToString();
+
+            //=> string.Join(
+            //    Environment.NewLine,
+            //    type.GetConstructors().Single().GetParameters().Select(p =>
+            //        string.Format(
+            //            p.HasDefaultValue ? "{0}: {1} = {2}" : "{0}: {1}",
+            //            p.Name,
+            //            p.ParameterType,
+            //            p.DefaultValue == null ? "null" : p.DefaultValue)));
+
+        }
+
     }
 }
