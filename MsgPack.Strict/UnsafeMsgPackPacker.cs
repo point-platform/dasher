@@ -336,7 +336,7 @@ namespace MsgPack.Strict
                 else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
                 {
                     // negative fixnum (5-bit negative number)
-                    *p = (byte)(value | 0xE0);
+                    *p = (byte)value;
                     _offset++;
                 }
                 else
@@ -393,7 +393,7 @@ namespace MsgPack.Strict
                 else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
                 {
                     // negative fixnum (5-bit negative number)
-                    *p = (byte)(value | 0xE0);
+                    *p = (byte)value;
                     _offset++;
                 }
                 else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
@@ -466,7 +466,7 @@ namespace MsgPack.Strict
                 else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
                 {
                     // negative fixnum (5-bit negative number)
-                    *p = (byte)(value | 0xE0);
+                    *p = (byte)value;
                     _offset++;
                 }
                 else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
@@ -510,7 +510,7 @@ namespace MsgPack.Strict
                 else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
                 {
                     // negative fixnum (5-bit negative number)
-                    *p = (byte)(value | 0xE0);
+                    *p = (byte)value;
                     _offset++;
                 }
                 else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)

@@ -201,7 +201,7 @@ namespace MsgPack.Strict
             else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
             {
                 // negative fixnum (5-bit negative number)
-                _stream.WriteByte((byte)(value | 0xE0));
+                _stream.WriteByte((byte)value);
             }
             else
             {
@@ -240,7 +240,7 @@ namespace MsgPack.Strict
             else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
             {
                 // negative fixnum (5-bit negative number)
-                _stream.WriteByte((byte)(value | 0xE0));
+                _stream.WriteByte((byte)value);
             }
             else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
             {
@@ -293,7 +293,7 @@ namespace MsgPack.Strict
             else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
             {
                 // negative fixnum (5-bit negative number)
-                _stream.WriteByte((byte)(value | 0xE0));
+                _stream.WriteByte((byte)value);
             }
             else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
             {
@@ -326,7 +326,7 @@ namespace MsgPack.Strict
             else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
             {
                 // negative fixnum (5-bit negative number)
-                _stream.WriteByte((byte)(value | 0xE0));
+                _stream.WriteByte((byte)value);
             }
             else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
             {

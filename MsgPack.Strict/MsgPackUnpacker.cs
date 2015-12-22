@@ -48,7 +48,7 @@ namespace MsgPack.Strict
             {
                 if ((_nextByte & 0x80) == 0)
                 {
-                    value = (byte)(_nextByte & 0x7F);
+                    value = (byte)_nextByte;
                     _nextByte = -1;
                     return true;
                 }
@@ -75,7 +75,7 @@ namespace MsgPack.Strict
 
             if ((_nextByte & 0x80) == 0)
             {
-                value = (short)(_nextByte & 0x7F);
+                value = (short)_nextByte;
                 _nextByte = -1;
                 return true;
             }
@@ -112,7 +112,7 @@ namespace MsgPack.Strict
 
             if ((_nextByte & 0x80) == 0)
             {
-                value = _nextByte & 0x7F;
+                value = _nextByte;
                 _nextByte = -1;
                 return true;
             }
@@ -151,7 +151,7 @@ namespace MsgPack.Strict
 
             if ((_nextByte & 0x80) == 0)
             {
-                value = _nextByte & 0x7F;
+                value = _nextByte;
                 _nextByte = -1;
                 return true;
             }
@@ -188,7 +188,7 @@ namespace MsgPack.Strict
             {
                 if ((_nextByte & 0x80) == 0)
                 {
-                    value = (sbyte)(_nextByte & 0x7F);
+                    value = (sbyte)_nextByte;
                     _nextByte = -1;
                     return true;
                 }
@@ -222,7 +222,7 @@ namespace MsgPack.Strict
 
             if ((_nextByte & 0x80) == 0)
             {
-                value = (ushort)(_nextByte & 0x7F);
+                value = (ushort)_nextByte;
                 _nextByte = -1;
                 return true;
             }
@@ -251,7 +251,7 @@ namespace MsgPack.Strict
 
             if ((_nextByte & 0x80) == 0)
             {
-                value = (uint)(_nextByte & 0x7F);
+                value = (uint)_nextByte;
                 _nextByte = -1;
                 return true;
             }
@@ -281,7 +281,7 @@ namespace MsgPack.Strict
 
             if ((_nextByte & 0x80) == 0)
             {
-                value = (ulong)(_nextByte & 0x7F);
+                value = (ulong)_nextByte;
                 _nextByte = -1;
                 return true;
             }
