@@ -416,7 +416,7 @@ namespace MsgPack.Strict
                 if (length != null)
                 {
                     if (length > int.MaxValue)
-                        throw new Exception("Array length too large");
+                        throw new Exception("Map length too large");
                     _nextByte = -1;
                     value = (int)length;
                     return true;
