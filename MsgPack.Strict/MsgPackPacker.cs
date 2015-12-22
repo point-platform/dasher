@@ -5,9 +5,6 @@ using static MsgPack.Strict.MsgPackConstants;
 
 namespace MsgPack.Strict
 {
-    // TODO compare perf with MsgPack.Cli
-    // TODO compare perf if using intermediate buffer
-    // TODO compare perf if using unsafe code
     // TODO support nullable values
 
     public class MsgPackPacker
