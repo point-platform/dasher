@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using Xunit;
 
 // ReSharper disable ClassNeverInstantiated.Global
@@ -207,7 +209,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ExactMatch()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(123));
 
@@ -220,7 +222,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void HandlesDecimalProperty()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack("123.4567"));
 
@@ -233,7 +235,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void DeserialiseToStruct()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(123));
 
@@ -246,7 +248,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ReorderedFields()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("Score").Pack(123)
                 .Pack("Name").Pack("Bob"));
 
@@ -259,7 +261,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void MixedUpCapitalisation()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("NaMe").Pack("Bob")
                 .Pack("ScorE").Pack(123));
 
@@ -272,7 +274,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnUnexpectedField()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(3)
+            var bytes = PackBytes(packer => packer.PackMapHeader(3)
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(123)
                 .Pack("SUPRISE").Pack("Unexpected"));
@@ -288,7 +290,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnMissingField()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("Name").Pack("Bob"));
 
             var deserialiser = StrictDeserialiser.Get<UserScore>();
@@ -302,7 +304,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnIncorrectDataType()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(123.4)); // double, should be int
 
@@ -317,7 +319,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnDuplicateField()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(3)
+            var bytes = PackBytes(packer => packer.PackMapHeader(3)
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(123)
                 .Pack("Score").Pack(321));
@@ -333,7 +335,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnNonMapData()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackArrayHeader(2)
+            var bytes = PackBytes(packer => packer.PackArrayHeader(2)
                 .Pack("Name").Pack(123));
 
             var deserialiser = StrictDeserialiser.Get<UserScore>();
@@ -358,7 +360,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void HandlesEnumPropertiesCorrectly()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("TestEnum").Pack("Bar"));
 
             var after = StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes);
@@ -369,7 +371,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void DeserialisesEnumMembersCaseInsensitively()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("TestEnum").Pack("BAR"));
 
             var after = StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes);
@@ -380,7 +382,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsWhenEnumNotEncodedAsString()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("TestEnum").Pack(123));
 
             var ex = Assert.Throws<StrictDeserialisationException>(
@@ -393,7 +395,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsWhenEnumStringNotValidMember()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("TestEnum").Pack("Rubbish"));
 
             var ex = Assert.Throws<StrictDeserialisationException>(
@@ -406,7 +408,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void UsesDefaultValuesIfNotInMessage()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(0));
+            var bytes = PackBytes(packer => packer.PackMapHeader(0));
 
             var deserialiser = StrictDeserialiser.Get<TestDefaultParams>();
             var after = deserialiser.Deserialise(bytes);
@@ -430,7 +432,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void SpecifiedValueOverridesDefaultValue()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(12345)); // score has a default of 100
 
@@ -460,7 +462,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void HandlesNestedComplexTypes()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("Weight").Pack(0.5d)
                 .Pack("UserScore").PackMapHeader(2)
                     .Pack("Name").Pack("Bob")
@@ -476,7 +478,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void HandlesReadOnlyListProperty()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("Name").Pack("Bob")
                 .Pack("Scores").PackArrayHeader(3).Pack(1).Pack(2).Pack(3));
 
@@ -489,7 +491,7 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void HandlesListOfListProperty()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("Jagged").PackArrayHeader(2)
                     .PackArrayHeader(3).Pack(1).Pack(2).Pack(3)
                     .PackArrayHeader(3).Pack(4).Pack(5).Pack(6));
@@ -504,12 +506,25 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void HandlesBinary()
         {
-            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("Bytes").PackBinary(new byte[] {1,2,3,4}));
 
             var after = StrictDeserialiser.Get<WithBinary>().Deserialise(bytes);
 
             Assert.Equal(new byte[] {1, 2, 3, 4}, after.Bytes);
         }
+
+        #region Helper
+
+        private static byte[] PackBytes(Action<Packer> packAction)
+        {
+            var stream = new MemoryStream();
+            var packer = Packer.Create(stream, PackerCompatibilityOptions.None);
+            packAction(packer);
+            stream.Position = 0;
+            return stream.GetBuffer();
+        }
+
+        #endregion
     }
 }
