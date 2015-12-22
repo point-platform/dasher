@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable UnusedMember.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
 namespace MsgPack.Strict.Tests
 {
-    // TODO enum fields
-    // TODO class/ctor private
     // TODO mismatch between ctor args and properties (?)
 
     public sealed class StrictDeserialiserTests
@@ -16,6 +19,18 @@ namespace MsgPack.Strict.Tests
         public sealed class UserScore
         {
             public UserScore(string name, int score)
+            {
+                Name = name;
+                Score = score;
+            }
+
+            public string Name { get; }
+            public int Score { get; }
+        }
+
+        public struct UserScoreStruct
+        {
+            public UserScoreStruct(string name, int score)
             {
                 Name = name;
                 Score = score;
@@ -49,22 +64,51 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        public sealed class UserScoreDecimal
+        {
+            public UserScoreDecimal(string name, decimal score)
+            {
+                Name = name;
+                Score = score;
+            }
+
+            public string Name { get; }
+            public decimal Score { get; }
+        }
+
+        public enum TestEnum
+        {
+            Foo = 1,
+            Bar = 2
+        }
+
+        public sealed class WithEnumProperty
+        {
+            public WithEnumProperty(TestEnum testEnum)
+            {
+                TestEnum = testEnum;
+            }
+
+            public TestEnum TestEnum { get; }
+        }
+
         public sealed class TestDefaultParams
         {
-            public byte    B   { get; }
-            public sbyte   Sb  { get; }
-            public short   S   { get; }
-            public ushort  Us  { get; }
-            public int     I   { get; }
-            public uint    Ui  { get; }
-            public long    L   { get; }
-            public ulong   Ul  { get; }
-            public string  Str { get; }
-            public float   F   { get; }
-            public double  D   { get; }
-            public decimal Dc  { get; }
-            public bool    Bo  { get; }
-            public object  O   { get; }
+            public byte      B       { get; }
+            public sbyte     Sb      { get; }
+            public short     S       { get; }
+            public ushort    Us      { get; }
+            public int       I       { get; }
+            public uint      Ui      { get; }
+            public long      L       { get; }
+            public ulong     Ul      { get; }
+            public string    Str     { get; }
+            public float     F       { get; }
+            public double    D       { get; }
+            public decimal   Dc      { get; }
+            public bool      Bo      { get; }
+            public TestEnum  E       { get; }
+            public UserScore Complex { get; }
 
             public TestDefaultParams(
                 sbyte sb = -12,
@@ -80,7 +124,8 @@ namespace MsgPack.Strict.Tests
                 double d = 1.23,
                 decimal dc = 1.23M,
                 bool bo = true,
-                object o = null)
+                TestEnum e = TestEnum.Bar,
+                UserScore complex = null)
             {
                 B = b;
                 Sb = sb;
@@ -95,7 +140,8 @@ namespace MsgPack.Strict.Tests
                 D = d;
                 Dc = dc;
                 Bo = bo;
-                O = o;
+                E = e;
+                Complex = complex;
             }
         }
 
@@ -126,7 +172,6 @@ namespace MsgPack.Strict.Tests
             }
         }
 
-
         public sealed class UserScoreList
         {
             public UserScoreList(string name, IReadOnlyList<int> scores)
@@ -139,6 +184,16 @@ namespace MsgPack.Strict.Tests
             public IReadOnlyList<int> Scores { get; }
         }
 
+        public sealed class ListOfList
+        {
+            public IReadOnlyList<IReadOnlyList<int>> Jagged { get; }
+
+            public ListOfList(IReadOnlyList<IReadOnlyList<int>> jagged)
+            {
+                Jagged = jagged;
+            }
+        }
+
         #endregion
 
         [Fact]
@@ -149,6 +204,32 @@ namespace MsgPack.Strict.Tests
                 .Pack("Score").Pack(123));
 
             var after = StrictDeserialiser.Get<UserScore>().Deserialise(bytes);
+
+            Assert.Equal("Bob", after.Name);
+            Assert.Equal(123, after.Score);
+        }
+
+        [Fact]
+        public void HandlesDecimalProperty()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("Name").Pack("Bob")
+                .Pack("Score").Pack("123.4567"));
+
+            var after = StrictDeserialiser.Get<UserScoreDecimal>().Deserialise(bytes);
+
+            Assert.Equal("Bob", after.Name);
+            Assert.Equal(123.4567m, after.Score);
+        }
+
+        [Fact]
+        public void DeserialiseToStruct()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("Name").Pack("Bob")
+                .Pack("Score").Pack(123));
+
+            var after = StrictDeserialiser.Get<UserScoreStruct>().Deserialise(bytes);
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123, after.Score);
@@ -207,7 +288,7 @@ namespace MsgPack.Strict.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Missing required field \"Score\".", ex.Message);
+            Assert.Equal("Missing required field \"score\".", ex.Message);
         }
 
         [Fact]
@@ -222,7 +303,7 @@ namespace MsgPack.Strict.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Unexpected type for \"Score\". Expected int, got double.", ex.Message);
+            Assert.Equal("Unexpected type for \"score\". Expected Int32, got Float64.", ex.Message);
         }
 
         [Fact]
@@ -248,7 +329,9 @@ namespace MsgPack.Strict.Tests
                 .Pack("Name").Pack(123));
 
             var deserialiser = StrictDeserialiser.Get<UserScore>();
-            Assert.Throws<MessageTypeException>(() => deserialiser.Deserialise(bytes));
+            var ex = Assert.Throws<StrictDeserialisationException>(() => deserialiser.Deserialise(bytes));
+            Assert.Equal("Message must be encoded as a MsgPack map", ex.Message);
+            Assert.Equal(typeof(UserScore), ex.TargetType);
         }
 
         [Fact]
@@ -261,7 +344,55 @@ namespace MsgPack.Strict.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Data stream ended.", ex.Message);
+            Assert.Equal("Data stream empty", ex.Message);
+        }
+
+        [Fact]
+        public void HandlesEnumPropertiesCorrectly()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("TestEnum").Pack("Bar"));
+
+            var after = StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes);
+
+            Assert.Equal(TestEnum.Bar, after.TestEnum);
+        }
+
+        [Fact]
+        public void DeserialisesEnumMembersCaseInsensitively()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("TestEnum").Pack("BAR"));
+
+            var after = StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes);
+
+            Assert.Equal(TestEnum.Bar, after.TestEnum);
+        }
+
+        [Fact]
+        public void ThrowsWhenEnumNotEncodedAsString()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("TestEnum").Pack(123));
+
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes));
+
+            Assert.Equal(typeof(WithEnumProperty), ex.TargetType);
+            Assert.Equal($"Unable to read string value for enum property testEnum of type {typeof(TestEnum)}", ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsWhenEnumStringNotValidMember()
+        {
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("TestEnum").Pack("Rubbish"));
+
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes));
+
+            Assert.Equal(typeof(WithEnumProperty), ex.TargetType);
+            Assert.Equal($"Unable to parse value \"Rubbish\" as a member of enum type {typeof(TestEnum)}", ex.Message);
         }
 
         [Fact]
@@ -285,7 +416,7 @@ namespace MsgPack.Strict.Tests
             Assert.Equal(1.23, after.D);
             Assert.Equal(1.23M, after.Dc);
             Assert.Equal(true, after.Bo);
-            Assert.Equal(null, after.O);
+            Assert.Equal(null, after.Complex);
         }
 
         [Fact]
@@ -348,42 +479,18 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
-        public void GenerateSchema()
+        public void HandlesListOfListProperty()
         {
-            Assert.Equal(
-                "name: System.String\r\nscore: System.Int32",
-                GenerateSchema(typeof(UserScore)));
+            var bytes = TestUtil.PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("Jagged").PackArrayHeader(2)
+                    .PackArrayHeader(3).Pack(1).Pack(2).Pack(3)
+                    .PackArrayHeader(3).Pack(4).Pack(5).Pack(6));
 
-            Assert.Equal(
-                "name: System.String\r\nscore: System.Int32 = 100",
-                GenerateSchema(typeof(UserScoreWithDefaultScore)));
+            var after = StrictDeserialiser.Get<ListOfList>().Deserialise(bytes);
 
-            Assert.Equal(
-                @"sb: System.SByte = -12
-b: System.Byte = 12
-s: System.Int16 = -1234
-us: System.UInt16 = 1234
-i: System.Int32 = -12345
-ui: System.UInt32 = 12345
-l: System.Int64 = -12345678900
-ul: System.UInt64 = 12345678900
-str: System.String = str
-f: System.Single = 1.23
-d: System.Double = 1.23
-dc: System.Decimal = 1.23
-bo: System.Boolean = True
-o: System.Object = null",
-                GenerateSchema(typeof(TestDefaultParams)));
+            Assert.Equal(2, after.Jagged.Count);
+            Assert.Equal(new[] {1, 2, 3}, after.Jagged[0]);
+            Assert.Equal(new[] {4, 5, 6}, after.Jagged[1]);
         }
-
-        public static string GenerateSchema(Type type)
-            => string.Join(
-                Environment.NewLine,
-                type.GetConstructors().Single().GetParameters().Select(p =>
-                    string.Format(
-                        p.HasDefaultValue ? "{0}: {1} = {2}" : "{0}: {1}",
-                        p.Name,
-                        p.ParameterType,
-                        p.DefaultValue)));
     }
 }
