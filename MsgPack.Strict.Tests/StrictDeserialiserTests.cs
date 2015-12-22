@@ -585,16 +585,6 @@ namespace MsgPack.Strict.Tests
             indent(result, indentLevel).Append("}");
 
             return result.ToString();
-
-            //=> string.Join(
-            //    Environment.NewLine,
-            //    type.GetConstructors().Single().GetParameters().Select(p =>
-            //        string.Format(
-            //            p.HasDefaultValue ? "{0}: {1} = {2}" : "{0}: {1}",
-            //            p.Name,
-            //            p.ParameterType,
-            //            p.DefaultValue == null ? "null" : p.DefaultValue)));
-
         }
 
     }
