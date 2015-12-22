@@ -156,6 +156,30 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
+        public void TryReadBinary()
+        {
+            var inputs = new[]
+            {
+                null,
+                new byte[0],
+                new byte[] {1, 2, 3, 4, byte.MaxValue},
+                new byte[0xFF],
+                new byte[0x100],
+                new byte[0xFFFF],
+                new byte[0x10000]
+            };
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.PackBinary(input));
+
+                byte[] value;
+                Assert.True(unpacker.TryReadBinary(out value), $"Processing {(input == null ? "null" : $"[{string.Join(",", input)}]")}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
         public void TryPeekFormatFamily()
         {
             TestFamily(p => p.PackMapHeader(1),   FormatFamily.Map);
@@ -451,7 +475,7 @@ namespace MsgPack.Strict.Tests
         private static MsgPackUnpacker InitTest(Action<Packer> packerAction)
         {
             var stream = new MemoryStream();
-            packerAction(Packer.Create(stream));
+            packerAction(Packer.Create(stream, PackerCompatibilityOptions.None));
             stream.Position = 0;
 
             return new MsgPackUnpacker(stream);

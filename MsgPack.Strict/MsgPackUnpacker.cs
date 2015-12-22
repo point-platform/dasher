@@ -428,6 +428,39 @@ namespace MsgPack.Strict
             return false;
         }
 
+        public bool TryReadBinary(out byte[] value)
+        {
+            if (TryPrepareNextByte())
+            {
+                if (_nextByte == NullByte)
+                {
+                    value = null;
+                    _nextByte = -1;
+                    return true;
+                }
+
+                uint? length = null;
+                switch (_nextByte)
+                {
+                    case Bin8PrefixByte:  length = ReadByte();   break;
+                    case Bin16PrefixByte: length = ReadUInt16(); break;
+                    case Bin32PrefixByte: length = ReadUInt32(); break;
+                }
+
+                if (length != null)
+                {
+                    if (length > int.MaxValue)
+                        throw new Exception("Byte array length is too long to read");
+                    value = Read((int)length);
+                    _nextByte = -1;
+                    return true;
+                }
+            }
+
+            value = default(byte[]);
+            return false;
+        }
+
         public bool TryPeekFormatFamily(out FormatFamily family)
         {
             if (TryPrepareNextByte())
