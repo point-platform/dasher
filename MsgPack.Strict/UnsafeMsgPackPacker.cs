@@ -5,7 +5,7 @@ using static MsgPack.Strict.MsgPackConstants;
 
 namespace MsgPack.Strict
 {
-    public unsafe class UnsafeMsgPackPacker : IDisposable
+    public sealed unsafe class UnsafeMsgPackPacker : IDisposable
     {
         private readonly Stream _stream;
         private readonly byte[] _buffer;

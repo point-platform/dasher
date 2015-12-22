@@ -7,7 +7,7 @@ namespace MsgPack.Strict
 {
     // TODO support nullable values
 
-    public class MsgPackPacker
+    public sealed class MsgPackPacker
     {
         private readonly Stream _stream;
 
