@@ -198,7 +198,7 @@ namespace MsgPack.Strict
                 // positive fixnum (7-bit positive number)
                 _stream.WriteByte((byte)value);
             }
-            else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
+            else if (value >= -32 /*0b_1110_000*/)
             {
                 // negative fixnum (5-bit negative number)
                 _stream.WriteByte((byte)value);

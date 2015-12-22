@@ -333,7 +333,7 @@ namespace MsgPack.Strict
                     *p = (byte)value;
                     _offset++;
                 }
-                else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
+                else if (value >= -32 /*0b_1110_000*/)
                 {
                     // negative fixnum (5-bit negative number)
                     *p = (byte)value;
