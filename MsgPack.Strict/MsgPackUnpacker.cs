@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using static MsgPack.Strict.MsgPackConstants;
 
 namespace MsgPack.Strict
 {
@@ -46,14 +47,14 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if ((_nextByte & 0x80) == 0)
+                if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
                 {
                     value = (byte)_nextByte;
                     _nextByte = -1;
                     return true;
                 }
 
-                if (_nextByte == 0xCC)
+                if (_nextByte == UInt8PrefixByte)
                 {
                     value = ReadByte();
                     _nextByte = -1;
@@ -73,14 +74,14 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
                 value = (short)_nextByte;
                 _nextByte = -1;
                 return true;
             }
 
-            if ((_nextByte & 0xE0) == 0xE0)
+            if ((_nextByte & NegFixIntPrefixBitsMask) == NegFixIntPrefixBits)
             {
                 value = (sbyte)_nextByte;
                 _nextByte = -1;
@@ -89,9 +90,9 @@ namespace MsgPack.Strict
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xD0: value = ReadSByte(); break;
-                case 0xD1: value = ReadInt16(); break;
+                case UInt8PrefixByte: value = ReadByte();  break;
+                case Int8PrefixByte:  value = ReadSByte(); break;
+                case Int16PrefixByte: value = ReadInt16(); break;
 
                 default:
                     value = default(short);
@@ -110,14 +111,14 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
                 value = _nextByte;
                 _nextByte = -1;
                 return true;
             }
 
-            if ((_nextByte & 0xE0) == 0xE0)
+            if ((_nextByte & NegFixIntPrefixBitsMask) == NegFixIntPrefixBits)
             {
                 value = (sbyte)_nextByte;
                 _nextByte = -1;
@@ -126,11 +127,11 @@ namespace MsgPack.Strict
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xCD: value = ReadUInt16(); break;
-                case 0xD0: value = ReadSByte(); break;
-                case 0xD1: value = ReadInt16(); break;
-                case 0xD2: value = ReadInt32(); break;
+                case UInt8PrefixByte:  value = ReadByte();   break;
+                case UInt16PrefixByte: value = ReadUInt16(); break;
+                case Int8PrefixByte:   value = ReadSByte();  break;
+                case Int16PrefixByte:  value = ReadInt16();  break;
+                case Int32PrefixByte:  value = ReadInt32();  break;
 
                 default:
                     value = default(int);
@@ -149,14 +150,14 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
                 value = _nextByte;
                 _nextByte = -1;
                 return true;
             }
 
-            if ((_nextByte & 0xE0) == 0xE0)
+            if ((_nextByte & NegFixIntPrefixBitsMask) == NegFixIntPrefixBits)
             {
                 value = (sbyte)_nextByte;
                 _nextByte = -1;
@@ -165,13 +166,13 @@ namespace MsgPack.Strict
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xCD: value = ReadUInt16(); break;
-                case 0xCE: value = ReadUInt32(); break;
-                case 0xD0: value = ReadSByte(); break;
-                case 0xD1: value = ReadInt16(); break;
-                case 0xD2: value = ReadInt32(); break;
-                case 0xD3: value = ReadInt64(); break;
+                case UInt8PrefixByte:  value = ReadByte();   break;
+                case UInt16PrefixByte: value = ReadUInt16(); break;
+                case UInt32PrefixByte: value = ReadUInt32(); break;
+                case Int8PrefixByte:   value = ReadSByte();  break;
+                case Int16PrefixByte:  value = ReadInt16();  break;
+                case Int32PrefixByte:  value = ReadInt32();  break;
+                case Int64PrefixByte:  value = ReadInt64();  break;
 
                 default:
                     value = default(long);
@@ -186,21 +187,21 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if ((_nextByte & 0x80) == 0)
+                if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
                 {
                     value = (sbyte)_nextByte;
                     _nextByte = -1;
                     return true;
                 }
 
-                if ((_nextByte & 0xE0) == 0xE0)
+                if ((_nextByte & NegFixIntPrefixBitsMask) == NegFixIntPrefixBits)
                 {
                     value = (sbyte)_nextByte;
                     _nextByte = -1;
                     return true;
                 }
 
-                if (_nextByte == 0xD0)
+                if (_nextByte == Int8PrefixByte)
                 {
                     value = ReadSByte();
                     _nextByte = -1;
@@ -220,7 +221,7 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
                 value = (ushort)_nextByte;
                 _nextByte = -1;
@@ -229,8 +230,8 @@ namespace MsgPack.Strict
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xCD: value = ReadUInt16(); break;
+                case UInt8PrefixByte:  value = ReadByte();   break;
+                case UInt16PrefixByte: value = ReadUInt16(); break;
 
                 default:
                     value = default(ushort);
@@ -249,7 +250,7 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
                 value = (uint)_nextByte;
                 _nextByte = -1;
@@ -258,9 +259,9 @@ namespace MsgPack.Strict
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xCD: value = ReadUInt16(); break;
-                case 0xCE: value = ReadUInt32(); break;
+                case UInt8PrefixByte:  value = ReadByte();   break;
+                case UInt16PrefixByte: value = ReadUInt16(); break;
+                case UInt32PrefixByte: value = ReadUInt32(); break;
 
                 default:
                     value = default(uint);
@@ -279,7 +280,7 @@ namespace MsgPack.Strict
                 return false;
             }
 
-            if ((_nextByte & 0x80) == 0)
+            if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
                 value = (ulong)_nextByte;
                 _nextByte = -1;
@@ -288,10 +289,10 @@ namespace MsgPack.Strict
 
             switch (_nextByte)
             {
-                case 0xCC: value = ReadByte(); break;
-                case 0xCD: value = ReadUInt16(); break;
-                case 0xCE: value = ReadUInt32(); break;
-                case 0xCF: value = ReadUInt64(); break;
+                case UInt8PrefixByte:  value = ReadByte();   break;
+                case UInt16PrefixByte: value = ReadUInt16(); break;
+                case UInt32PrefixByte: value = ReadUInt32(); break;
+                case UInt64PrefixByte: value = ReadUInt64(); break;
 
                 default:
                     value = default(ulong);
@@ -308,7 +309,7 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == 0xca)
+                if (_nextByte == Float32PrefixByte)
                 {
                     // big-endian 32-bit IEEE 754 floating point
                     var bits = ReadUInt32();
@@ -326,7 +327,7 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == 0xcb)
+                if (_nextByte == Float64PrefixByte)
                 {
                     // big-endian 64-bit IEEE 754 floating point
                     var bits = ReadUInt64();
@@ -344,14 +345,14 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == 0xc2)
+                if (_nextByte == FalseByte)
                 {
                     value = false;
                     _nextByte = -1;
                     return true;
                 }
 
-                if (_nextByte == 0xc3)
+                if (_nextByte == TrueByte)
                 {
                     value = true;
                     _nextByte = -1;
@@ -368,16 +369,16 @@ namespace MsgPack.Strict
             if (TryPrepareNextByte())
             {
                 uint? length = null;
-                if ((_nextByte & 0xF0) == 0x90)
+                if ((_nextByte & FixArrayPrefixBitsMask) == FixArrayPrefixBits)
                 {
-                    length = (uint?)(_nextByte & 0x0F);
+                    length = (uint)(_nextByte & FixArrayMaxLength);
                 }
                 else
                 {
                     switch (_nextByte)
                     {
-                        case 0xDC: length = ReadUInt16(); break;
-                        case 0xDD: length = ReadUInt32(); break;
+                        case Array16PrefixByte: length = ReadUInt16(); break;
+                        case Array32PrefixByte: length = ReadUInt32(); break;
                     }
                 }
 
@@ -400,16 +401,16 @@ namespace MsgPack.Strict
             if (TryPrepareNextByte())
             {
                 uint? length = null;
-                if ((_nextByte & 0xF0) == 0x80)
+                if ((_nextByte & FixMapPrefixBitsMask) == FixMapPrefixBits)
                 {
-                    length = (uint?)(_nextByte & 0x0F);
+                    length = (uint)(_nextByte & FixMapMaxLength);
                 }
                 else
                 {
                     switch (_nextByte)
                     {
-                        case 0xDE: length = ReadUInt16(); break;
-                        case 0xDF: length = ReadUInt32(); break;
+                        case Map16PrefixByte: length = ReadUInt16(); break;
+                        case Map32PrefixByte: length = ReadUInt32(); break;
                     }
                 }
 
@@ -431,42 +432,53 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if ((_nextByte >= 0 && _nextByte <= 0x7f) || (_nextByte >= 0xcc && _nextByte <= 0xd3) || (_nextByte >= 0xe0 && _nextByte <= 0xff))
+                if ((_nextByte <= PosFixIntMaxByte) ||
+                    (_nextByte >= UInt8PrefixByte && _nextByte <= Int64PrefixByte) ||
+                    (_nextByte >= NegFixIntMinByte))
                 {
                     family = FormatFamily.Integer;
                     return true;
                 }
-                if ((_nextByte >= 0x80 && _nextByte <= 0x8f) || _nextByte == 0xde || _nextByte == 0xdf)
+
+                if ((_nextByte >= FixMapMinPrefixByte && _nextByte <= FixMapMaxPrefixByte) ||
+                     _nextByte == Map16PrefixByte ||
+                     _nextByte == Map32PrefixByte)
                 {
                     family = FormatFamily.Map;
                     return true;
                 }
-                if ((_nextByte >= 0x90 && _nextByte <= 0x9f) || _nextByte == 0xdc || _nextByte == 0xdd)
+
+                if ((_nextByte >= FixArrayMinPrefixByte && _nextByte <= FixArrayMaxPrefixByte) ||
+                     _nextByte == Array16PrefixByte ||
+                     _nextByte == Array32PrefixByte)
                 {
                     family = FormatFamily.Array;
                     return true;
                 }
-                if ((_nextByte >= 0xa0 && _nextByte <= 0xbf) || (_nextByte >= 0xd9 && _nextByte <= 0xdb))
+
+                if ((_nextByte >= FixStrMinPrefixByte && _nextByte <= FixStrMaxPrefixByte) ||
+                    (_nextByte >= Str8PrefixByte && _nextByte <= Str32PrefixByte))
                 {
                     family = FormatFamily.String;
                     return true;
                 }
+
                 switch (_nextByte)
                 {
-                    case 0xc0:
+                    case NullByte:
                         family = FormatFamily.Null;
                         return true;
-                    case 0xc2:
-                    case 0xc3:
+                    case TrueByte:
+                    case FalseByte:
                         family = FormatFamily.Boolean;
                         return true;
-                    case 0xc4:
-                    case 0xc5:
-                    case 0xc6:
+                    case Bin8PrefixByte:
+                    case Bin16PrefixByte:
+                    case Bin32PrefixByte:
                         family = FormatFamily.Binary;
                         return true;
-                    case 0xca:
-                    case 0xcb:
+                    case Float32PrefixByte:
+                    case Float64PrefixByte:
                         family = FormatFamily.Float;
                         return true;
                 }
@@ -490,50 +502,50 @@ namespace MsgPack.Strict
 
         private static Format DecodeFormat(byte b)
         {
-            if (b <= 0x7f)
+            if (b <= PosFixIntMaxByte)
                 return Format.PositiveFixInt;
-            if (b >= 0x80 && b <= 0x8f)
+            if (b >= FixMapMinPrefixByte && b <= FixMapMaxPrefixByte)
                 return Format.FixMap;
-            if (b >= 0x90 && b <= 0x9f)
+            if (b >= FixArrayMinPrefixByte && b <= FixArrayMaxPrefixByte)
                 return Format.FixArray;
-            if (b >= 0xa0 && b <= 0xbf)
+            if (b >= FixStrMinPrefixByte && b <= FixStrMaxPrefixByte)
                 return Format.FixStr;
-            if (b >= 0xe0)
+            if (b >= NegFixIntMinByte)
                 return Format.NegativeFixInt;
 
             switch (b)
             {
-                case 0xc0: return Format.Null;
-                case 0xc2: return Format.False;
-                case 0xc3: return Format.True;
-                case 0xc4: return Format.Bin8;
-                case 0xc5: return Format.Bin16;
-                case 0xc6: return Format.Bin32;
-                case 0xc7: return Format.Ext8;
-                case 0xc8: return Format.Ext16;
-                case 0xc9: return Format.Ext32;
-                case 0xca: return Format.Float32;
-                case 0xcb: return Format.Float64;
-                case 0xcc: return Format.UInt8;
-                case 0xcd: return Format.UInt16;
-                case 0xce: return Format.UInt32;
-                case 0xcf: return Format.UInt64;
-                case 0xd0: return Format.Int8;
-                case 0xd1: return Format.Int16;
-                case 0xd2: return Format.Int32;
-                case 0xd3: return Format.Int64;
-                case 0xd4: return Format.FixExt1;
-                case 0xd5: return Format.FixExt2;
-                case 0xd6: return Format.FixExt4;
-                case 0xd7: return Format.FixExt8;
-                case 0xd8: return Format.FixExt16;
-                case 0xd9: return Format.Str8;
-                case 0xda: return Format.Str16;
-                case 0xdb: return Format.Str32;
-                case 0xdc: return Format.Array16;
-                case 0xdd: return Format.Array32;
-                case 0xde: return Format.Map16;
-                case 0xdf: return Format.Map32;
+                case NullByte:           return Format.Null;
+                case FalseByte:          return Format.False;
+                case TrueByte:           return Format.True;
+                case Bin8PrefixByte:     return Format.Bin8;
+                case Bin16PrefixByte:    return Format.Bin16;
+                case Bin32PrefixByte:    return Format.Bin32;
+                case Ext8PrefixByte:     return Format.Ext8;
+                case Ext16PrefixByte:    return Format.Ext16;
+                case Ext32PrefixByte:    return Format.Ext32;
+                case Float32PrefixByte:  return Format.Float32;
+                case Float64PrefixByte:  return Format.Float64;
+                case UInt8PrefixByte:    return Format.UInt8;
+                case UInt16PrefixByte:   return Format.UInt16;
+                case UInt32PrefixByte:   return Format.UInt32;
+                case UInt64PrefixByte:   return Format.UInt64;
+                case Int8PrefixByte:     return Format.Int8;
+                case Int16PrefixByte:    return Format.Int16;
+                case Int32PrefixByte:    return Format.Int32;
+                case Int64PrefixByte:    return Format.Int64;
+                case FixExt1PrefixByte:  return Format.FixExt1;
+                case FixExt2PrefixByte:  return Format.FixExt2;
+                case FixExt4PrefixByte:  return Format.FixExt4;
+                case FixExt8PrefixByte:  return Format.FixExt8;
+                case FixExt16PrefixByte: return Format.FixExt16;
+                case Str8PrefixByte:     return Format.Str8;
+                case Str16PrefixByte:    return Format.Str16;
+                case Str32PrefixByte:    return Format.Str32;
+                case Array16PrefixByte:  return Format.Array16;
+                case Array32PrefixByte:  return Format.Array32;
+                case Map16PrefixByte:    return Format.Map16;
+                case Map32PrefixByte:    return Format.Map32;
 
                 default:
                     return Format.Unknown;
@@ -551,7 +563,7 @@ namespace MsgPack.Strict
         {
             if (TryPrepareNextByte())
             {
-                if (_nextByte == 0xc0)
+                if (_nextByte == NullByte)
                 {
                     value = null;
                     _nextByte = -1;
@@ -559,17 +571,17 @@ namespace MsgPack.Strict
                 }
 
                 uint? length = null;
-                if ((_nextByte & 0xE0) == 0xA0)
+                if ((_nextByte & FixStrPrefixBitsMask) == FixStrPrefixBits)
                 {
-                    length = (uint)(_nextByte & 0x1F);
+                    length = (uint)(_nextByte & FixStrMaxLength);
                 }
                 else
                 {
                     switch (_nextByte)
                     {
-                        case 0xD9: length = ReadByte();  break;
-                        case 0xDA: length = ReadUInt16(); break;
-                        case 0xDB: length = ReadUInt32(); break;
+                        case Str8PrefixByte:  length = ReadByte();   break;
+                        case Str16PrefixByte: length = ReadUInt16(); break;
+                        case Str32PrefixByte: length = ReadUInt32(); break;
                     }
                 }
 

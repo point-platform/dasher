@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using static MsgPack.Strict.MsgPackConstants;
 
 namespace MsgPack.Strict
 {
@@ -68,7 +69,7 @@ namespace MsgPack.Strict
             CheckBuffer(1);
 
             fixed (byte* b = _buffer)
-                *(b + _offset++) = 0xc0;
+                *(b + _offset++) = NullByte;
         }
 
         public void PackArrayHeader(uint length)
@@ -77,14 +78,14 @@ namespace MsgPack.Strict
 
             fixed (byte* b = _buffer)
             {
-                if (length <= 0x0F)
+                if (length <= FixArrayMaxLength)
                 {
-                    *(b + _offset++) = (byte)(0x90 | length);
+                    *(b + _offset++) = (byte)(FixArrayPrefixBits | length);
                 }
-                else if (length <= 0xFFFF)
+                else if (length <= ushort.MaxValue)
                 {
                     var p = b + _offset;
-                    *p++ = 0xDC;
+                    *p++ = Array16PrefixByte;
                     *p++ = (byte)(length>>8);
                     *p   = (byte)length;
                     _offset += 3;
@@ -92,7 +93,7 @@ namespace MsgPack.Strict
                 else
                 {
                     var p = b + _offset;
-                    *p++ = 0xDD;
+                    *p++ = Array32PrefixByte;
                     *p++ = (byte)(length >> 24);
                     *p++ = (byte)(length >> 16);
                     *p++ = (byte)(length >> 8);
@@ -108,14 +109,14 @@ namespace MsgPack.Strict
 
             fixed (byte* b = _buffer)
             {
-                if (length <= 0x0F)
+                if (length <= FixMapMaxLength)
                 {
-                    *(b + _offset++) = (byte)(0x80 | length);
+                    *(b + _offset++) = (byte)(FixMapPrefixBits | length);
                 }
-                else if (length <= 0xFFFF)
+                else if (length <= ushort.MaxValue)
                 {
                     var p = b + _offset;
-                    *p++ = 0xDE;
+                    *p++ = Map16PrefixByte;
                     *p++ = (byte)(length >> 8);
                     *p   = (byte)length;
                     _offset += 3;
@@ -123,7 +124,7 @@ namespace MsgPack.Strict
                 else
                 {
                     var p = b + _offset;
-                    *p++ = 0xDF;
+                    *p++ = Map32PrefixByte;
                     *p++ = (byte)(length >> 24);
                     *p++ = (byte)(length >> 16);
                     *p++ = (byte)(length >> 8);
@@ -138,7 +139,7 @@ namespace MsgPack.Strict
             CheckBuffer(1);
 
             fixed (byte* b = _buffer)
-                *(b + _offset++) = value ? (byte)0xC3 : (byte)0xC2;
+                *(b + _offset++) = value ? TrueByte : FalseByte;
         }
 
         public void Pack(byte[] bytes)
@@ -159,7 +160,7 @@ namespace MsgPack.Strict
                 fixed (byte* b = _buffer)
                 {
                     var p = b + _offset;
-                    *p++ = 0xC4;
+                    *p++ = Bin8PrefixByte;
                     *p = (byte)length;
                     _offset += 2;
                 }
@@ -170,7 +171,7 @@ namespace MsgPack.Strict
                 fixed (byte* b = _buffer)
                 {
                     var p = b + _offset;
-                    *p++ = 0xC5;
+                    *p++ = Bin16PrefixByte;
                     *p++ = (byte)(length >> 8);
                     *p   = (byte)length;
                     _offset += 3;
@@ -182,7 +183,7 @@ namespace MsgPack.Strict
                 fixed (byte* b = _buffer)
                 {
                     var p = b + _offset;
-                    *p++ = 0xC6;
+                    *p++ = Bin32PrefixByte;
                     *p++ = (byte)(length >> 24);
                     *p++ = (byte)(length >> 16);
                     *p++ = (byte)(length >> 8);
@@ -209,32 +210,32 @@ namespace MsgPack.Strict
 
             var bytes = encoding.GetBytes(value);
 
-            if (bytes.Length <= 0x1F)
+            if (bytes.Length <= FixStrMaxLength)
             {
                 CheckBuffer(1);
                 fixed (byte* b = _buffer)
-                    *(b + _offset++) = (byte)(0xA0 | bytes.Length);
+                    *(b + _offset++) = (byte)(FixStrPrefixBits | bytes.Length);
                 Append(bytes);
             }
-            else if (bytes.Length <= 0xFF)
+            else if (bytes.Length <= byte.MaxValue)
             {
                 CheckBuffer(2);
                 fixed (byte* b = _buffer)
                 {
                     var p = b + _offset;
-                    *p++ = 0xD9;
+                    *p++ = Str8PrefixByte;
                     *p   = (byte)bytes.Length;
                     _offset += 2;
                 }
                 Append(bytes);
             }
-            else if (bytes.Length <= 0xFFFF)
+            else if (bytes.Length <= ushort.MaxValue)
             {
                 CheckBuffer(3);
                 fixed (byte* b = _buffer)
                 {
                     var p = b + _offset;
-                    *p++ = 0xDA;
+                    *p++ = Str16PrefixByte;
                     var l = bytes.Length;
                     *p++ = (byte)(l >> 8);
                     *p   = (byte)l;
@@ -248,7 +249,7 @@ namespace MsgPack.Strict
                 fixed (byte* b = _buffer)
                 {
                     var p = b + _offset;
-                    *p++ = 0xDB;
+                    *p++ = Str32PrefixByte;
                     var l = bytes.Length;
                     *p++ = (byte)(l >> 24);
                     *p++ = (byte)(l >> 16);
@@ -267,7 +268,7 @@ namespace MsgPack.Strict
             fixed (byte* b = _buffer)
             {
                 var p = b + _offset;
-                *p++ = 0xCA;
+                *p++ = Float32PrefixByte;
                 var l = *(int*)&value;
                 *p++ = (byte)(l >> 24);
                 *p++ = (byte)(l >> 16);
@@ -284,7 +285,7 @@ namespace MsgPack.Strict
             fixed (byte* b = _buffer)
             {
                 var p = b + _offset;
-                *p++ = 0xCB;
+                *p++ = Float64PrefixByte;
                 var l = *(ulong*)&value;
                 *p++ = (byte)(l >> 56);
                 *p++ = (byte)(l >> 48);
@@ -305,15 +306,14 @@ namespace MsgPack.Strict
             fixed (byte* b = _buffer)
             {
                 var p = b + _offset;
-                if (value <= 0x7F)
+                if (value <= PosFixIntMaxValue)
                 {
-                    // positive fixnum (7-bit positive number)
                     *p = value;
                     _offset++;
                 }
                 else
                 {
-                    *p++ = 0xCC;
+                    *p++ = UInt8PrefixByte;
                     *p = value;
                     _offset += 2;
                 }
@@ -327,21 +327,19 @@ namespace MsgPack.Strict
             fixed (byte* b = _buffer)
             {
                 var p = b + _offset;
-                if (value >= 0x00)
+                if (value >= 0)
                 {
-                    // positive fixnum (7-bit positive number)
                     *p = (byte)value;
                     _offset++;
                 }
-                else if (value >= -32 /*0b_1110_000*/)
+                else if (value >= NegFixIntMinValue)
                 {
-                    // negative fixnum (5-bit negative number)
                     *p = (byte)value;
                     _offset++;
                 }
                 else
                 {
-                    *p++ = 0xD0;
+                    *p++ = Int8PrefixByte;
                     *p = (byte)value;
                     _offset += 2;
                 }
@@ -355,21 +353,20 @@ namespace MsgPack.Strict
             fixed (byte* b = _buffer)
             {
                 var p = b + _offset;
-                if (value <= 0x7F)
+                if (value <= PosFixIntMaxValue)
                 {
-                    // positive fixnum (7-bit positive number)
                     *p = (byte)value;
                     _offset++;
                 }
                 else if (value <= byte.MaxValue)
                 {
-                    *p++ = 0xCC;
+                    *p++ = UInt8PrefixByte;
                     *p = (byte)value;
                     _offset += 2;
                 }
                 else
                 {
-                    *p++ = 0xCD;
+                    *p++ = UInt16PrefixByte;
                     *p++ = (byte)(value >> 8);
                     *p = (byte)value;
                     _offset += 3;
@@ -384,27 +381,25 @@ namespace MsgPack.Strict
             fixed (byte* b = _buffer)
             {
                 var p = b + _offset;
-                if (value >= 0x00 && value <= sbyte.MaxValue)
+                if (value >= 0 && value <= PosFixIntMaxValue)
                 {
-                    // positive fixnum (7-bit positive number)
                     *p = (byte)value;
                     _offset++;
                 }
-                else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
+                else if (value >= NegFixIntMinValue && value < 0)
                 {
-                    // negative fixnum (5-bit negative number)
                     *p = (byte)value;
                     _offset++;
                 }
                 else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
                 {
-                    *p++ = 0xD0;
+                    *p++ = Int8PrefixByte;
                     *p = (byte)value;
                     _offset += 2;
                 }
                 else
                 {
-                    *p++ = 0xD1;
+                    *p++ = Int16PrefixByte;
                     *p++ = (byte)(value >> 8);
                     *p = (byte)value;
                     _offset += 3;
@@ -419,28 +414,27 @@ namespace MsgPack.Strict
             fixed (byte* b = _buffer)
             {
                 var p = b + _offset;
-                if (value <= 0x7F)
+                if (value <= PosFixIntMaxValue)
                 {
-                    // positive fixnum (7-bit positive number)
                     *p = (byte)value;
                     _offset++;
                 }
                 else if (value <= byte.MaxValue)
                 {
-                    *p++ = 0xCC;
+                    *p++ = UInt8PrefixByte;
                     *p   = (byte)value;
                     _offset += 2;
                 }
                 else if (value <= ushort.MaxValue)
                 {
-                    *p++ = 0xCD;
+                    *p++ = UInt16PrefixByte;
                     *p++ = (byte)(value >> 8);
                     *p   = (byte)value;
                     _offset += 3;
                 }
                 else
                 {
-                    *p++ = 0xCE;
+                    *p++ = UInt32PrefixByte;
                     *p++ = (byte)(value >> 24);
                     *p++ = (byte)(value >> 16);
                     *p++ = (byte)(value >> 8);
@@ -457,34 +451,32 @@ namespace MsgPack.Strict
             fixed (byte* b = _buffer)
             {
                 var p = b + _offset;
-                if (value >= 0x00 && value <= sbyte.MaxValue)
+                if (value >= 0 && value <= PosFixIntMaxValue)
                 {
-                    // positive fixnum (7-bit positive number)
                     *p = (byte)value;
                     _offset++;
                 }
-                else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
+                else if (value >= NegFixIntMinValue && value < 0)
                 {
-                    // negative fixnum (5-bit negative number)
                     *p = (byte)value;
                     _offset++;
                 }
                 else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
                 {
-                    *p++ = 0xD0;
+                    *p++ = Int8PrefixByte;
                     *p = (byte)value;
                     _offset += 2;
                 }
                 else if (value >= short.MinValue && value <= short.MaxValue)
                 {
-                    *p++ = 0xD1;
+                    *p++ = Int16PrefixByte;
                     *p++ = (byte)(value >> 8);
                     *p = (byte)value;
                     _offset += 3;
                 }
-                else // if (value >= int.MinValue && value <= int.MaxValue)
+                else
                 {
-                    *p++ = 0xD2;
+                    *p++ = Int32PrefixByte;
                     *p++ = (byte)(value >> 24);
                     *p++ = (byte)(value >> 16);
                     *p++ = (byte)(value >> 8);
@@ -501,34 +493,32 @@ namespace MsgPack.Strict
             fixed (byte* b = _buffer)
             {
                 var p = b + _offset;
-                if (value >= 0x00 && value <= sbyte.MaxValue)
+                if (value >= 0 && value <= PosFixIntMaxValue)
                 {
-                    // positive fixnum (7-bit positive number)
                     *p = (byte)value;
                     _offset++;
                 }
-                else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
+                else if (value >= NegFixIntMinValue && value < 0)
                 {
-                    // negative fixnum (5-bit negative number)
                     *p = (byte)value;
                     _offset++;
                 }
                 else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
                 {
-                    *p++ = 0xD0;
+                    *p++ = Int8PrefixByte;
                     *p = (byte)value;
                     _offset += 2;
                 }
                 else if (value >= short.MinValue && value <= short.MaxValue)
                 {
-                    *p++ = 0xD1;
+                    *p++ = Int16PrefixByte;
                     *p++ = (byte)(value >> 8);
                     *p = (byte)value;
                     _offset += 3;
                 }
                 else if (value >= int.MinValue && value <= int.MaxValue)
                 {
-                    *p++ = 0xD2;
+                    *p++ = Int32PrefixByte;
                     *p++ = (byte)(value >> 24);
                     *p++ = (byte)(value >> 16);
                     *p++ = (byte)(value >> 8);
@@ -537,7 +527,7 @@ namespace MsgPack.Strict
                 }
                 else
                 {
-                    *p++ = 0xD3;
+                    *p++ = Int64PrefixByte;
                     *p++ = (byte)(value >> 56);
                     *p++ = (byte)(value >> 48);
                     *p++ = (byte)(value >> 40);
@@ -558,28 +548,27 @@ namespace MsgPack.Strict
             fixed (byte* b = _buffer)
             {
                 var p = b + _offset;
-                if (value <= 0x7F)
+                if (value <= PosFixIntMaxValue)
                 {
-                    // positive fixnum (7-bit positive number)
                     *p = (byte)value;
                     _offset++;
                 }
                 else if (value <= byte.MaxValue)
                 {
-                    *p++ = 0xCC;
+                    *p++ = UInt8PrefixByte;
                     *p = (byte)value;
                     _offset += 2;
                 }
                 else if (value <= ushort.MaxValue)
                 {
-                    *p++ = 0xCD;
+                    *p++ = UInt16PrefixByte;
                     *p++ = (byte)(value >> 8);
                     *p = (byte)value;
                     _offset += 3;
                 }
                 else if (value <= uint.MaxValue)
                 {
-                    *p++ = 0xCE;
+                    *p++ = UInt32PrefixByte;
                     *p++ = (byte)(value >> 24);
                     *p++ = (byte)(value >> 16);
                     *p++ = (byte)(value >> 8);
@@ -588,7 +577,7 @@ namespace MsgPack.Strict
                 }
                 else
                 {
-                    *p++ = 0xCF;
+                    *p++ = UInt64PrefixByte;
                     *p++ = (byte)(value >> 56);
                     *p++ = (byte)(value >> 48);
                     *p++ = (byte)(value >> 40);

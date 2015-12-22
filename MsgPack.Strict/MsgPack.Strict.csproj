@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Format.cs" />
+    <Compile Include="MsgPackConstants.cs" />
     <Compile Include="FormatFamily.cs" />
     <Compile Include="MsgPackPacker.cs" />
     <Compile Include="MsgPackUnpacker.cs" />

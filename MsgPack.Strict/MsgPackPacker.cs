@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using static MsgPack.Strict.MsgPackConstants;
 
 namespace MsgPack.Strict
 {
@@ -20,24 +21,24 @@ namespace MsgPack.Strict
 
         public void PackNull()
         {
-            _stream.WriteByte(0xc0);
+            _stream.WriteByte(NullByte);
         }
 
         public void PackArrayHeader(uint length)
         {
-            if (length <= 0x0F)
+            if (length <= FixArrayMaxLength)
             {
-                _stream.WriteByte((byte)(0x90 | length));
+                _stream.WriteByte((byte)(FixArrayPrefixBits | length));
             }
-            else if (length <= 0xFFFF)
+            else if (length <= ushort.MaxValue)
             {
-                _stream.WriteByte(0xDC);
+                _stream.WriteByte(Array16PrefixByte);
                 _stream.WriteByte((byte)(length >> 8));
                 _stream.WriteByte((byte)length);
             }
             else
             {
-                _stream.WriteByte(0xDD);
+                _stream.WriteByte(Array32PrefixByte);
                 _stream.WriteByte((byte)(length >> 24));
                 _stream.WriteByte((byte)(length >> 16));
                 _stream.WriteByte((byte)(length >> 8));
@@ -47,19 +48,19 @@ namespace MsgPack.Strict
 
         public void PackMapHeader(uint length)
         {
-            if (length <= 0x0F)
+            if (length <= FixMapMaxLength)
             {
-                _stream.WriteByte((byte)(0x80 | length));
+                _stream.WriteByte((byte)(FixMapPrefixBits | length));
             }
-            else if (length <= 0xFFFF)
+            else if (length <= ushort.MaxValue)
             {
-                _stream.WriteByte(0xDE);
+                _stream.WriteByte(Map16PrefixByte);
                 _stream.WriteByte((byte)(length >> 8));
                 _stream.WriteByte((byte)length);
             }
             else
             {
-                _stream.WriteByte(0xDF);
+                _stream.WriteByte(Map32PrefixByte);
                 _stream.WriteByte((byte)(length >> 24));
                 _stream.WriteByte((byte)(length >> 16));
                 _stream.WriteByte((byte)(length >> 8));
@@ -69,7 +70,7 @@ namespace MsgPack.Strict
 
         public void Pack(bool value)
         {
-            _stream.WriteByte(value ? (byte)0xC3 : (byte)0xC2);
+            _stream.WriteByte(value ? TrueByte : FalseByte);
         }
 
         public void Pack(byte[] bytes)
@@ -80,15 +81,15 @@ namespace MsgPack.Strict
                 return;
             }
 
-            if (bytes.Length <= 0xFF)
+            if (bytes.Length <= byte.MaxValue)
             {
-                _stream.WriteByte(0xC4);
+                _stream.WriteByte(Bin8PrefixByte);
                 _stream.WriteByte((byte)bytes.Length);
                 _stream.Write(bytes, 0, bytes.Length);
             }
-            else if (bytes.Length <= 0xFFFF)
+            else if (bytes.Length <= ushort.MaxValue)
             {
-                _stream.WriteByte(0xC5);
+                _stream.WriteByte(Bin16PrefixByte);
                 var l = bytes.Length;
                 _stream.WriteByte((byte)(l >> 8));
                 _stream.WriteByte((byte)l);
@@ -96,7 +97,7 @@ namespace MsgPack.Strict
             }
             else
             {
-                _stream.WriteByte(0xC6);
+                _stream.WriteByte(Bin32PrefixByte);
                 var l = bytes.Length;
                 _stream.WriteByte((byte)(l >> 24));
                 _stream.WriteByte((byte)(l >> 16));
@@ -121,20 +122,20 @@ namespace MsgPack.Strict
 
             var bytes = encoding.GetBytes(value);
 
-            if (bytes.Length <= 0x1F)
+            if (bytes.Length <= FixStrMaxLength)
             {
-                _stream.WriteByte((byte)(0xA0 | bytes.Length));
+                _stream.WriteByte((byte)(FixStrPrefixBits | bytes.Length));
                 _stream.Write(bytes, 0, bytes.Length);
             }
-            else if (bytes.Length <= 0xFF)
+            else if (bytes.Length <= byte.MaxValue)
             {
-                _stream.WriteByte(0xD9);
+                _stream.WriteByte(Str8PrefixByte);
                 _stream.WriteByte((byte)bytes.Length);
                 _stream.Write(bytes, 0, bytes.Length);
             }
-            else if (bytes.Length <= 0xFFFF)
+            else if (bytes.Length <= ushort.MaxValue)
             {
-                _stream.WriteByte(0xDA);
+                _stream.WriteByte(Str16PrefixByte);
                 var l = bytes.Length;
                 _stream.WriteByte((byte)(l >> 8));
                 _stream.WriteByte((byte)l);
@@ -142,7 +143,7 @@ namespace MsgPack.Strict
             }
             else
             {
-                _stream.WriteByte(0xDB);
+                _stream.WriteByte(Str32PrefixByte);
                 var l = bytes.Length;
                 _stream.WriteByte((byte)(l >> 24));
                 _stream.WriteByte((byte)(l >> 16));
@@ -154,7 +155,7 @@ namespace MsgPack.Strict
 
         public void Pack(float value)
         {
-            _stream.WriteByte(0xCA);
+            _stream.WriteByte(Float32PrefixByte);
             // TODO this is a terrible, but probably correct, hack that technically could be broken by future releases of .NET, though that seems unlikely
             var i = value.GetHashCode();
             _stream.WriteByte((byte)(i >> 24));
@@ -165,7 +166,7 @@ namespace MsgPack.Strict
 
         public void Pack(double value)
         {
-            _stream.WriteByte(0xCB);
+            _stream.WriteByte(Float64PrefixByte);
             var l = BitConverter.DoubleToInt64Bits(value);
             _stream.WriteByte((byte)(l >> 56));
             _stream.WriteByte((byte)(l >> 48));
@@ -179,52 +180,48 @@ namespace MsgPack.Strict
 
         public void Pack(byte value)
         {
-            if (value <= 0x7F)
+            if (value <= PosFixIntMaxValue)
             {
-                // positive fixnum (7-bit positive number)
                 _stream.WriteByte(value);
             }
             else
             {
-                _stream.WriteByte(0xCC);
+                _stream.WriteByte(UInt8PrefixByte);
                 _stream.WriteByte(value);
             }
         }
 
         public void Pack(sbyte value)
         {
-            if (value >= 0x00)
+            if (value >= 0)
             {
-                // positive fixnum (7-bit positive number)
                 _stream.WriteByte((byte)value);
             }
-            else if (value >= -32 /*0b_1110_000*/)
+            else if (value >= NegFixIntMinValue)
             {
-                // negative fixnum (5-bit negative number)
                 _stream.WriteByte((byte)value);
             }
             else
             {
-                _stream.WriteByte(0xD0);
+                _stream.WriteByte(Int8PrefixByte);
                 _stream.WriteByte((byte)value);
             }
         }
 
         public void Pack(ushort value)
         {
-            if (value <= 0x7F)
+            if (value <= PosFixIntMaxValue)
             {
-                // positive fixnum (7-bit positive number)
                 _stream.WriteByte((byte)value);
             }
             else if (value <= byte.MaxValue)
             {
-                _stream.WriteByte(0xCC);
+                _stream.WriteByte(UInt8PrefixByte);
                 _stream.WriteByte((byte)value);
             }
-            else // if (value <= ushort.MaxValue)
+            else
             {
-                _stream.WriteByte(0xCD);
+                _stream.WriteByte(UInt16PrefixByte);
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
@@ -232,24 +229,22 @@ namespace MsgPack.Strict
 
         public void Pack(short value)
         {
-            if (value >= 0x00 && value <= sbyte.MaxValue)
+            if (value >= 0 && value <= PosFixIntMaxValue)
             {
-                // positive fixnum (7-bit positive number)
                 _stream.WriteByte((byte)value);
             }
-            else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
+            else if (value >= NegFixIntMinValue && value < 0)
             {
-                // negative fixnum (5-bit negative number)
                 _stream.WriteByte((byte)value);
             }
             else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
             {
-                _stream.WriteByte(0xD0);
+                _stream.WriteByte(Int8PrefixByte);
                 _stream.WriteByte((byte)value);
             }
-            else // if (value >= short.MinValue && value <= short.MaxValue)
+            else
             {
-                _stream.WriteByte(0xD1);
+                _stream.WriteByte(Int16PrefixByte);
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
@@ -257,25 +252,24 @@ namespace MsgPack.Strict
 
         public void Pack(uint value)
         {
-            if (value <= 0x7F)
+            if (value <= PosFixIntMaxValue)
             {
-                // positive fixnum (7-bit positive number)
                 _stream.WriteByte((byte)value);
             }
             else if (value <= byte.MaxValue)
             {
-                _stream.WriteByte(0xCC);
+                _stream.WriteByte(UInt8PrefixByte);
                 _stream.WriteByte((byte)value);
             }
             else if (value <= ushort.MaxValue)
             {
-                _stream.WriteByte(0xCD);
+                _stream.WriteByte(UInt16PrefixByte);
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
-            else // if (value <= uint.MaxValue)
+            else
             {
-                _stream.WriteByte(0xCE);
+                _stream.WriteByte(UInt32PrefixByte);
                 _stream.WriteByte((byte)(value >> 24));
                 _stream.WriteByte((byte)(value >> 16));
                 _stream.WriteByte((byte)(value >> 8));
@@ -285,30 +279,28 @@ namespace MsgPack.Strict
 
         public void Pack(int value)
         {
-            if (value >= 0x00 && value <= sbyte.MaxValue)
+            if (value >= 0 && value <= PosFixIntMaxValue)
             {
-                // positive fixnum (7-bit positive number)
                 _stream.WriteByte((byte)value);
             }
-            else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
+            else if (value >= NegFixIntMinValue && value < 0)
             {
-                // negative fixnum (5-bit negative number)
                 _stream.WriteByte((byte)value);
             }
             else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
             {
-                _stream.WriteByte(0xD0);
+                _stream.WriteByte(Int8PrefixByte);
                 _stream.WriteByte((byte)value);
             }
             else if (value >= short.MinValue && value <= short.MaxValue)
             {
-                _stream.WriteByte(0xD1);
+                _stream.WriteByte(Int16PrefixByte);
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
-            else // if (value >= int.MinValue && value <= int.MaxValue)
+            else
             {
-                _stream.WriteByte(0xD2);
+                _stream.WriteByte(Int32PrefixByte);
                 _stream.WriteByte((byte)(value >> 24));
                 _stream.WriteByte((byte)(value >> 16));
                 _stream.WriteByte((byte)(value >> 8));
@@ -318,30 +310,28 @@ namespace MsgPack.Strict
 
         public void Pack(long value)
         {
-            if (value >= 0x00 && value <= sbyte.MaxValue)
+            if (value >= 0 && value <= PosFixIntMaxValue)
             {
-                // positive fixnum (7-bit positive number)
                 _stream.WriteByte((byte)value);
             }
-            else if (value >= -32 /*0b_1110_000*/ && value < 0x00)
+            else if (value >= NegFixIntMinValue && value < 0)
             {
-                // negative fixnum (5-bit negative number)
                 _stream.WriteByte((byte)value);
             }
             else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
             {
-                _stream.WriteByte(0xD0);
+                _stream.WriteByte(Int8PrefixByte);
                 _stream.WriteByte((byte)value);
             }
             else if (value >= short.MinValue && value <= short.MaxValue)
             {
-                _stream.WriteByte(0xD1);
+                _stream.WriteByte(Int16PrefixByte);
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
             else if (value >= int.MinValue && value <= int.MaxValue)
             {
-                _stream.WriteByte(0xD2);
+                _stream.WriteByte(Int32PrefixByte);
                 _stream.WriteByte((byte)(value >> 24));
                 _stream.WriteByte((byte)(value >> 16));
                 _stream.WriteByte((byte)(value >> 8));
@@ -349,7 +339,7 @@ namespace MsgPack.Strict
             }
             else
             {
-                _stream.WriteByte(0xD3);
+                _stream.WriteByte(Int64PrefixByte);
                 _stream.WriteByte((byte)(value >> 56));
                 _stream.WriteByte((byte)(value >> 48));
                 _stream.WriteByte((byte)(value >> 40));
@@ -363,25 +353,24 @@ namespace MsgPack.Strict
 
         public void Pack(ulong value)
         {
-            if (value <= 0x7F)
+            if (value <= PosFixIntMaxValue)
             {
-                // positive fixnum (7-bit positive number)
                 _stream.WriteByte((byte)value);
             }
             else if (value <= byte.MaxValue)
             {
-                _stream.WriteByte(0xCC);
+                _stream.WriteByte(UInt8PrefixByte);
                 _stream.WriteByte((byte)value);
             }
             else if (value <= ushort.MaxValue)
             {
-                _stream.WriteByte(0xCD);
+                _stream.WriteByte(UInt16PrefixByte);
                 _stream.WriteByte((byte)(value >> 8));
                 _stream.WriteByte((byte)value);
             }
             else if (value <= uint.MaxValue)
             {
-                _stream.WriteByte(0xCE);
+                _stream.WriteByte(UInt32PrefixByte);
                 _stream.WriteByte((byte)(value >> 24));
                 _stream.WriteByte((byte)(value >> 16));
                 _stream.WriteByte((byte)(value >> 8));
@@ -389,7 +378,7 @@ namespace MsgPack.Strict
             }
             else
             {
-                _stream.WriteByte(0xCF);
+                _stream.WriteByte(UInt64PrefixByte);
                 _stream.WriteByte((byte)(value >> 56));
                 _stream.WriteByte((byte)(value >> 48));
                 _stream.WriteByte((byte)(value >> 40));
