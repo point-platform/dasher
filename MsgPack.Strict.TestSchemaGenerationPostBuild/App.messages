@@ -1,0 +1,18 @@
+Sends:
+MessageOne
+{
+    i: System.Int32
+}
+Receives:
+MessageOne
+{
+    i: System.Int32
+}
+MessageTwo
+{
+    i: System.Int32
+    messageOne: MessageOne
+    {
+        i: System.Int32
+    }
+}
