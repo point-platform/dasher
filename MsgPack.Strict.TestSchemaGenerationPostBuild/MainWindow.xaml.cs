@@ -16,10 +16,8 @@ using System.Windows.Shapes;
 
 namespace MsgPack.Strict.TestSchemaGenerationPostBuild
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    /// 
+    [SendMessage]
+    [ReceiveMessage]
     public sealed class MessageOne
     {
         public MessageOne(int i)
@@ -29,6 +27,7 @@ namespace MsgPack.Strict.TestSchemaGenerationPostBuild
         public int I { get; }
     }
 
+    [ReceiveMessage]
     public sealed class MessageTwo
     {
         public MessageTwo(int i, MessageOne messageOne)
@@ -40,7 +39,10 @@ namespace MsgPack.Strict.TestSchemaGenerationPostBuild
         public MessageOne MessageOne { get;}
     }
 
-
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    /// 
     public partial class MainWindow : Window
     {
         public MainWindow()

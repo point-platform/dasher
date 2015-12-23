@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Text;
 
 namespace MsgPack.Strict.SchemaGenerator
 {
@@ -11,21 +12,22 @@ namespace MsgPack.Strict.SchemaGenerator
     {
         static void Main(string[] args)
         {
-            Debugger.Launch();
             new Program().GenerateSchema(args);
         }
 
-        private string targetName = null;
+        private string targetPath = null;
         private string targetDir = null;
+        private string projectDir = null;
 
         private void GenerateSchema(string[] args)
         { 
             var optionSet = new OptionSet() {
-                                { "targetName=", o => targetName = o },
+                                { "targetPath=", o => targetPath = o },
                                 { "targetDir=",  o => targetDir = o },
+                                { "projectDir=",  o => projectDir = o },
                                 };
             List<string> extra = optionSet.Parse(args);
-            if (targetName == null || targetDir == null)
+            if (targetPath == null || targetDir == null || projectDir == null)
             {
                 // This format makes it show up properly in the VS Error window.
                 Console.WriteLine("MsgPack.Strict.SchemaGenerator.exe : error: Incorrect command line arguments.");
@@ -33,55 +35,67 @@ namespace MsgPack.Strict.SchemaGenerator
                 Environment.ExitCode = 1;
             }
 
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, eventArgs) => { return Assembly.LoadFrom(targetDir + eventArgs.Name); };
-            var assembly = Assembly.LoadFrom(targetDir + targetName);
+            var assembly = Assembly.LoadFrom(targetPath);
 
+            var sendMessageTypes = new HashSet<Type>();
+            var receiveMessageTypes = new HashSet<Type>();
+
+            // TODO this is verbose.  Tidy up using Linq?
             foreach (Type t in assembly.GetTypes())
             {
-                Debug.Print(t.ToString());
-            }
-
-            Type msgPackPackerType = null;
-            foreach (var file in Directory.GetFiles(targetDir, "*.dll"))
-            {
-                assembly = Assembly.LoadFrom(file);
-                msgPackPackerType = assembly.GetType("MsgPack.Strict.StrictSerialiser");
-                
-                foreach (Type t in assembly.GetTypes())
+                foreach (var attribute in t.GetCustomAttributes())
                 {
-                    Debug.Print(file + " => " + t.ToString());
-
-                    DisplayTypeInfo(t);
+                    if (attribute is SendMessageAttribute)
+                    {
+                        sendMessageTypes.Add(t);
+                    }
+                    if (attribute is ReceiveMessageAttribute)
+                    {
+                        receiveMessageTypes.Add(t);
+                    }
                 }
-
-
-                //if (msgPackPackerType != null)
-                //    break;
             }
 
-            //Type[] typeParameters = msgPackPackerType.GetGenericArguments();
+            writeMessageFile(targetDir + "App.messages", sendMessageTypes, receiveMessageTypes);
+            writeMessageFile(projectDir + "App.messages", sendMessageTypes, receiveMessageTypes);
 
             Environment.ExitCode = 0;
         }
 
-        private static void DisplayTypeInfo(Type t)
+        private void writeMessageFile(string path, HashSet<Type> sendMessageTypes, HashSet<Type> receiveMessageTypes)
         {
-            Debug.Print("\r\n{0}", t);
-            Debug.Print("\tIs this a generic type definition? {0}",
-                t.IsGenericTypeDefinition);
-            Debug.Print("\tIs it a generic type? {0}",
-                t.IsGenericType);
-            Type[] typeArguments = t.GetGenericArguments();
-            Debug.Print("\tList type arguments ({0}):", typeArguments.Length);
-            foreach (Type tParam in typeArguments)
+            // Delete the file if it exists.
+            if (File.Exists(path))
             {
-                Debug.Print("\t\t{0}", tParam);
+                File.Delete(path);
+            }
+
+            //Create the file.
+            using (FileStream fs = File.Create(path))
+            {
+                var bytes = new UTF8Encoding(true).GetBytes("Sends:\r\n");
+                fs.Write(bytes, 0, bytes.Length);
+                foreach (var sendMessageType in sendMessageTypes)
+                {
+                    string schema = SchemaGenerator.GenerateSchema(sendMessageType);
+                    bytes = new UTF8Encoding(true).GetBytes(schema);
+                    fs.Write(bytes, 0, bytes.Length);
+                }
+                bytes = new UTF8Encoding(true).GetBytes("Receives:\r\n");
+                fs.Write(bytes, 0, bytes.Length);
+                foreach (var sendMessageType in receiveMessageTypes)
+                {
+                    string schema = SchemaGenerator.GenerateSchema(sendMessageType);
+                    bytes = new UTF8Encoding(true).GetBytes(schema);
+                    fs.Write(bytes, 0, bytes.Length);
+                }
             }
         }
 
         private static void Usage()
         {
-            Console.WriteLine("Usage: MsgPack.Strict.SchemaGenerator.exe --targetDir=TARGETDIR --targetName=TARGETNAME");
+            Console.WriteLine("Usage: MsgPack.Strict.SchemaGenerator.exe --targetDir=TARGETDIR --targetName=TARGETNAME --projectDir=PROJECTDIR");
+            Console.WriteLine("TARGETDIR is the output directory of the project.  TARGETNAME is the full path of the project target.  PROJECTDIR is the root dir of the project, where the app.messages file will be written.");
         }
     }
 }

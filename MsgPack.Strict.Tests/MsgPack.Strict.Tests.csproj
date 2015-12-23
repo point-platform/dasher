@@ -70,6 +70,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MsgPack.Strict.SchemaGenerator\MsgPack.Strict.SchemaGenerator.csproj">
+      <Project>{5c36317e-16d8-4ae9-a6a0-8b878d6a6608}</Project>
+      <Name>MsgPack.Strict.SchemaGenerator</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MsgPack.Strict\MsgPack.Strict.csproj">
       <Project>{e77ec65c-4610-45c8-a8b0-4ad558b03b40}</Project>
       <Name>MsgPack.Strict</Name>

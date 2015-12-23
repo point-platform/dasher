@@ -90,6 +90,9 @@ namespace MsgPack.Strict
             if (type.IsPrimitive)
                 throw new Exception("TEST THIS CASE 1");
 
+            if (type.GetCustomAttributes(typeof(SendMessageAttribute), true).Length == 0)
+                throw new StrictDeserialisationException("Type must have a SendMessage attribute.", type);
+
             var method = new DynamicMethod(
                 $"Serialiser{type.Name}",
                 null,

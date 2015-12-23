@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MsgPack.Strict
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum)]
     public class SendMessageAttribute : System.Attribute
     {
         public SendMessageAttribute()
@@ -14,7 +14,7 @@ namespace MsgPack.Strict
         }
     }
 
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum)]
     public class ReceiveMessageAttribute : System.Attribute
     {
         public ReceiveMessageAttribute()

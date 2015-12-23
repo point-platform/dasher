@@ -37,6 +37,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes.cs" />
     <Compile Include="Format.cs" />
     <Compile Include="FormatFamily.cs" />
     <Compile Include="MsgPackPacker.cs" />

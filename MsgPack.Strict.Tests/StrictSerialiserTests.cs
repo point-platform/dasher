@@ -11,6 +11,27 @@ namespace MsgPack.Strict.Tests
     {
         #region Test Types
 
+        public class UnAnnotatedMessage
+        {
+            public UnAnnotatedMessage(int i)
+            {
+                I = i;
+            }
+            public int I { get; }
+        }
+
+        [ReceiveMessage]
+        public class IncorrectlyAnnotatedMessage
+        {
+            public IncorrectlyAnnotatedMessage(int i)
+            {
+                I = i;
+            }
+            public int I { get; }
+        }
+
+        [ReceiveMessage]
+        [SendMessage]
         public sealed class UserScore
         {
             public UserScore(string name, int score)
@@ -23,6 +44,8 @@ namespace MsgPack.Strict.Tests
             public int Score { get; }
         }
 
+        [ReceiveMessage]
+        [SendMessage]
         public struct UserScoreStruct
         {
             public UserScoreStruct(string name, int score)
@@ -35,6 +58,8 @@ namespace MsgPack.Strict.Tests
             public int Score { get; }
         }
 
+        [ReceiveMessage]
+        [SendMessage]
         public sealed class UserScoreWrapper
         {
             public double Weight { get; }
@@ -47,6 +72,8 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        [ReceiveMessage]
+        [SendMessage]
         public sealed class UserScoreDecimal
         {
             public UserScoreDecimal(string name, decimal score)
@@ -65,6 +92,8 @@ namespace MsgPack.Strict.Tests
             Bar = 2
         }
 
+        [ReceiveMessage]
+        [SendMessage]
         public sealed class WithEnumProperty
         {
             public WithEnumProperty(TestEnum testEnum)
@@ -75,6 +104,8 @@ namespace MsgPack.Strict.Tests
             public TestEnum TestEnum { get; }
         }
 
+        [ReceiveMessage]
+        [SendMessage]
         public sealed class UserScoreList
         {
             public UserScoreList(string name, IReadOnlyList<int> scores)
@@ -87,6 +118,8 @@ namespace MsgPack.Strict.Tests
             public IReadOnlyList<int> Scores { get; }
         }
 
+        [ReceiveMessage]
+        [SendMessage]
         public sealed class ListOfList
         {
             public IReadOnlyList<IReadOnlyList<int>> Jagged { get; }
@@ -161,6 +194,24 @@ namespace MsgPack.Strict.Tests
             var after = RoundTrip(new WithEnumProperty(TestEnum.Bar));
 
             Assert.Equal(TestEnum.Bar, after.TestEnum);
+        }
+
+        [Fact]
+        public void ThrowsOnUnAnnotatedMessage()
+        {
+            byte[] bytes = null;
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => StrictSerialiser.Get<UnAnnotatedMessage>());
+            Assert.Equal("Type must have a SendMessage attribute.", ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsOnIncorrectlyAnnotatedMessage()
+        {
+            byte[] bytes = null;
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => StrictSerialiser.Get<IncorrectlyAnnotatedMessage>());
+            Assert.Equal("Type must have a SendMessage attribute.", ex.Message);
         }
 
         #region Test helpers

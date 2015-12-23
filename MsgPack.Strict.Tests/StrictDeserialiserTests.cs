@@ -17,6 +17,26 @@ namespace MsgPack.Strict.Tests
     {
         #region Test Types
 
+        public class UnAnnotatedMessage
+        {
+            public UnAnnotatedMessage(int i)
+            {
+                I = i;
+            }
+            public int I { get; }
+        }
+
+        [SendMessage]
+        public class IncorrectlyAnnotatedMessage
+        {
+            public IncorrectlyAnnotatedMessage(int i)
+            {
+                I = i;
+            }
+            public int I { get; }
+        }
+
+        [ReceiveMessage]
         public sealed class UserScore
         {
             public UserScore(string name, int score)
@@ -29,6 +49,7 @@ namespace MsgPack.Strict.Tests
             public int Score { get; }
         }
 
+        [ReceiveMessage]
         public struct UserScoreStruct
         {
             public UserScoreStruct(string name, int score)
@@ -41,6 +62,7 @@ namespace MsgPack.Strict.Tests
             public int Score { get; }
         }
 
+        [ReceiveMessage]
         public sealed class UserScoreWithDefaultScore
         {
             public UserScoreWithDefaultScore(string name, int score = 100)
@@ -53,6 +75,7 @@ namespace MsgPack.Strict.Tests
             public int Score { get; }
         }
 
+        [ReceiveMessage]
         public sealed class UserScoreWrapper
         {
             public double Weight { get; }
@@ -65,6 +88,7 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        [ReceiveMessage]
         public sealed class UserScoreDecimal
         {
             public UserScoreDecimal(string name, decimal score)
@@ -77,12 +101,14 @@ namespace MsgPack.Strict.Tests
             public decimal Score { get; }
         }
 
+        [ReceiveMessage]
         public enum TestEnum
         {
             Foo = 1,
             Bar = 2
         }
 
+        [ReceiveMessage]
         public sealed class WithEnumProperty
         {
             public WithEnumProperty(TestEnum testEnum)
@@ -93,6 +119,7 @@ namespace MsgPack.Strict.Tests
             public TestEnum TestEnum { get; }
         }
 
+        [ReceiveMessage]
         public sealed class TestDefaultParams
         {
             public byte B { get; }
@@ -146,6 +173,7 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        [ReceiveMessage]
         public sealed class MultipleConstructors
         {
             public int Number { get; }
@@ -163,6 +191,7 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        [ReceiveMessage]
         public sealed class NoPublicConstructors
         {
             public int Number { get; }
@@ -173,6 +202,7 @@ namespace MsgPack.Strict.Tests
             }
         }
 
+        [ReceiveMessage]
         public sealed class UserScoreList
         {
             public UserScoreList(string name, IReadOnlyList<int> scores)
@@ -185,6 +215,7 @@ namespace MsgPack.Strict.Tests
             public IReadOnlyList<int> Scores { get; }
         }
 
+        [ReceiveMessage]
         public sealed class ListOfList
         {
             public IReadOnlyList<IReadOnlyList<int>> Jagged { get; }
@@ -495,97 +526,21 @@ namespace MsgPack.Strict.Tests
         }
 
         [Fact]
-        public void GenerateSchemaForSimpleType()
+        public void ThrowsOnUnAnnotatedMessage()
         {
-            var expected = String.Join(
-                Environment.NewLine,
-                "UserScore",
-                "{",
-                "    name: System.String",
-                "    score: System.Int32",
-                "}");
-            var actual = GenerateSchema(typeof(UserScore));
-            Assert.Equal(expected, actual);
+            byte[] bytes = null;
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => StrictDeserialiser.Get<UnAnnotatedMessage>());
+            Assert.Equal("Type must have a ReceiveMessage attribute.", ex.Message);
         }
 
         [Fact]
-        public void GenerateSchemaForSimpleTypeWithDefaults()
+        public void ThrowsOnIncorrectlyAnnotatedMessage()
         {
-
-            var expected = String.Join(
-                Environment.NewLine,
-                "UserScoreWithDefaultScore",
-                "{",
-                "    name: System.String",
-                "    score: System.Int32 = 100",
-                "}");
-            var actual = GenerateSchema(typeof(UserScoreWithDefaultScore));
-            Assert.Equal(expected, actual);
+            byte[] bytes = null;
+            var ex = Assert.Throws<StrictDeserialisationException>(
+                () => StrictDeserialiser.Get<IncorrectlyAnnotatedMessage>());
+            Assert.Equal("Type must have a ReceiveMessage attribute.", ex.Message);
         }
-
-        [Fact]
-        public void GenerateSchemaForTypeContainingComplexType()
-        {
-            var expected = @"TestDefaultParams
-{
-    sb: System.SByte = -12
-    b: System.Byte = 12
-    s: System.Int16 = -1234
-    us: System.UInt16 = 1234
-    i: System.Int32 = -12345
-    ui: System.UInt32 = 12345
-    l: System.Int64 = -12345678900
-    ul: System.UInt64 = 12345678900
-    str: System.String = str
-    f: System.Single = 1.23
-    d: System.Double = 1.23
-    dc: System.Decimal = 1.23
-    e: MsgPack.Strict.Tests.StrictDeserialiserTests+TestEnum = Bar
-    complex: UserScore
-    {
-        name: System.String
-        score: System.Int32
-    }
-    bo: System.Boolean = True
-}";
-            var actual = GenerateSchema(typeof(TestDefaultParams));
-
-            Assert.Equal(expected, actual);
-        }
-
-        public static StringBuilder indent(StringBuilder sb, int indentLevel)
-        {
-            for (var i = 0; i < indentLevel; ++i)
-                sb.Append("    ");
-            return sb;
-        }
-        public static string GenerateSchema(Type type, int indentLevel = 0)
-        {
-            var result = new StringBuilder();
-            result.AppendFormat("{0}", type.Name).AppendLine();
-            indent(result, indentLevel).AppendLine("{");
-            foreach (var ctorArg in type.GetConstructors().Single().GetParameters())
-            {
-                var ctorArgType = ctorArg.ParameterType;
-                if (ctorArgType.Namespace == "System" || ctorArgType.IsValueType || ctorArgType.IsEnum)
-                {
-                    indent(result, indentLevel+1).AppendFormat(
-                              ctorArg.HasDefaultValue ? "{0}: {1} = {2}" : "{0}: {1}",
-                              ctorArg.Name,
-                              ctorArg.ParameterType,
-                              ctorArg.DefaultValue == null ? "null" : ctorArg.DefaultValue);
-                    result.AppendLine();
-                }
-                else
-                {
-                    indent(result, indentLevel + 1).AppendFormat("{0}: ", ctorArg.Name).Append(GenerateSchema(ctorArg.ParameterType, indentLevel + 1));
-                    result.AppendLine();
-                }
-            }
-            indent(result, indentLevel).Append("}");
-
-            return result.ToString();
-        }
-
     }
 }

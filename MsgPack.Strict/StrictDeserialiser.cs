@@ -70,6 +70,9 @@ namespace MsgPack.Strict
             if (type.IsPrimitive)
                 throw new Exception("TEST THIS CASE 1");
 
+            if(type.GetCustomAttributes(typeof(ReceiveMessageAttribute), true).Length == 0)
+                throw new StrictDeserialisationException("Type must have a ReceiveMessage attribute.", type);
+
             var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (ctors.Length != 1)
                 throw new StrictDeserialisationException("Type must have a single public constructor.", type);
