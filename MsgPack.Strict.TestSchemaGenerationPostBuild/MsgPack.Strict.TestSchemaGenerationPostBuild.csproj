@@ -104,7 +104,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>C:\msgpack-strict-schema-generation\MsgPack.Strict.SchemaGenerator\bin\Debug\MsgPack.Strict.SchemaGenerator.exe --targetDir=$(TargetDir) --targetPath=$(TargetPath) --projectDir=$(ProjectDir)</PostBuildEvent>
+    <PostBuildEvent>$(SolutionDir)\MsgPack.Strict.SchemaGenerator\bin\Debug\MsgPack.Strict.SchemaGenerator.exe --targetDir=$(TargetDir) --targetPath=$(TargetPath) --projectDir=$(ProjectDir)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

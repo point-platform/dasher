@@ -1,6 +1,7 @@
 ﻿using System;
 using Xunit;
 using MsgPack.Strict.SchemaGenerator;
+using System.Collections.Generic;
 
 namespace MsgPack.Strict.SchemaGenerator.Tests
 {
@@ -84,9 +85,50 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
             Complex = complex;
         }
     }
+
+    public sealed class UserScoreList
+    {
+        public UserScoreList(string name, IReadOnlyList<int> scores)
+        {
+            Name = name;
+            Scores = scores;
+        }
+
+        public string Name { get; }
+        public IReadOnlyList<int> Scores { get; }
+    }
+
+    public sealed class NoPublicConstructors
+    {
+        public int Number { get; }
+
+        internal NoPublicConstructors(int number)
+        {
+            Number = number;
+        }
+    }
+
+    public sealed class MultipleConstructors
+    {
+        public int Number { get; }
+        public string Text { get; }
+
+        public MultipleConstructors(int number, string text)
+        {
+            Number = number;
+            Text = text;
+        }
+
+        public MultipleConstructors(int number)
+        {
+            Number = number;
+        }
+    }
+
+
     #endregion
 
-    class SchemaGeneratorTests
+    public class SchemaGeneratorTests
     {
         [Fact]
         public void GenerateSchemaForSimpleType()
@@ -97,7 +139,8 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
                 "{",
                 "    name: System.String",
                 "    score: System.Int32",
-                "}");
+                "}",
+                "");
             var actual = SchemaGenerator.GenerateSchema(typeof(UserScore));
             Assert.Equal(expected, actual);
         }
@@ -112,9 +155,43 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
                 "{",
                 "    name: System.String",
                 "    score: System.Int32 = 100",
-                "}");
+                "}",
+                "");
             var actual = SchemaGenerator.GenerateSchema(typeof(UserScoreWithDefaultScore));
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void GenerateSchemaForTypeContainingList()
+        {
+            var expected = @"UserScoreList
+{
+    name: System.String
+    scores: System.Collections.Generic.IReadOnlyList`1[System.Int32]
+}" + "\r\n";
+            var actual = SchemaGenerator.GenerateSchema(typeof(UserScoreList));
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void ThrowsOnNoPublicConstructors()
+        {
+            var ex = Assert.Throws<SchemaGenerationException>(
+                () => SchemaGenerator.GenerateSchema(typeof(NoPublicConstructors)));
+
+            Assert.Equal(typeof(NoPublicConstructors), ex.TargetType);
+            Assert.Equal("Type must have a single public constructor.", ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsOnMultipleConstructors()
+        {
+            var ex = Assert.Throws<SchemaGenerationException>(
+                () => SchemaGenerator.GenerateSchema(typeof(MultipleConstructors)));
+
+            Assert.Equal(typeof(MultipleConstructors), ex.TargetType);
+            Assert.Equal("Type must have a single public constructor.", ex.Message);
         }
 
         [Fact]
@@ -134,14 +211,14 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
     f: System.Single = 1.23
     d: System.Double = 1.23
     dc: System.Decimal = 1.23
-    e: MsgPack.Strict.Tests.StrictDeserialiserTests+TestEnum = Bar
+    e: MsgPack.Strict.SchemaGenerator.Tests.TestEnum = Bar
     complex: UserScore
     {
         name: System.String
         score: System.Int32
     }
     bo: System.Boolean = True
-}";
+}" + "\r\n";
             var actual = SchemaGenerator.GenerateSchema(typeof(TestDefaultParams));
 
             Assert.Equal(expected, actual);

@@ -101,7 +101,6 @@ namespace MsgPack.Strict.Tests
             public decimal Score { get; }
         }
 
-        [ReceiveMessage]
         public enum TestEnum
         {
             Foo = 1,
@@ -528,7 +527,6 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnUnAnnotatedMessage()
         {
-            byte[] bytes = null;
             var ex = Assert.Throws<StrictDeserialisationException>(
                 () => StrictDeserialiser.Get<UnAnnotatedMessage>());
             Assert.Equal("Type must have a ReceiveMessage attribute.", ex.Message);
@@ -537,7 +535,6 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnIncorrectlyAnnotatedMessage()
         {
-            byte[] bytes = null;
             var ex = Assert.Throws<StrictDeserialisationException>(
                 () => StrictDeserialiser.Get<IncorrectlyAnnotatedMessage>());
             Assert.Equal("Type must have a ReceiveMessage attribute.", ex.Message);

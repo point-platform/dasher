@@ -199,7 +199,6 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnUnAnnotatedMessage()
         {
-            byte[] bytes = null;
             var ex = Assert.Throws<StrictDeserialisationException>(
                 () => StrictSerialiser.Get<UnAnnotatedMessage>());
             Assert.Equal("Type must have a SendMessage attribute.", ex.Message);
@@ -208,7 +207,6 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnIncorrectlyAnnotatedMessage()
         {
-            byte[] bytes = null;
             var ex = Assert.Throws<StrictDeserialisationException>(
                 () => StrictSerialiser.Get<IncorrectlyAnnotatedMessage>());
             Assert.Equal("Type must have a SendMessage attribute.", ex.Message);
