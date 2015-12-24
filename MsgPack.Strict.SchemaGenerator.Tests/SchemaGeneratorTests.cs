@@ -5,131 +5,132 @@ using System.Collections.Generic;
 
 namespace MsgPack.Strict.SchemaGenerator.Tests
 {
-    #region test classes
-    public sealed class UserScore
-    {
-        public UserScore(string name, int score)
-        {
-            Name = name;
-            Score = score;
-        }
-
-        public string Name { get; }
-        public int Score { get; }
-    }
-    public sealed class UserScoreWithDefaultScore
-    {
-        public UserScoreWithDefaultScore(string name, int score = 100)
-        {
-            Name = name;
-            Score = score;
-        }
-
-        public string Name { get; }
-        public int Score { get; }
-    }
-    public enum TestEnum
-    {
-        Foo = 1,
-        Bar = 2
-    }
-    public sealed class TestDefaultParams
-    {
-        public byte B { get; }
-        public sbyte Sb { get; }
-        public short S { get; }
-        public ushort Us { get; }
-        public int I { get; }
-        public uint Ui { get; }
-        public long L { get; }
-        public ulong Ul { get; }
-        public string Str { get; }
-        public float F { get; }
-        public double D { get; }
-        public decimal Dc { get; }
-        public bool Bo { get; }
-        public TestEnum E { get; }
-        public UserScore Complex { get; }
-
-        public TestDefaultParams(
-            sbyte sb = -12,
-            byte b = 12,
-            short s = -1234,
-            ushort us = 1234,
-            int i = -12345,
-            uint ui = 12345,
-            long l = -12345678900L,
-            ulong ul = 12345678900UL,
-            string str = "str",
-            float f = 1.23f,
-            double d = 1.23,
-            decimal dc = 1.23M,
-            TestEnum e = TestEnum.Bar,
-            UserScore complex = null,
-            bool bo = true)
-        {
-            B = b;
-            Sb = sb;
-            S = s;
-            Us = us;
-            I = i;
-            Ui = ui;
-            L = l;
-            Ul = ul;
-            Str = str;
-            F = f;
-            D = d;
-            Dc = dc;
-            Bo = bo;
-            E = e;
-            Complex = complex;
-        }
-    }
-
-    public sealed class UserScoreList
-    {
-        public UserScoreList(string name, IReadOnlyList<int> scores)
-        {
-            Name = name;
-            Scores = scores;
-        }
-
-        public string Name { get; }
-        public IReadOnlyList<int> Scores { get; }
-    }
-
-    public sealed class NoPublicConstructors
-    {
-        public int Number { get; }
-
-        internal NoPublicConstructors(int number)
-        {
-            Number = number;
-        }
-    }
-
-    public sealed class MultipleConstructors
-    {
-        public int Number { get; }
-        public string Text { get; }
-
-        public MultipleConstructors(int number, string text)
-        {
-            Number = number;
-            Text = text;
-        }
-
-        public MultipleConstructors(int number)
-        {
-            Number = number;
-        }
-    }
-
-
-    #endregion
-
     public class SchemaGeneratorTests
     {
+        #region test classes
+        public sealed class UserScore
+        {
+            public UserScore(string name, int score)
+            {
+                Name = name;
+                Score = score;
+            }
+
+            public string Name { get; }
+            public int Score { get; }
+        }
+        public sealed class UserScoreWithDefaultScore
+        {
+            public UserScoreWithDefaultScore(string name, int score = 100)
+            {
+                Name = name;
+                Score = score;
+            }
+
+            public string Name { get; }
+            public int Score { get; }
+        }
+        public enum TestEnum
+        {
+            Foo = 1,
+            Bar = 2
+        }
+        public sealed class TestDefaultParams
+        {
+            public byte B { get; }
+            public sbyte Sb { get; }
+            public short S { get; }
+            public ushort Us { get; }
+            public int I { get; }
+            public uint Ui { get; }
+            public long L { get; }
+            public ulong Ul { get; }
+            public string Str { get; }
+            public float F { get; }
+            public double D { get; }
+            public decimal Dc { get; }
+            public bool Bo { get; }
+            public TestEnum E { get; }
+            public UserScore Complex { get; }
+
+            public TestDefaultParams(
+                sbyte sb = -12,
+                byte b = 12,
+                short s = -1234,
+                ushort us = 1234,
+                int i = -12345,
+                uint ui = 12345,
+                long l = -12345678900L,
+                ulong ul = 12345678900UL,
+                string str = "str",
+                float f = 1.23f,
+                double d = 1.23,
+                decimal dc = 1.23M,
+                TestEnum e = TestEnum.Bar,
+                UserScore complex = null,
+                bool bo = true)
+            {
+                B = b;
+                Sb = sb;
+                S = s;
+                Us = us;
+                I = i;
+                Ui = ui;
+                L = l;
+                Ul = ul;
+                Str = str;
+                F = f;
+                D = d;
+                Dc = dc;
+                Bo = bo;
+                E = e;
+                Complex = complex;
+            }
+        }
+
+        public sealed class UserScoreList
+        {
+            public UserScoreList(string name, IReadOnlyList<int> scores)
+            {
+                Name = name;
+                Scores = scores;
+            }
+
+            public string Name { get; }
+            public IReadOnlyList<int> Scores { get; }
+        }
+
+        public sealed class NoPublicConstructors
+        {
+            public int Number { get; }
+
+            internal NoPublicConstructors(int number)
+            {
+                Number = number;
+            }
+        }
+
+        public sealed class MultipleConstructors
+        {
+            public int Number { get; }
+            public string Text { get; }
+
+            public MultipleConstructors(int number, string text)
+            {
+                Number = number;
+                Text = text;
+            }
+
+            public MultipleConstructors(int number)
+            {
+                Number = number;
+            }
+        }
+
+
+        #endregion
+
+
         [Fact]
         public void GenerateSchemaForSimpleType()
         {
@@ -211,7 +212,7 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
     f: System.Single = 1.23
     d: System.Double = 1.23
     dc: System.Decimal = 1.23
-    e: MsgPack.Strict.SchemaGenerator.Tests.TestEnum = Bar
+    e: MsgPack.Strict.SchemaGenerator.Tests.SchemaGeneratorTests+TestEnum = Bar
     complex: UserScore
     {
         name: System.String

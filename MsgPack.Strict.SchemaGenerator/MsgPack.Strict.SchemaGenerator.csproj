@@ -52,6 +52,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SchemaGenerationException.cs" />
     <Compile Include="SchemaGenerator.cs" />
+    <Compile Include="XMLSchemaGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
