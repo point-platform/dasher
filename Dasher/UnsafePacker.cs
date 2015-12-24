@@ -208,40 +208,66 @@ namespace Dasher
                 return;
             }
 
-            var bytes = encoding.GetBytes(value);
+            var byteCount = encoding.GetByteCount(value);
 
-            if (bytes.Length <= FixStrMaxLength)
+            if (byteCount <= FixStrMaxLength)
             {
                 CheckBuffer(1);
                 fixed (byte* b = _buffer)
-                    *(b + _offset++) = (byte)(FixStrPrefixBits | bytes.Length);
-                Append(bytes);
+                {
+                    *(b + _offset++) = (byte)(FixStrPrefixBits | byteCount);
+
+                    if (_offset + byteCount + 1 <= _buffer.Length)
+                    {
+                        fixed (char* c = value)
+                            encoding.GetBytes(c, value.Length, b + _offset, byteCount);
+                        _offset += byteCount;
+                        return;
+                    }
+                }
+                Append(encoding.GetBytes(value));
             }
-            else if (bytes.Length <= byte.MaxValue)
+            else if (byteCount <= byte.MaxValue)
             {
                 CheckBuffer(2);
                 fixed (byte* b = _buffer)
                 {
                     var p = b + _offset;
                     *p++ = Str8PrefixByte;
-                    *p   = (byte)bytes.Length;
+                    *p   = (byte)byteCount;
                     _offset += 2;
+
+                    if (_offset + byteCount + 1 <= _buffer.Length)
+                    {
+                        fixed (char* c = value)
+                            encoding.GetBytes(c, value.Length, b + _offset, byteCount);
+                        _offset += byteCount;
+                        return;
+                    }
                 }
-                Append(bytes);
+                Append(encoding.GetBytes(value));
             }
-            else if (bytes.Length <= ushort.MaxValue)
+            else if (byteCount <= ushort.MaxValue)
             {
                 CheckBuffer(3);
                 fixed (byte* b = _buffer)
                 {
                     var p = b + _offset;
                     *p++ = Str16PrefixByte;
-                    var l = bytes.Length;
+                    var l = byteCount;
                     *p++ = (byte)(l >> 8);
                     *p   = (byte)l;
                     _offset += 3;
+
+                    if (_offset + byteCount + 1 <= _buffer.Length)
+                    {
+                        fixed (char* c = value)
+                            encoding.GetBytes(c, value.Length, b + _offset, byteCount);
+                        _offset += byteCount;
+                        return;
+                    }
                 }
-                Append(bytes);
+                Append(encoding.GetBytes(value));
             }
             else
             {
@@ -250,14 +276,14 @@ namespace Dasher
                 {
                     var p = b + _offset;
                     *p++ = Str32PrefixByte;
-                    var l = bytes.Length;
+                    var l = byteCount;
                     *p++ = (byte)(l >> 24);
                     *p++ = (byte)(l >> 16);
                     *p++ = (byte)(l >> 8);
                     *p   = (byte)l;
                     _offset += 5;
                 }
-                Append(bytes);
+                Append(encoding.GetBytes(value));
             }
         }
 
