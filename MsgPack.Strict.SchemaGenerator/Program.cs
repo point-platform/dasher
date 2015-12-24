@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Xml.Linq;
 
 namespace MsgPack.Strict.SchemaGenerator
 {
@@ -39,6 +40,7 @@ namespace MsgPack.Strict.SchemaGenerator
         private string targetPath = null;
         private string targetDir = null;
         private string projectDir = null;
+        private bool writeToAppMessagesFile = false;
         private bool debug = false;
         private bool help = false;
 
@@ -48,6 +50,7 @@ namespace MsgPack.Strict.SchemaGenerator
                                 { "targetPath=", o => targetPath = o },
                                 { "targetDir=",  o => targetDir = o },
                                 { "projectDir=",  o => projectDir = o },
+                                { "writeToAppMessagesFile",  v => writeToAppMessagesFile = v != null },
                                 { "debug",   v => debug = v != null },
                                 { "h|?|help",   v => help = v != null },
                                 };
@@ -93,10 +96,72 @@ namespace MsgPack.Strict.SchemaGenerator
                 }
             }
 
-            writeMessageFile(targetDir + "App.messages", sendMessageTypes, receiveMessageTypes);
-            writeMessageFile(projectDir + "App.messages", sendMessageTypes, receiveMessageTypes);
+            // In both cases we write to the project (ie source) dir and also the target (ie bin) dir.
+            // This makes sure that the updated file is included in the source code and also deployed.
+            if (writeToAppMessagesFile)
+            {
+                writeMessageFile(targetDir + "App.messages", sendMessageTypes, receiveMessageTypes);
+                writeMessageFile(projectDir + "App.messages", sendMessageTypes, receiveMessageTypes);
+            }
+            else
+            {
+                writeToAppManifest(targetDir, sendMessageTypes, receiveMessageTypes);
+                writeToAppManifest(projectDir, sendMessageTypes, receiveMessageTypes);
+            }
 
             return ReturnCode.EXIT_SUCCESS;
+        }
+
+        private void writeToAppManifest(string dirName, HashSet<Type> sendMessageTypes, HashSet<Type> receiveMessageTypes)
+        {
+            XDocument doc;
+            // Create a file with a root element if the manifest doesn't exist.
+            // This should only happen in testing.
+            string appManifestFileName = dirName + "App.manifest";
+            XElement appElement;
+            if (File.Exists(appManifestFileName))
+            {
+                doc = XDocument.Load(appManifestFileName);
+                appElement = doc.Element("App");
+                if(appElement == null)
+                {
+                    appElement = new XElement("App");
+                    doc.AddFirst(appElement);
+                }
+                if(appElement.Element("SendsMessages") == null)
+                {
+                    appElement.Add(new XElement("SendsMessages"));
+                }
+                if (appElement.Element("ReceivesMessages") == null)
+                {
+                    appElement.Add(new XElement("ReceivesMessages"));
+                }
+            }
+            else
+            {
+                doc = new XDocument(new XElement("App"));
+                appElement = doc.Element("App");
+                appElement.Add(new XElement("SendsMessages"));
+                appElement.Add(new XElement("ReceivesMessages"));
+            }
+
+            var sendsMessagesElement = new XElement("SendsMessages");
+            var receivesMessagesElement = new XElement("ReceivesMessages");
+            foreach (var sendMessageType in sendMessageTypes)
+            {
+                var message = XMLSchemaGenerator.GenerateSchema(sendMessageType);
+                sendsMessagesElement.AddFirst(message);
+            }
+            foreach (var receiveMessageType in receiveMessageTypes)
+            {
+                var message = XMLSchemaGenerator.GenerateSchema(receiveMessageType);
+                receivesMessagesElement.AddFirst(message);
+            }
+
+            appElement.Element("SendsMessages").ReplaceWith(sendsMessagesElement);
+            appElement.Element("ReceivesMessages").ReplaceWith(receivesMessagesElement);
+
+            doc.Save(appManifestFileName);
         }
 
         private void writeMessageFile(string path, HashSet<Type> sendMessageTypes, HashSet<Type> receiveMessageTypes)
@@ -120,9 +185,9 @@ namespace MsgPack.Strict.SchemaGenerator
                 }
                 bytes = new UTF8Encoding(true).GetBytes("Receives:\r\n");
                 fs.Write(bytes, 0, bytes.Length);
-                foreach (var sendMessageType in receiveMessageTypes)
+                foreach (var receiveMessageType in receiveMessageTypes)
                 {
-                    string schema = SchemaGenerator.GenerateSchema(sendMessageType);
+                    string schema = SchemaGenerator.GenerateSchema(receiveMessageType);
                     bytes = new UTF8Encoding(true).GetBytes(schema);
                     fs.Write(bytes, 0, bytes.Length);
                 }
