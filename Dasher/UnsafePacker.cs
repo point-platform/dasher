@@ -1,17 +1,17 @@
 using System;
 using System.IO;
 using System.Text;
-using static MsgPack.Strict.MsgPackConstants;
+using static Dasher.MsgPackConstants;
 
-namespace MsgPack.Strict
+namespace Dasher
 {
-    public sealed unsafe class UnsafeMsgPackPacker : IDisposable
+    public sealed unsafe class UnsafePacker : IDisposable
     {
         private readonly Stream _stream;
         private readonly byte[] _buffer;
         private int _offset;
 
-        public UnsafeMsgPackPacker(Stream stream, int bufferSize = 4096)
+        public UnsafePacker(Stream stream, int bufferSize = 4096)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));

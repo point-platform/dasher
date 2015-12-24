@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using MsgPack;
 using Xunit;
 
 // ReSharper disable ClassNeverInstantiated.Global
@@ -8,11 +9,11 @@ using Xunit;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace MsgPack.Strict.Tests
+namespace Dasher.Tests
 {
     // TODO mismatch between ctor args and properties (?)
 
-    public sealed class StrictDeserialiserTests
+    public sealed class DeserialiserTests
     {
         #region Test Types
 
@@ -213,7 +214,7 @@ namespace MsgPack.Strict.Tests
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(123));
 
-            var after = StrictDeserialiser.Get<UserScore>().Deserialise(bytes);
+            var after = Deserialiser.Get<UserScore>().Deserialise(bytes);
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123, after.Score);
@@ -226,7 +227,7 @@ namespace MsgPack.Strict.Tests
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack("123.4567"));
 
-            var after = StrictDeserialiser.Get<UserScoreDecimal>().Deserialise(bytes);
+            var after = Deserialiser.Get<UserScoreDecimal>().Deserialise(bytes);
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123.4567m, after.Score);
@@ -239,7 +240,7 @@ namespace MsgPack.Strict.Tests
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(123));
 
-            var after = StrictDeserialiser.Get<UserScoreStruct>().Deserialise(bytes);
+            var after = Deserialiser.Get<UserScoreStruct>().Deserialise(bytes);
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123, after.Score);
@@ -252,7 +253,7 @@ namespace MsgPack.Strict.Tests
                 .Pack("Score").Pack(123)
                 .Pack("Name").Pack("Bob"));
 
-            var after = StrictDeserialiser.Get<UserScore>().Deserialise(bytes);
+            var after = Deserialiser.Get<UserScore>().Deserialise(bytes);
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123, after.Score);
@@ -265,7 +266,7 @@ namespace MsgPack.Strict.Tests
                 .Pack("NaMe").Pack("Bob")
                 .Pack("ScorE").Pack(123));
 
-            var after = StrictDeserialiser.Get<UserScore>().Deserialise(bytes);
+            var after = Deserialiser.Get<UserScore>().Deserialise(bytes);
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123, after.Score);
@@ -279,8 +280,8 @@ namespace MsgPack.Strict.Tests
                 .Pack("Score").Pack(123)
                 .Pack("SUPRISE").Pack("Unexpected"));
 
-            var deserialiser = StrictDeserialiser.Get<UserScore>();
-            var ex = Assert.Throws<StrictDeserialisationException>(
+            var deserialiser = Deserialiser.Get<UserScore>();
+            var ex = Assert.Throws<DeserialisationException>(
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
@@ -293,8 +294,8 @@ namespace MsgPack.Strict.Tests
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("Name").Pack("Bob"));
 
-            var deserialiser = StrictDeserialiser.Get<UserScore>();
-            var ex = Assert.Throws<StrictDeserialisationException>(
+            var deserialiser = Deserialiser.Get<UserScore>();
+            var ex = Assert.Throws<DeserialisationException>(
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
@@ -308,8 +309,8 @@ namespace MsgPack.Strict.Tests
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(123.4)); // double, should be int
 
-            var deserialiser = StrictDeserialiser.Get<UserScore>();
-            var ex = Assert.Throws<StrictDeserialisationException>(
+            var deserialiser = Deserialiser.Get<UserScore>();
+            var ex = Assert.Throws<DeserialisationException>(
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
@@ -324,8 +325,8 @@ namespace MsgPack.Strict.Tests
                 .Pack("Score").Pack(123)
                 .Pack("Score").Pack(321));
 
-            var deserialiser = StrictDeserialiser.Get<UserScore>();
-            var ex = Assert.Throws<StrictDeserialisationException>(
+            var deserialiser = Deserialiser.Get<UserScore>();
+            var ex = Assert.Throws<DeserialisationException>(
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
@@ -338,8 +339,8 @@ namespace MsgPack.Strict.Tests
             var bytes = PackBytes(packer => packer.PackArrayHeader(2)
                 .Pack("Name").Pack(123));
 
-            var deserialiser = StrictDeserialiser.Get<UserScore>();
-            var ex = Assert.Throws<StrictDeserialisationException>(() => deserialiser.Deserialise(bytes));
+            var deserialiser = Deserialiser.Get<UserScore>();
+            var ex = Assert.Throws<DeserialisationException>(() => deserialiser.Deserialise(bytes));
             Assert.Equal("Message must be encoded as a MsgPack map", ex.Message);
             Assert.Equal(typeof(UserScore), ex.TargetType);
         }
@@ -349,8 +350,8 @@ namespace MsgPack.Strict.Tests
         {
             var bytes = new byte[0];
 
-            var deserialiser = StrictDeserialiser.Get<UserScore>();
-            var ex = Assert.Throws<StrictDeserialisationException>(
+            var deserialiser = Deserialiser.Get<UserScore>();
+            var ex = Assert.Throws<DeserialisationException>(
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
@@ -363,7 +364,7 @@ namespace MsgPack.Strict.Tests
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("TestEnum").Pack("Bar"));
 
-            var after = StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes);
+            var after = Deserialiser.Get<WithEnumProperty>().Deserialise(bytes);
 
             Assert.Equal(TestEnum.Bar, after.TestEnum);
         }
@@ -374,7 +375,7 @@ namespace MsgPack.Strict.Tests
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("TestEnum").Pack("BAR"));
 
-            var after = StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes);
+            var after = Deserialiser.Get<WithEnumProperty>().Deserialise(bytes);
 
             Assert.Equal(TestEnum.Bar, after.TestEnum);
         }
@@ -385,8 +386,8 @@ namespace MsgPack.Strict.Tests
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("TestEnum").Pack(123));
 
-            var ex = Assert.Throws<StrictDeserialisationException>(
-                () => StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes));
+            var ex = Assert.Throws<DeserialisationException>(
+                () => Deserialiser.Get<WithEnumProperty>().Deserialise(bytes));
 
             Assert.Equal(typeof(WithEnumProperty), ex.TargetType);
             Assert.Equal($"Unable to read string value for enum property testEnum of type {typeof(TestEnum)}", ex.Message);
@@ -398,8 +399,8 @@ namespace MsgPack.Strict.Tests
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("TestEnum").Pack("Rubbish"));
 
-            var ex = Assert.Throws<StrictDeserialisationException>(
-                () => StrictDeserialiser.Get<WithEnumProperty>().Deserialise(bytes));
+            var ex = Assert.Throws<DeserialisationException>(
+                () => Deserialiser.Get<WithEnumProperty>().Deserialise(bytes));
 
             Assert.Equal(typeof(WithEnumProperty), ex.TargetType);
             Assert.Equal($"Unable to parse value \"Rubbish\" as a member of enum type {typeof(TestEnum)}", ex.Message);
@@ -410,7 +411,7 @@ namespace MsgPack.Strict.Tests
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(0));
 
-            var deserialiser = StrictDeserialiser.Get<TestDefaultParams>();
+            var deserialiser = Deserialiser.Get<TestDefaultParams>();
             var after = deserialiser.Deserialise(bytes);
 
             Assert.Equal(-12, after.Sb);
@@ -436,7 +437,7 @@ namespace MsgPack.Strict.Tests
                 .Pack("Name").Pack("Bob")
                 .Pack("Score").Pack(12345)); // score has a default of 100
 
-            var deserialiser = StrictDeserialiser.Get<UserScoreWithDefaultScore>();
+            var deserialiser = Deserialiser.Get<UserScoreWithDefaultScore>();
             var after = deserialiser.Deserialise(bytes);
 
             Assert.Equal("Bob", after.Name);
@@ -446,16 +447,16 @@ namespace MsgPack.Strict.Tests
         [Fact]
         public void ThrowsOnMultipleConstructors()
         {
-            var ex = Assert.Throws<StrictDeserialisationException>(
-                () => StrictDeserialiser.Get<MultipleConstructors>());
+            var ex = Assert.Throws<DeserialisationException>(
+                () => Deserialiser.Get<MultipleConstructors>());
             Assert.Equal("Type must have a single public constructor.", ex.Message);
         }
 
         [Fact]
         public void ThrowsNoPublicConstructors()
         {
-            var ex = Assert.Throws<StrictDeserialisationException>(
-                () => StrictDeserialiser.Get<NoPublicConstructors>());
+            var ex = Assert.Throws<DeserialisationException>(
+                () => Deserialiser.Get<NoPublicConstructors>());
             Assert.Equal("Type must have a single public constructor.", ex.Message);
         }
 
@@ -468,7 +469,7 @@ namespace MsgPack.Strict.Tests
                     .Pack("Name").Pack("Bob")
                     .Pack("Score").Pack(123));
 
-            var after = StrictDeserialiser.Get<UserScoreWrapper>().Deserialise(bytes);
+            var after = Deserialiser.Get<UserScoreWrapper>().Deserialise(bytes);
 
             Assert.Equal(0.5d, after.Weight);
             Assert.Equal("Bob", after.UserScore.Name);
@@ -482,7 +483,7 @@ namespace MsgPack.Strict.Tests
                 .Pack("Name").Pack("Bob")
                 .Pack("Scores").PackArrayHeader(3).Pack(1).Pack(2).Pack(3));
 
-            var after = StrictDeserialiser.Get<UserScoreList>().Deserialise(bytes);
+            var after = Deserialiser.Get<UserScoreList>().Deserialise(bytes);
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(new[] {1, 2, 3}, after.Scores);
@@ -496,7 +497,7 @@ namespace MsgPack.Strict.Tests
                     .PackArrayHeader(3).Pack(1).Pack(2).Pack(3)
                     .PackArrayHeader(3).Pack(4).Pack(5).Pack(6));
 
-            var after = StrictDeserialiser.Get<ListOfList>().Deserialise(bytes);
+            var after = Deserialiser.Get<ListOfList>().Deserialise(bytes);
 
             Assert.Equal(2, after.Jagged.Count);
             Assert.Equal(new[] {1, 2, 3}, after.Jagged[0]);
@@ -509,17 +510,17 @@ namespace MsgPack.Strict.Tests
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack("Bytes").PackBinary(new byte[] {1,2,3,4}));
 
-            var after = StrictDeserialiser.Get<WithBinary>().Deserialise(bytes);
+            var after = Deserialiser.Get<WithBinary>().Deserialise(bytes);
 
             Assert.Equal(new byte[] {1, 2, 3, 4}, after.Bytes);
         }
 
         #region Helper
 
-        private static byte[] PackBytes(Action<Packer> packAction)
+        private static byte[] PackBytes(Action<MsgPack.Packer> packAction)
         {
             var stream = new MemoryStream();
-            var packer = Packer.Create(stream, PackerCompatibilityOptions.None);
+            var packer = MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None);
             packAction(packer);
             stream.Position = 0;
             return stream.GetBuffer();

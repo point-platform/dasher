@@ -1,27 +1,169 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using MsgPack;
 using Xunit;
 
-namespace MsgPack.Strict.Tests
+namespace Dasher.Tests
 {
-    public sealed class UnsafeMsgPackPackerTests
+    public sealed class PackerTests
     {
+        [Fact]
+        public void StreamWritePerfTest()
+        {
+            const int bufferSize = 1024;
+            const int chunkCount = 1024;
+
+            var s = new MemoryStream(bufferSize * chunkCount);
+
+            s.WriteByte(1);
+
+            var sw = Stopwatch.StartNew();
+
+            for (var i = 0; i < bufferSize * chunkCount; i++)
+                s.WriteByte((byte)i);
+
+            var oneByOneTime = sw.Elapsed.TotalMilliseconds;
+
+            s.Position = 0;
+
+            var buffer = Enumerable.Range(0, bufferSize).Select(i => (byte)i).ToArray();
+
+            sw.Restart();
+
+            for (var i = 0; i < chunkCount; i++)
+            {
+                for (int j = 0; j < buffer.Length; j++)
+                    buffer[j] = (byte)j;
+                s.Write(buffer, 0, bufferSize);
+            }
+
+            var inChunksTime = sw.Elapsed.TotalMilliseconds;
+
+            Console.Out.WriteLine("oneByOneTime = {0}", oneByOneTime);
+            Console.Out.WriteLine("inChunksTime = {0}", inChunksTime);
+        }
+
+//        [Fact]
+        public void PackPerfFaceOff()
+        {
+            var s = new MemoryStream();
+
+            var thisPacker = new Packer(s);
+            var thisUnsafePacker = new UnsafePacker(s);
+            var thatPacker = MsgPack.Packer.Create(s);
+
+//            var str = new string('a', 256);
+//            var bytes = new byte[256];
+
+            const int loopCount = 1024 * 1024;
+
+            Action thisBytePack = () =>
+            {
+                s.Position = 0;
+                thisPacker.Pack(false);
+                thisPacker.Pack(true);
+                thisPacker.Pack((byte)1);
+                thisPacker.Pack((sbyte)-1);
+                thisPacker.Pack(1.1f);
+                thisPacker.Pack(1.1d);
+                thisPacker.Pack((short)1234);
+                thisPacker.Pack((ushort)1234);
+                thisPacker.Pack((int)1234);
+                thisPacker.Pack((uint)1234);
+                thisPacker.Pack((long)1234);
+                thisPacker.Pack((ulong)1234);
+                thisPacker.Pack("Hello World");
+//                thisPacker.Pack(str);
+//                thisPacker.Pack(bytes);
+            };
+
+            Action thisUnsafePack = () =>
+            {
+                s.Position = 0;
+                thisUnsafePacker.Pack(false);
+                thisUnsafePacker.Pack(true);
+                thisUnsafePacker.Pack((byte)1);
+                thisUnsafePacker.Pack((sbyte)-1);
+                thisUnsafePacker.Pack(1.1f);
+                thisUnsafePacker.Pack(1.1d);
+                thisUnsafePacker.Pack((short)1234);
+                thisUnsafePacker.Pack((ushort)1234);
+                thisUnsafePacker.Pack((int)1234);
+                thisUnsafePacker.Pack((uint)1234);
+                thisUnsafePacker.Pack((long)1234);
+                thisUnsafePacker.Pack((ulong)1234);
+                thisUnsafePacker.Pack("Hello World");
+//                thisUnsafePacker.Pack(str);
+//                thisUnsafePacker.Pack(bytes);
+                thisUnsafePacker.Flush();
+            };
+
+            Action thatPack = () =>
+            {
+                s.Position = 0;
+                thatPacker.Pack(false);
+                thatPacker.Pack(true);
+                thatPacker.Pack((byte)1);
+                thatPacker.Pack((sbyte)-1);
+                thatPacker.Pack(1.1f);
+                thatPacker.Pack(1.1d);
+                thatPacker.Pack((short)1234);
+                thatPacker.Pack((ushort)1234);
+                thatPacker.Pack((int)1234);
+                thatPacker.Pack((uint)1234);
+                thatPacker.Pack((long)1234);
+                thatPacker.Pack((ulong)1234);
+                thatPacker.Pack("Hello World");
+//                thatPacker.Pack(str);
+//                thatPacker.Pack(bytes);
+            };
+
+            for (var i = 0; i < 10; i++)
+            {
+                thisBytePack();
+                thisUnsafePack();
+                thatPack();
+            }
+
+            var sw = Stopwatch.StartNew();
+
+            for (var i = 0; i < loopCount; i++)
+                thisBytePack();
+
+            var thisBytePackTime = sw.Elapsed.TotalMilliseconds;
+
+            sw.Restart();
+
+            for (var i = 0; i < loopCount; i++)
+                thisUnsafePack();
+
+            var thisUnsafeTime = sw.Elapsed.TotalMilliseconds;
+
+            sw.Restart();
+
+            for (var i = 0; i < loopCount; i++)
+                thatPack();
+
+            var thatPackTime = sw.Elapsed.TotalMilliseconds;
+
+            Assert.True(false, $"thisBytePackTime={thisBytePackTime}, thisUnsafeTime={thisUnsafeTime}, thatPackTime={thatPackTime}");
+        }
+
         [Fact]
         public void PacksByte()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             for (var i = (int)byte.MinValue; i <= byte.MaxValue; i++)
             {
                 stream.Position = 0;
 
                 packer.Pack((byte)i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -35,15 +177,14 @@ namespace MsgPack.Strict.Tests
         public void PacksSByte()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             for (var i = (int)sbyte.MinValue; i <= sbyte.MaxValue; i++)
             {
                 stream.Position = 0;
 
                 packer.Pack((sbyte)i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -57,15 +198,14 @@ namespace MsgPack.Strict.Tests
         public void PacksInt16()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             for (var i = (int)short.MinValue; i <= short.MaxValue; i++)
             {
                 stream.Position = 0;
 
                 packer.Pack((short)i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -79,15 +219,14 @@ namespace MsgPack.Strict.Tests
         public void PacksUInt16()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             for (var i = (int)ushort.MinValue; i <= ushort.MaxValue; i++)
             {
                 stream.Position = 0;
 
                 packer.Pack((ushort)i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -101,8 +240,8 @@ namespace MsgPack.Strict.Tests
         public void PacksInt32()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = Enumerable.Range(-60000, 60000*2).Concat(new[] {int.MinValue, int.MaxValue, int.MinValue + 1, int.MaxValue - 1});
 
@@ -111,7 +250,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.Pack(i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -125,8 +263,8 @@ namespace MsgPack.Strict.Tests
         public void PacksUInt32()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = Enumerable.Range(0, 60000 * 2)
                 .Select(i => (uint)i)
@@ -137,7 +275,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.Pack(i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -151,8 +288,8 @@ namespace MsgPack.Strict.Tests
         public void PacksInt64()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = Enumerable.Range(-60000, 60000*2)
                 .Select(i => (long)i)
@@ -163,7 +300,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.Pack(i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -177,8 +313,8 @@ namespace MsgPack.Strict.Tests
         public void PacksUInt64()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = Enumerable.Range(-60000, 60000 * 2)
                 .Select(i => (ulong)i)
@@ -189,7 +325,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.Pack(i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -203,8 +338,8 @@ namespace MsgPack.Strict.Tests
         public void PacksSingle()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = new[] {float.MinValue, float.MaxValue, 0.0f, 1.0f, -1.0f, 0.1f, -0.1f, float.NaN, float.PositiveInfinity, float.NegativeInfinity, float.Epsilon};
 
@@ -213,7 +348,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.Pack(i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -227,8 +361,8 @@ namespace MsgPack.Strict.Tests
         public void PacksDouble()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = new[] {double.MinValue, double.MaxValue, 0.0f, 1.0f, -1.0f, 0.1f, -0.1f, double.NaN, double.PositiveInfinity, double.NegativeInfinity, double.Epsilon};
 
@@ -237,7 +371,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.Pack(i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -251,8 +384,8 @@ namespace MsgPack.Strict.Tests
         public void PacksString()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = new[] {"Hello", "", Environment.NewLine, null, "\0"};
 
@@ -261,7 +394,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.Pack(i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -275,8 +407,8 @@ namespace MsgPack.Strict.Tests
         public void PacksStringWithEncoding()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = new[] {"Hello", "", Environment.NewLine, null, "\0", new string('A', 0xFF), new string('A', 0x100), new string('A', 0x10000) };
 
@@ -285,7 +417,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.Pack(i, Encoding.UTF8);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -299,8 +430,8 @@ namespace MsgPack.Strict.Tests
         public void PacksBool()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = new[] {true, false};
 
@@ -309,7 +440,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.Pack(i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -323,24 +453,21 @@ namespace MsgPack.Strict.Tests
         public void PacksBytes()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
-            var inputs = new[] {new byte[0xFF], /*new byte[0xFFFF], null, new byte[0], new byte[0x10000], new byte[] {1,2,3}*/};
+            var inputs = new[] {null, new byte[0], new byte[0xFF], new byte[0xFFFF], new byte[0x10000], new byte[] {1,2,3}};
 
             foreach (var i in inputs)
             {
                 stream.Position = 0;
 
                 packer.Pack(i);
-                packer.Flush();
 
                 stream.Position = 0;
 
                 byte[] result;
                 Assert.True(unpacker.ReadBinary(out result));
-                if (i != null)
-                    Assert.Equal(i.Length, result.Length);
                 Assert.Equal(i, result);
             }
         }
@@ -349,8 +476,8 @@ namespace MsgPack.Strict.Tests
         public void PacksArrayHeader()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = new uint[] {0, 1, 255, 256, ushort.MaxValue, ushort.MaxValue + 1, int.MaxValue};
 
@@ -359,7 +486,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.PackArrayHeader(i);
-                packer.Flush();
 
                 stream.Position = 0;
 
@@ -373,8 +499,8 @@ namespace MsgPack.Strict.Tests
         public void PacksMapHeader()
         {
             var stream = new MemoryStream();
-            var packer = new UnsafeMsgPackPacker(stream);
-            var unpacker = Unpacker.Create(stream);
+            var packer = new Packer(stream);
+            var unpacker = MsgPack.Unpacker.Create(stream);
 
             var inputs = new uint[] {0, 1, 255, 256, ushort.MaxValue, ushort.MaxValue + 1, int.MaxValue};
 
@@ -383,7 +509,6 @@ namespace MsgPack.Strict.Tests
                 stream.Position = 0;
 
                 packer.PackMapHeader(i);
-                packer.Flush();
 
                 stream.Position = 0;
 

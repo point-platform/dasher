@@ -7,8 +7,8 @@
     <ProjectGuid>{E77EC65C-4610-45C8-A8B0-4AD558B03B40}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MsgPack.Strict</RootNamespace>
-    <AssemblyName>MsgPack.Strict</AssemblyName>
+    <RootNamespace>Dasher</RootNamespace>
+    <AssemblyName>Dasher</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,13 +40,13 @@
     <Compile Include="Format.cs" />
     <Compile Include="MsgPackConstants.cs" />
     <Compile Include="FormatFamily.cs" />
-    <Compile Include="MsgPackPacker.cs" />
-    <Compile Include="MsgPackUnpacker.cs" />
-    <Compile Include="StrictDeserialisationException.cs" />
-    <Compile Include="StrictDeserialiser.cs" />
+    <Compile Include="Packer.cs" />
+    <Compile Include="Unpacker.cs" />
+    <Compile Include="DeserialisationException.cs" />
+    <Compile Include="Deserialiser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StrictSerialiser.cs" />
-    <Compile Include="UnsafeMsgPackPacker.cs" />
+    <Compile Include="Serialiser.cs" />
+    <Compile Include="UnsafePacker.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,17 +1,17 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using static MsgPack.Strict.MsgPackConstants;
+using static Dasher.MsgPackConstants;
 
-namespace MsgPack.Strict
+namespace Dasher
 {
     // TODO support nullable values
 
-    public sealed class MsgPackPacker
+    public sealed class Packer
     {
         private readonly Stream _stream;
 
-        public MsgPackPacker(Stream stream)
+        public Packer(Stream stream)
         {
             _stream = stream;
         }

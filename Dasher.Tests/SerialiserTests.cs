@@ -6,9 +6,9 @@ using Xunit;
 // ReSharper disable UnusedMember.Global
 // ReSharper disable MemberCanBePrivate.Global
 
-namespace MsgPack.Strict.Tests
+namespace Dasher.Tests
 {
-    public sealed class StrictSerialiserTests
+    public sealed class SerialiserTests
     {
         #region Test Types
 
@@ -190,11 +190,11 @@ namespace MsgPack.Strict.Tests
         {
             var stream = new MemoryStream();
 
-            StrictSerialiser.Get<T>().Serialise(stream, before);
+            Serialiser.Get<T>().Serialise(stream, before);
 
             stream.Position = 0;
 
-            return StrictDeserialiser.Get<T>().Deserialise(stream.ToArray());
+            return Deserialiser.Get<T>().Deserialise(stream.ToArray());
         }
 
         #endregion

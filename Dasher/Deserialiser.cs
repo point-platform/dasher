@@ -7,13 +7,13 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace MsgPack.Strict
+namespace Dasher
 {
-    public sealed class StrictDeserialiser<T>
+    public sealed class Deserialiser<T>
     {
-        private readonly StrictDeserialiser _inner;
+        private readonly Deserialiser _inner;
 
-        internal StrictDeserialiser(StrictDeserialiser inner)
+        internal Deserialiser(Deserialiser inner)
         {
             _inner = inner;
         }
@@ -21,24 +21,24 @@ namespace MsgPack.Strict
         public T Deserialise(byte[] bytes) => (T)_inner.Deserialise(bytes);
     }
 
-    public sealed class StrictDeserialiser
+    public sealed class Deserialiser
     {
         #region Instance accessors
 
-        private static readonly ConcurrentDictionary<Type, StrictDeserialiser> _deserialiserByType = new ConcurrentDictionary<Type, StrictDeserialiser>();
+        private static readonly ConcurrentDictionary<Type, Deserialiser> _deserialiserByType = new ConcurrentDictionary<Type, Deserialiser>();
 
-        public static StrictDeserialiser<T> Get<T>()
+        public static Deserialiser<T> Get<T>()
         {
-            return new StrictDeserialiser<T>(Get(typeof(T)));
+            return new Deserialiser<T>(Get(typeof(T)));
         }
 
-        public static StrictDeserialiser Get(Type type)
+        public static Deserialiser Get(Type type)
         {
-            StrictDeserialiser deserialiser;
+            Deserialiser deserialiser;
             if (_deserialiserByType.TryGetValue(type, out deserialiser))
                 return deserialiser;
 
-            _deserialiserByType.TryAdd(type, new StrictDeserialiser(type));
+            _deserialiserByType.TryAdd(type, new Deserialiser(type));
             var present = _deserialiserByType.TryGetValue(type, out deserialiser);
             Debug.Assert(present);
             return deserialiser;
@@ -46,24 +46,24 @@ namespace MsgPack.Strict
 
         #endregion
 
-        private readonly Func<MsgPackUnpacker, object> _func;
+        private readonly Func<Unpacker, object> _func;
 
-        private StrictDeserialiser(Type type)
+        private Deserialiser(Type type)
         {
             _func = BuildUnpacker(type);
         }
 
         public object Deserialise(byte[] bytes)
         {
-            return Deserialise(new MsgPackUnpacker(new MemoryStream(bytes)));
+            return Deserialise(new Unpacker(new MemoryStream(bytes)));
         }
 
-        public object Deserialise(MsgPackUnpacker unpacker)
+        public object Deserialise(Unpacker unpacker)
         {
             return _func(unpacker);
         }
 
-        private static Func<MsgPackUnpacker, object> BuildUnpacker(Type type)
+        private static Func<Unpacker, object> BuildUnpacker(Type type)
         {
             #region Verify and prepare for target type
 
@@ -72,7 +72,7 @@ namespace MsgPack.Strict
 
             var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (ctors.Length != 1)
-                throw new StrictDeserialisationException("Type must have a single public constructor.", type);
+                throw new DeserialisationException("Type must have a single public constructor.", type);
             var ctor = ctors[0];
 
             var parameters = ctor.GetParameters();
@@ -84,7 +84,7 @@ namespace MsgPack.Strict
             var method = new DynamicMethod(
                 $"Deserialiser{type.Name}",
                 typeof(object),
-                new[] {typeof(MsgPackUnpacker) });
+                new[] {typeof(Unpacker) });
 
             var ilg = method.GetILGenerator();
 
@@ -125,7 +125,7 @@ namespace MsgPack.Strict
             Action throwException = () =>
             {
                 LoadType(ilg, type);
-                ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
+                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             };
 
@@ -141,14 +141,14 @@ namespace MsgPack.Strict
                 // within the map. We read this here.
                 ilg.Emit(OpCodes.Ldarg_0); // unpacker
                 ilg.Emit(OpCodes.Ldloca, mapSize);
-                ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadMapLength)));
+                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadMapLength)));
 
                 // If false was returned, the data stream ended
                 var ifLabel = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, ifLabel);
                 {
                     ilg.Emit(OpCodes.Ldarg_0); // unpacker
-                    ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetProperty(nameof(MsgPackUnpacker.HasStreamEnded)).GetMethod);
+                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetProperty(nameof(Unpacker.HasStreamEnded)).GetMethod);
                     var lblNotEmpty = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Brfalse, lblNotEmpty);
                     ilg.Emit(OpCodes.Ldstr, "Data stream empty");
@@ -187,7 +187,7 @@ namespace MsgPack.Strict
                 {
                     ilg.Emit(OpCodes.Ldarg_0); // unpacker
                     ilg.Emit(OpCodes.Ldloca, key);
-                    ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
+                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
 
                     // If false was returned, the data stream ended
                     var ifLabel = ilg.DefineLabel();
@@ -333,26 +333,26 @@ namespace MsgPack.Strict
             ilg.Emit(OpCodes.Ret);
 
             // Return a delegate that performs the above operations
-            return (Func<MsgPackUnpacker, object>)method.CreateDelegate(typeof(Func<MsgPackUnpacker, object>));
+            return (Func<Unpacker, object>)method.CreateDelegate(typeof(Func<Unpacker, object>));
         }
 
         #region Read value to local
 
         private static readonly Dictionary<Type, MethodInfo> _unpackerTryReadMethodByType = new Dictionary<Type, MethodInfo>
         {
-            {typeof(sbyte),  typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadSByte))},
-            {typeof(byte),   typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadByte))},
-            {typeof(short),  typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadInt16))},
-            {typeof(ushort), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadUInt16))},
-            {typeof(int),    typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadInt32))},
-            {typeof(uint),   typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadUInt32))},
-            {typeof(long),   typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadInt64))},
-            {typeof(ulong),  typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadUInt64))},
-            {typeof(float),  typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadSingle))},
-            {typeof(double), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadDouble))},
-            {typeof(bool),   typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadBoolean))},
-            {typeof(string), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] {typeof(string).MakeByRefType()})},
-            {typeof(byte[]), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadBinary))}
+            {typeof(sbyte),  typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadSByte))},
+            {typeof(byte),   typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadByte))},
+            {typeof(short),  typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadInt16))},
+            {typeof(ushort), typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadUInt16))},
+            {typeof(int),    typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadInt32))},
+            {typeof(uint),   typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadUInt32))},
+            {typeof(long),   typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadInt64))},
+            {typeof(ulong),  typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadUInt64))},
+            {typeof(float),  typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadSingle))},
+            {typeof(double), typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadDouble))},
+            {typeof(bool),   typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadBoolean))},
+            {typeof(string), typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()})},
+            {typeof(byte[]), typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadBinary))}
         };
 
         private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local, string name, Type targetType)
@@ -375,7 +375,7 @@ namespace MsgPack.Strict
                     var format = ilg.DeclareLocal(typeof(Format));
                     ilg.Emit(OpCodes.Ldarg_0);
                     ilg.Emit(OpCodes.Ldloca, format);
-                    ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryPeekFormat)));
+                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryPeekFormat)));
                     ilg.Emit(OpCodes.Pop);
 
                     ilg.Emit(OpCodes.Ldstr, "Unexpected type for \"{0}\". Expected {1}, got {2}.");
@@ -385,7 +385,7 @@ namespace MsgPack.Strict
                     ilg.Emit(OpCodes.Box, typeof(Format));
                     ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object), typeof(object) }));
                     LoadType(ilg, targetType);
-                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
+                    ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                     ilg.Emit(OpCodes.Throw);
                 }
                 ilg.MarkLabel(typeGetterSuccess);
@@ -399,7 +399,7 @@ namespace MsgPack.Strict
 
                 ilg.Emit(OpCodes.Ldarg_0);
                 ilg.Emit(OpCodes.Ldloca, s);
-                ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
+                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
 
                 ilg.Emit(OpCodes.Ldloc, s); // unpacker
                 ilg.Emit(OpCodes.Ldloca, local);
@@ -427,7 +427,7 @@ namespace MsgPack.Strict
 
                 ilg.Emit(OpCodes.Ldarg_0);
                 ilg.Emit(OpCodes.Ldloca, s);
-                ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
+                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
 
                 var lbl1 = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, lbl1);
@@ -437,7 +437,7 @@ namespace MsgPack.Strict
                     LoadType(ilg, type);
                     ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
                     LoadType(ilg, targetType);
-                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                    ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
                     ilg.Emit(OpCodes.Throw);
                 }
                 ilg.MarkLabel(lbl1);
@@ -455,7 +455,7 @@ namespace MsgPack.Strict
                     LoadType(ilg, type);
                     ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
                     LoadType(ilg, targetType);
-                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                    ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
                     ilg.Emit(OpCodes.Throw);
                 }
                 ilg.MarkLabel(lbl2);
@@ -471,7 +471,7 @@ namespace MsgPack.Strict
                 var count = ilg.DeclareLocal(typeof(int));
                 ilg.Emit(OpCodes.Ldarg_0);
                 ilg.Emit(OpCodes.Ldloca, count);
-                ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadArrayLength)));
+                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadArrayLength)));
 
                 // verify read correctly
                 var lbl1 = ilg.DefineLabel();
@@ -479,7 +479,7 @@ namespace MsgPack.Strict
                 {
                     ilg.Emit(OpCodes.Ldstr, "Expecting collection data to be encoded as array");
                     LoadType(ilg, targetType);
-                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                    ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
                     ilg.Emit(OpCodes.Throw);
                 }
                 ilg.MarkLabel(lbl1);
@@ -538,9 +538,9 @@ namespace MsgPack.Strict
                 // TODO should support complex structs too
                 // TODO cache subtype deserialiser instances in fields of generated class (requires moving away from DynamicMethod)
                 LoadType(ilg, type);
-                ilg.Emit(OpCodes.Call, typeof(StrictDeserialiser).GetMethod(nameof(StrictDeserialiser.Get), new[] {typeof(Type)}));
+                ilg.Emit(OpCodes.Call, typeof(Deserialiser).GetMethod(nameof(Deserialiser.Get), new[] {typeof(Type)}));
                 ilg.Emit(OpCodes.Ldarg_0); // unpacker
-                ilg.Emit(OpCodes.Call, typeof(StrictDeserialiser).GetMethod(nameof(StrictDeserialiser.Deserialise), new[] {typeof(MsgPackUnpacker)}));
+                ilg.Emit(OpCodes.Call, typeof(Deserialiser).GetMethod(nameof(Deserialiser.Deserialise), new[] {typeof(Unpacker)}));
                 ilg.Emit(OpCodes.Castclass, type);
                 ilg.Emit(OpCodes.Stloc, local);
                 return;

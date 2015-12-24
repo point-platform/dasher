@@ -7,13 +7,13 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace MsgPack.Strict
+namespace Dasher
 {
-    public sealed class StrictSerialiser<T>
+    public sealed class Serialiser<T>
     {
-        private readonly StrictSerialiser _inner;
+        private readonly Serialiser _inner;
 
-        internal StrictSerialiser(StrictSerialiser inner)
+        internal Serialiser(Serialiser inner)
         {
             _inner = inner;
         }
@@ -23,7 +23,7 @@ namespace MsgPack.Strict
             _inner.Serialise(stream, value);
         }
 
-        public void Serialise(UnsafeMsgPackPacker packer, T value)
+        public void Serialise(UnsafePacker packer, T value)
         {
             _inner.Serialise(packer, value);
         }
@@ -34,24 +34,24 @@ namespace MsgPack.Strict
         }
     }
 
-    public sealed class StrictSerialiser
+    public sealed class Serialiser
     {
         #region Instance accessors
 
-        private static readonly ConcurrentDictionary<Type, StrictSerialiser> _serialiserByType = new ConcurrentDictionary<Type, StrictSerialiser>();
+        private static readonly ConcurrentDictionary<Type, Serialiser> _serialiserByType = new ConcurrentDictionary<Type, Serialiser>();
 
-        public static StrictSerialiser<T> Get<T>()
+        public static Serialiser<T> Get<T>()
         {
-            return new StrictSerialiser<T>(Get(typeof(T)));
+            return new Serialiser<T>(Get(typeof(T)));
         }
 
-        public static StrictSerialiser Get(Type type)
+        public static Serialiser Get(Type type)
         {
-            StrictSerialiser deserialiser;
+            Serialiser deserialiser;
             if (_serialiserByType.TryGetValue(type, out deserialiser))
                 return deserialiser;
 
-            _serialiserByType.TryAdd(type, new StrictSerialiser(type));
+            _serialiserByType.TryAdd(type, new Serialiser(type));
             var present = _serialiserByType.TryGetValue(type, out deserialiser);
             Debug.Assert(present);
             return deserialiser;
@@ -59,20 +59,20 @@ namespace MsgPack.Strict
 
         #endregion
 
-        private readonly Action<UnsafeMsgPackPacker, object> _action;
+        private readonly Action<UnsafePacker, object> _action;
 
-        private StrictSerialiser(Type type)
+        private Serialiser(Type type)
         {
             _action = BuildPacker(type);
         }
 
         public void Serialise(Stream stream, object value)
         {
-            using (var packer = new UnsafeMsgPackPacker(stream))
+            using (var packer = new UnsafePacker(stream))
                 Serialise(packer, value);
         }
 
-        public void Serialise(UnsafeMsgPackPacker packer, object value)
+        public void Serialise(UnsafePacker packer, object value)
         {
             _action(packer, value);
         }
@@ -80,12 +80,12 @@ namespace MsgPack.Strict
         public byte[] Serialise(object value)
         {
             var stream = new MemoryStream();
-            using (var packer = new UnsafeMsgPackPacker(stream))
+            using (var packer = new UnsafePacker(stream))
                 _action(packer, value);
             return stream.ToArray();
         }
 
-        private static Action<UnsafeMsgPackPacker, object> BuildPacker(Type type)
+        private static Action<UnsafePacker, object> BuildPacker(Type type)
         {
             if (type.IsPrimitive)
                 throw new Exception("TEST THIS CASE 1");
@@ -93,12 +93,12 @@ namespace MsgPack.Strict
             var method = new DynamicMethod(
                 $"Serialiser{type.Name}",
                 null,
-                new[] { typeof(UnsafeMsgPackPacker), typeof(object) });
+                new[] { typeof(UnsafePacker), typeof(object) });
 
             var ilg = method.GetILGenerator();
 
             // store packer in a local so we can pass it easily
-            var packer = ilg.DeclareLocal(typeof(UnsafeMsgPackPacker));
+            var packer = ilg.DeclareLocal(typeof(UnsafePacker));
             ilg.Emit(OpCodes.Ldarg_0); // packer
             ilg.Emit(OpCodes.Stloc, packer);
 
@@ -113,14 +113,14 @@ namespace MsgPack.Strict
             ilg.Emit(OpCodes.Ret);
 
             // Return a delegate that performs the above operations
-            return (Action<UnsafeMsgPackPacker, object>)method.CreateDelegate(typeof(Action<UnsafeMsgPackPacker, object>));
+            return (Action<UnsafePacker, object>)method.CreateDelegate(typeof(Action<UnsafePacker, object>));
         }
 
         private static void WriteObject(ILGenerator ilg, LocalBuilder packer, LocalBuilder value)
         {
             var type = value.LocalType;
 
-            var packerMethod = typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.Pack), new[] { type });
+            var packerMethod = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { type });
             if (packerMethod != null)
             {
                 ilg.Emit(OpCodes.Ldloc, packer);
@@ -135,7 +135,7 @@ namespace MsgPack.Strict
                 ilg.Emit(OpCodes.Ldloc, packer);
                 ilg.Emit(OpCodes.Ldloca, value);
                 ilg.Emit(OpCodes.Call, typeof(decimal).GetMethod(nameof(decimal.ToString), new Type[0]));
-                ilg.Emit(OpCodes.Call, typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.Pack), new[] { typeof(string) }));
+                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(string) }));
                 return;
             }
 
@@ -146,7 +146,7 @@ namespace MsgPack.Strict
                 ilg.Emit(OpCodes.Ldloca, value);
                 ilg.Emit(OpCodes.Constrained, type);
                 ilg.Emit(OpCodes.Callvirt, typeof(object).GetMethod(nameof(ToString), new Type[0]));
-                ilg.Emit(OpCodes.Call, typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.Pack), new[] { typeof(string) }));
+                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(string) }));
                 return;
             }
 
@@ -163,7 +163,7 @@ namespace MsgPack.Strict
                 // write array header
                 ilg.Emit(OpCodes.Ldloc, packer);
                 ilg.Emit(OpCodes.Ldloc, count);
-                ilg.Emit(OpCodes.Call, typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.PackArrayHeader)));
+                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackArrayHeader)));
 
                 // begin loop
                 var loopStart = ilg.DefineLabel();
@@ -212,7 +212,7 @@ namespace MsgPack.Strict
             // write map header
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldc_I4, props.Count);
-            ilg.Emit(OpCodes.Call, typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.PackMapHeader)));
+            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackMapHeader)));
 
             // write each property's value
             foreach (var prop in props)
@@ -222,7 +222,7 @@ namespace MsgPack.Strict
                 // write property name
                 ilg.Emit(OpCodes.Ldloc, packer);
                 ilg.Emit(OpCodes.Ldstr, prop.Name);
-                ilg.Emit(OpCodes.Call, typeof(UnsafeMsgPackPacker).GetMethod(nameof(UnsafeMsgPackPacker.Pack), new[] {typeof(string)}));
+                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
 
                 // get property value
                 ilg.Emit(type.IsValueType ? OpCodes.Ldloca : OpCodes.Ldloc, value);

@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using MsgPack;
 using Xunit;
 using Xunit.Sdk;
 
-namespace MsgPack.Strict.Tests
+namespace Dasher.Tests
 {
-    public sealed class MsgPackUnpackerTests
+    public sealed class UnpackerTests
     {
         [Fact]
         public void TryReadByte()
@@ -265,9 +266,9 @@ namespace MsgPack.Strict.Tests
         public void Sequences()
         {
             var stream = new MemoryStream();
-            var packer = Packer.Create(stream);
+            var packer = MsgPack.Packer.Create(stream);
 
-            var unpacker = new MsgPackUnpacker(stream);
+            var unpacker = new Unpacker(stream);
             var random = new Random();
             var sequence = new List<string>();
 
@@ -472,35 +473,35 @@ namespace MsgPack.Strict.Tests
 
         #region Test support
 
-        private static MsgPackUnpacker InitTest(Action<Packer> packerAction)
+        private static Unpacker InitTest(Action<MsgPack.Packer> packerAction)
         {
             var stream = new MemoryStream();
-            packerAction(Packer.Create(stream, PackerCompatibilityOptions.None));
+            packerAction(MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None));
             stream.Position = 0;
 
-            return new MsgPackUnpacker(stream);
+            return new Unpacker(stream);
         }
 
-        private static void TestFamily(Action<Packer> packerAction, FormatFamily expected)
+        private static void TestFamily(Action<MsgPack.Packer> packerAction, FormatFamily expected)
         {
             var stream = new MemoryStream();
-            packerAction(Packer.Create(stream, PackerCompatibilityOptions.None));
+            packerAction(MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None));
             stream.Position = 0;
 
-            var unpacker = new MsgPackUnpacker(stream);
+            var unpacker = new Unpacker(stream);
 
             FormatFamily actual;
             Assert.True(unpacker.TryPeekFormatFamily(out actual));
             Assert.Equal(expected, actual);
         }
 
-        private static void TestFormat(Action<Packer> packerAction, Format expected)
+        private static void TestFormat(Action<MsgPack.Packer> packerAction, Format expected)
         {
             var stream = new MemoryStream();
-            packerAction(Packer.Create(stream, PackerCompatibilityOptions.None));
+            packerAction(MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None));
             stream.Position = 0;
 
-            var unpacker = new MsgPackUnpacker(stream);
+            var unpacker = new Unpacker(stream);
 
             Format actual;
             Assert.True(unpacker.TryPeekFormat(out actual));

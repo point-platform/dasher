@@ -8,8 +8,8 @@
     <ProjectGuid>{E9DBBACB-C3CC-460D-97B5-928EA4012D1C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MsgPack.Strict.Tests</RootNamespace>
-    <AssemblyName>MsgPack.Strict.Tests</AssemblyName>
+    <RootNamespace>Dasher.Tests</RootNamespace>
+    <AssemblyName>Dasher.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -58,20 +58,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MsgPackPackerTests.cs" />
-    <Compile Include="MsgPackUnpackerTests.cs" />
-    <Compile Include="StrictDeserialiserTests.cs" />
+    <Compile Include="PackerTests.cs" />
+    <Compile Include="UnpackerTests.cs" />
+    <Compile Include="DeserialiserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StrictSerialiserTests.cs" />
-    <Compile Include="UnsafeMsgPackPackerTests.cs" />
+    <Compile Include="SerialiserTests.cs" />
+    <Compile Include="UnsafePackerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MsgPack.Strict\MsgPack.Strict.csproj">
+    <ProjectReference Include="..\Dasher\Dasher.csproj">
       <Project>{e77ec65c-4610-45c8-a8b0-4ad558b03b40}</Project>
-      <Name>MsgPack.Strict</Name>
+      <Name>Dasher</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

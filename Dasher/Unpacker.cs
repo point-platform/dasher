@@ -1,16 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using static MsgPack.Strict.MsgPackConstants;
+using static Dasher.MsgPackConstants;
 
-namespace MsgPack.Strict
+namespace Dasher
 {
-    public sealed class MsgPackUnpacker
+    public sealed class Unpacker
     {
         private readonly Stream _stream;
         private int _nextByte = -1;
 
-        public MsgPackUnpacker(Stream stream)
+        public Unpacker(Stream stream)
         {
             _stream = stream;
         }

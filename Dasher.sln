@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsgPack.Strict", "MsgPack.Strict\MsgPack.Strict.csproj", "{E77EC65C-4610-45C8-A8B0-4AD558B03B40}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dasher", "Dasher\Dasher.csproj", "{E77EC65C-4610-45C8-A8B0-4AD558B03B40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MsgPack.Strict.Tests", "MsgPack.Strict.Tests\MsgPack.Strict.Tests.csproj", "{E9DBBACB-C3CC-460D-97B5-928EA4012D1C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dasher.Tests", "Dasher.Tests\Dasher.Tests.csproj", "{E9DBBACB-C3CC-460D-97B5-928EA4012D1C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

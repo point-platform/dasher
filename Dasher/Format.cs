@@ -1,4 +1,4 @@
-﻿namespace MsgPack.Strict
+﻿namespace Dasher
 {
     public enum Format
     {
