@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Dasher</id>
+    <version>$version$</version>
+    <title>Dasher</title>
+    <authors>Drew Noakes</authors>
+    <owners>Drew Noakes</owners>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+    <projectUrl>https://github.com/drewnoakes/dasher</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/drewnoakes/dasher/master/Resources/logo-1600x284.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>A a fast, lightweight, cross-platform serialisation tool.</summary>
+    <description>
+      A a fast, lightweight, cross-platform serialisation tool.
+    </description>
+<!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
+    <copyright>Copyright Drew Noakes 2015</copyright>
+    <tags>DTO Serialisation Serialization MsgPack Communication Formatting</tags>
+  </metadata>
+  <files>
+    <file src="bin\Release\Dasher.dll" target="lib\net45\" />
+    <file src="bin\Release\Dasher.xml" target="lib\net45\" />
+  </files>
+</package>
