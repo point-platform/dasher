@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<App>
+  <ID>
+    <Name>MsgPack.Strict.TestSchemaGenerationPostBuild</Name>
+    <Version>1.0.0</Version>
+  </ID>
+  <DisplayName>MsgPack-strict SchemaGenerator Test Project</DisplayName>
+  <IsSupportApp>False</IsSupportApp>
+  <HasView>True</HasView>
+  <AllowMultipleProcesses>False</AllowMultipleProcesses>
+  <AllowMultipleViews>True</AllowMultipleViews>
+  <Dependencies>
+  </Dependencies>
+  <Files>
+    <File>MsgPack.Strict.TestSchemaGenerationPostBuild.exe</File>
+    <File>MsgPack.Strict.dll</File>
+    <File>App.ico</File>
+  </Files>
+</App>
