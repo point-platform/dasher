@@ -165,11 +165,14 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
         [Fact]
         public void GenerateSchemaForTypeContainingList()
         {
-            var expected = @"UserScoreList
-{
-    name: System.String
-    scores: System.Collections.Generic.IReadOnlyList`1[System.Int32]
-}" + "\r\n";
+            var expected = String.Join(
+                Environment.NewLine,
+                "UserScoreList",
+                "{",
+                "    name: System.String",
+                "    scores: System.Collections.Generic.IReadOnlyList`1[System.Int32]",
+                "}",
+                "");
             var actual = SchemaGenerator.GenerateSchema(typeof(UserScoreList));
 
             Assert.Equal(expected, actual);
@@ -198,28 +201,31 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
         [Fact]
         public void GenerateSchemaForTypeContainingComplexType()
         {
-            var expected = @"TestDefaultParams
-{
-    sb: System.SByte = -12
-    b: System.Byte = 12
-    s: System.Int16 = -1234
-    us: System.UInt16 = 1234
-    i: System.Int32 = -12345
-    ui: System.UInt32 = 12345
-    l: System.Int64 = -12345678900
-    ul: System.UInt64 = 12345678900
-    str: System.String = str
-    f: System.Single = 1.23
-    d: System.Double = 1.23
-    dc: System.Decimal = 1.23
-    e: MsgPack.Strict.SchemaGenerator.Tests.SchemaGeneratorTests+TestEnum = Bar
-    complex: UserScore
-    {
-        name: System.String
-        score: System.Int32
-    }
-    bo: System.Boolean = True
-}" + "\r\n";
+            var expected = String.Join(
+                Environment.NewLine,
+                "TestDefaultParams",
+                "{",
+                "    sb: System.SByte = -12",
+                "    b: System.Byte = 12",
+                "    s: System.Int16 = -1234",
+                "    us: System.UInt16 = 1234",
+                "    i: System.Int32 = -12345",
+                "    ui: System.UInt32 = 12345",
+                "    l: System.Int64 = -12345678900",
+                "    ul: System.UInt64 = 12345678900",
+                "    str: System.String = str",
+                "    f: System.Single = 1.23",
+                "    d: System.Double = 1.23",
+                "    dc: System.Decimal = 1.23",
+                "    e: MsgPack.Strict.SchemaGenerator.Tests.SchemaGeneratorTests+TestEnum = Bar",
+                "    complex: UserScore",
+                "    {",
+                "        name: System.String",
+                "        score: System.Int32",
+                "    }",
+                "    bo: System.Boolean = True",
+                "}",
+                "");
             var actual = SchemaGenerator.GenerateSchema(typeof(TestDefaultParams));
 
             Assert.Equal(expected, actual);
