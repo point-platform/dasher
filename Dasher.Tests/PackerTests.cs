@@ -47,7 +47,7 @@ namespace Dasher.Tests
         }
 
 //        [Fact]
-        public void PackPerfFaceOff()
+        public void PackerPerf()
         {
             var s = new MemoryStream();
 

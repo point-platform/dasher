@@ -221,7 +221,7 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void HandlesDecimalProperty()
+        public void HandlesDecimal()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("Name").Pack("Bob")
