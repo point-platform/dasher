@@ -7,13 +7,19 @@ using System.Reflection.Emit;
 
 namespace Dasher
 {
+    public enum UnexpectedFieldBehaviour
+    {
+        Throw,
+        Ignore
+    }
+
     public sealed class Deserialiser<T>
     {
         private readonly Deserialiser _inner;
 
-        public Deserialiser()
+        public Deserialiser(UnexpectedFieldBehaviour unexpectedFieldBehaviour = UnexpectedFieldBehaviour.Throw)
         {
-            _inner = new Deserialiser(typeof(T));
+            _inner = new Deserialiser(typeof(T), unexpectedFieldBehaviour);
         }
 
         public T Deserialise(byte[] bytes) => (T)_inner.Deserialise(bytes);
@@ -25,9 +31,9 @@ namespace Dasher
     {
         private readonly Func<Unpacker, object> _func;
 
-        public Deserialiser(Type type)
+        public Deserialiser(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour = UnexpectedFieldBehaviour.Throw)
         {
-            _func = BuildUnpacker(type);
+            _func = BuildUnpacker(type, unexpectedFieldBehaviour);
         }
 
         public object Deserialise(byte[] bytes)
@@ -45,7 +51,7 @@ namespace Dasher
             return Deserialise(new Unpacker(stream));
         }
 
-        private static Func<Unpacker, object> BuildUnpacker(Type type)
+        private static Func<Unpacker, object> BuildUnpacker(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             #region Verify and prepare for target type
 
@@ -228,7 +234,7 @@ namespace Dasher
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
-                    ReadPropertyValue(ilg, valueLocals[parameterIndex], parameters[parameterIndex].Name, type);
+                    ReadPropertyValue(ilg, valueLocals[parameterIndex], parameters[parameterIndex].Name, type, unexpectedFieldBehaviour);
 
                     ilg.Emit(OpCodes.Br, lblEndIfChain);
                 }
@@ -236,11 +242,14 @@ namespace Dasher
                 if (nextLabel != null)
                     ilg.MarkLabel(nextLabel.Value);
 
-                // If we got here then the property was not recognised. Throw.
-                ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\".");
-                ilg.Emit(OpCodes.Ldloc, key);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)}));
-                throwException();
+                // If we got here then the property was not recognised. Either throw or ignore, depending upon configuration.
+                if (unexpectedFieldBehaviour == UnexpectedFieldBehaviour.Throw)
+                {
+                    ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\".");
+                    ilg.Emit(OpCodes.Ldloc, key);
+                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)}));
+                    throwException();
+                }
 
                 ilg.MarkLabel(lblEndIfChain);
 
@@ -337,7 +346,7 @@ namespace Dasher
             {typeof(byte[]), typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadBinary))}
         };
 
-        private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local, string name, Type targetType)
+        private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local, string name, Type targetType, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // TODO DateTime, TimeSpan
 
@@ -487,7 +496,7 @@ namespace Dasher
 
                 // loop body
                 var element = ilg.DeclareLocal(elementType);
-                ReadPropertyValue(ilg, element, name, targetType);
+                ReadPropertyValue(ilg, element, name, targetType, unexpectedFieldBehaviour);
 
                 ilg.Emit(OpCodes.Ldloc, array);
                 ilg.Emit(OpCodes.Ldloc, i);
@@ -520,7 +529,8 @@ namespace Dasher
                 // TODO should support complex structs too
                 // TODO cache subtype deserialiser instances in fields of generated class (requires moving away from DynamicMethod)
                 LoadType(ilg, type);
-                ilg.Emit(OpCodes.Newobj, typeof(Deserialiser).GetConstructor(new[] {typeof(Type)}));
+                ilg.Emit(OpCodes.Ldc_I4, (int)unexpectedFieldBehaviour);
+                ilg.Emit(OpCodes.Newobj, typeof(Deserialiser).GetConstructor(new[] {typeof(Type), typeof(UnexpectedFieldBehaviour)}));
                 ilg.Emit(OpCodes.Ldarg_0); // unpacker
                 ilg.Emit(OpCodes.Call, typeof(Deserialiser).GetMethod(nameof(Deserialiser.Deserialise), new[] {typeof(Unpacker)}));
                 ilg.Emit(OpCodes.Castclass, type);
