@@ -93,37 +93,15 @@ namespace Dasher
 
         private static void WriteObject(ILGenerator ilg, LocalBuilder packer, LocalBuilder value)
         {
+            var provider = TypeProviders.TypeProviders.Default.FirstOrDefault(p => p.CanProvide(value.LocalType));
+
+            if (provider != null)
+            {
+                provider.Serialise(ilg, value, packer);
+                return;
+            }
+
             var type = value.LocalType;
-
-            var packerMethod = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { type });
-            if (packerMethod != null)
-            {
-                ilg.Emit(OpCodes.Ldloc, packer);
-                ilg.Emit(OpCodes.Ldloc, value);
-                ilg.Emit(OpCodes.Call, packerMethod);
-                return;
-            }
-
-            if (type == typeof(decimal))
-            {
-                // write the string form of the value
-                ilg.Emit(OpCodes.Ldloc, packer);
-                ilg.Emit(OpCodes.Ldloca, value);
-                ilg.Emit(OpCodes.Call, typeof(decimal).GetMethod(nameof(decimal.ToString), new Type[0]));
-                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(string) }));
-                return;
-            }
-
-            if (type.IsEnum)
-            {
-                // write the string form of the value
-                ilg.Emit(OpCodes.Ldloc, packer);
-                ilg.Emit(OpCodes.Ldloca, value);
-                ilg.Emit(OpCodes.Constrained, type);
-                ilg.Emit(OpCodes.Callvirt, typeof(object).GetMethod(nameof(ToString), new Type[0]));
-                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(string) }));
-                return;
-            }
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>))
             {

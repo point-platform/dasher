@@ -40,9 +40,13 @@
   <ItemGroup>
     <Compile Include="Format.cs" />
     <Compile Include="ILGeneratorExtensions.cs" />
+    <Compile Include="TypeProviders\DecimalProvider.cs" />
+    <Compile Include="TypeProviders\EnumProvider.cs" />
+    <Compile Include="TypeProviders\ITypeProvider.cs" />
     <Compile Include="MsgPackConstants.cs" />
     <Compile Include="FormatFamily.cs" />
     <Compile Include="Packer.cs" />
+    <Compile Include="TypeProviders\MsgPackTypeProvider.cs" />
     <Compile Include="Unpacker.cs" />
     <Compile Include="DeserialisationException.cs" />
     <Compile Include="Deserialiser.cs" />

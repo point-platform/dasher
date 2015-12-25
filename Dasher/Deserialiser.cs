@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -80,6 +79,11 @@ namespace Dasher
 
             #region Initialise locals
 
+            // Store the Unpacker arg as a local so we can pass it around
+            var unpacker = ilg.DeclareLocal(typeof(Unpacker));
+            ilg.Emit(OpCodes.Ldarg_0); // unpacker
+            ilg.Emit(OpCodes.Stloc, unpacker);
+
             var valueLocals = new LocalBuilder[parameters.Length];
             var valueSetLocals = new LocalBuilder[parameters.Length];
 
@@ -127,7 +131,7 @@ namespace Dasher
                 //
                 // MsgPack maps begin with a header indicating the number of pairs
                 // within the map. We read this here.
-                ilg.Emit(OpCodes.Ldarg_0); // unpacker
+                ilg.Emit(OpCodes.Ldloc, unpacker);
                 ilg.Emit(OpCodes.Ldloca, mapSize);
                 ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadMapLength)));
 
@@ -135,7 +139,7 @@ namespace Dasher
                 var ifLabel = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, ifLabel);
                 {
-                    ilg.Emit(OpCodes.Ldarg_0); // unpacker
+                    ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Call, typeof(Unpacker).GetProperty(nameof(Unpacker.HasStreamEnded)).GetMethod);
                     var lblNotEmpty = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Brfalse, lblNotEmpty);
@@ -173,7 +177,7 @@ namespace Dasher
                 // is to require keys to be strings. We read the key here.
                 var key = ilg.DeclareLocal(typeof(string));
                 {
-                    ilg.Emit(OpCodes.Ldarg_0); // unpacker
+                    ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Ldloca, key);
                     ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
 
@@ -234,7 +238,7 @@ namespace Dasher
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
-                    ReadPropertyValue(ilg, valueLocals[parameterIndex], parameters[parameterIndex].Name, type, unexpectedFieldBehaviour);
+                    ReadPropertyValue(ilg, valueLocals[parameterIndex], parameters[parameterIndex].Name, type, unexpectedFieldBehaviour, unpacker);
 
                     ilg.Emit(OpCodes.Br, lblEndIfChain);
                 }
@@ -329,138 +333,26 @@ namespace Dasher
 
         #region Read value to local
 
-        private static readonly Dictionary<Type, MethodInfo> _unpackerTryReadMethodByType = new Dictionary<Type, MethodInfo>
-        {
-            {typeof(sbyte),  typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadSByte))},
-            {typeof(byte),   typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadByte))},
-            {typeof(short),  typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadInt16))},
-            {typeof(ushort), typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadUInt16))},
-            {typeof(int),    typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadInt32))},
-            {typeof(uint),   typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadUInt32))},
-            {typeof(long),   typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadInt64))},
-            {typeof(ulong),  typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadUInt64))},
-            {typeof(float),  typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadSingle))},
-            {typeof(double), typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadDouble))},
-            {typeof(bool),   typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadBoolean))},
-            {typeof(string), typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()})},
-            {typeof(byte[]), typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadBinary))}
-        };
-
-        private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local, string name, Type targetType, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local, string name, Type targetType, UnexpectedFieldBehaviour unexpectedFieldBehaviour, LocalBuilder unpacker)
         {
             // TODO DateTime, TimeSpan
 
-            var type = local.LocalType;
+            var provider = TypeProviders.TypeProviders.Default.FirstOrDefault(p => p.CanProvide(local.LocalType));
 
-            MethodInfo unpackerMethod;
-            if (_unpackerTryReadMethodByType.TryGetValue(type, out unpackerMethod))
+            if (provider != null)
             {
-                ilg.Emit(OpCodes.Ldarg_0); // unpacker
-                ilg.Emit(OpCodes.Ldloca, local);
-                ilg.Emit(OpCodes.Call, unpackerMethod);
-
-                // If the unpacker method failed (returned false), throw
-                var typeGetterSuccess = ilg.DefineLabel();
-                ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
-                {
-                    var format = ilg.DeclareLocal(typeof(Format));
-                    ilg.Emit(OpCodes.Ldarg_0);
-                    ilg.Emit(OpCodes.Ldloca, format);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryPeekFormat)));
-                    ilg.Emit(OpCodes.Pop);
-
-                    ilg.Emit(OpCodes.Ldstr, "Unexpected type for \"{0}\". Expected {1}, got {2}.");
-                    ilg.Emit(OpCodes.Ldstr, name);
-                    ilg.Emit(OpCodes.Ldstr, type.Name);
-                    ilg.Emit(OpCodes.Ldloc, format);
-                    ilg.Emit(OpCodes.Box, typeof(Format));
-                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object), typeof(object) }));
-                    ilg.LoadType(targetType);
-                    ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
-                    ilg.Emit(OpCodes.Throw);
-                }
-                ilg.MarkLabel(typeGetterSuccess);
+                provider.Deserialise(ilg, local, unpacker, name, targetType);
                 return;
             }
 
-            if (type == typeof(decimal))
-            {
-                // Read value as a string
-                var s = ilg.DeclareLocal(typeof(string));
-
-                ilg.Emit(OpCodes.Ldarg_0);
-                ilg.Emit(OpCodes.Ldloca, s);
-                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
-
-                ilg.Emit(OpCodes.Ldloc, s); // unpacker
-                ilg.Emit(OpCodes.Ldloca, local);
-                ilg.Emit(OpCodes.Call, typeof(decimal).GetMethod(nameof(decimal.TryParse), new[] { typeof(string), typeof(decimal).MakeByRefType() }));
-
-                ilg.Emit(OpCodes.And);
-
-                // If the unpacker method failed (returned false), throw
-                var typeGetterSuccess = ilg.DefineLabel();
-                ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
-                {
-                    // TODO throw better exception
-                    ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 4b");
-                    ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] { typeof(string) }));
-                    ilg.Emit(OpCodes.Throw);
-                }
-                ilg.MarkLabel(typeGetterSuccess);
-                return;
-            }
-
-            if (type.IsEnum)
-            {
-                // Read value as a string
-                var s = ilg.DeclareLocal(typeof(string));
-
-                ilg.Emit(OpCodes.Ldarg_0);
-                ilg.Emit(OpCodes.Ldloca, s);
-                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
-
-                var lbl1 = ilg.DefineLabel();
-                ilg.Emit(OpCodes.Brtrue, lbl1);
-                {
-                    ilg.Emit(OpCodes.Ldstr, "Unable to read string value for enum property {0} of type {1}");
-                    ilg.Emit(OpCodes.Ldstr, name);
-                    ilg.LoadType(type);
-                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
-                    ilg.LoadType(targetType);
-                    ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
-                    ilg.Emit(OpCodes.Throw);
-                }
-                ilg.MarkLabel(lbl1);
-
-                ilg.Emit(OpCodes.Ldloc, s);
-                ilg.Emit(OpCodes.Ldc_I4_1);
-                ilg.Emit(OpCodes.Ldloca, local);
-                ilg.Emit(OpCodes.Call, typeof(Enum).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(m => m.Name == "TryParse" && m.GetParameters().Length == 3).MakeGenericMethod(type));
-
-                var lbl2 = ilg.DefineLabel();
-                ilg.Emit(OpCodes.Brtrue, lbl2);
-                {
-                    ilg.Emit(OpCodes.Ldstr, "Unable to parse value \"{0}\" as a member of enum type {1}");
-                    ilg.Emit(OpCodes.Ldloc, s);
-                    ilg.LoadType(type);
-                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
-                    ilg.LoadType(targetType);
-                    ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
-                    ilg.Emit(OpCodes.Throw);
-                }
-                ilg.MarkLabel(lbl2);
-                return;
-            }
-
-            var listType = type.GetInterfaces().SingleOrDefault(i => i.Name == "IReadOnlyCollection`1" && i.Namespace == "System.Collections.Generic");
+            var listType = local.LocalType.GetInterfaces().SingleOrDefault(i => i.Name == "IReadOnlyCollection`1" && i.Namespace == "System.Collections.Generic");
             if (listType != null)
             {
                 var elementType = listType.GetGenericArguments().Single();
 
                 // read list length
                 var count = ilg.DeclareLocal(typeof(int));
-                ilg.Emit(OpCodes.Ldarg_0);
+                ilg.Emit(OpCodes.Ldloc, unpacker);
                 ilg.Emit(OpCodes.Ldloca, count);
                 ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadArrayLength)));
 
@@ -496,7 +388,7 @@ namespace Dasher
 
                 // loop body
                 var element = ilg.DeclareLocal(elementType);
-                ReadPropertyValue(ilg, element, name, targetType, unexpectedFieldBehaviour);
+                ReadPropertyValue(ilg, element, name, targetType, unexpectedFieldBehaviour, unpacker);
 
                 ilg.Emit(OpCodes.Ldloc, array);
                 ilg.Emit(OpCodes.Ldloc, i);
@@ -524,21 +416,21 @@ namespace Dasher
                 return;
             }
 
-            if (type.IsClass && type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1)
+            if (local.LocalType.IsClass && local.LocalType.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1)
             {
                 // TODO should support complex structs too
                 // TODO cache subtype deserialiser instances in fields of generated class (requires moving away from DynamicMethod)
-                ilg.LoadType(type);
+                ilg.LoadType(local.LocalType);
                 ilg.Emit(OpCodes.Ldc_I4, (int)unexpectedFieldBehaviour);
                 ilg.Emit(OpCodes.Newobj, typeof(Deserialiser).GetConstructor(new[] {typeof(Type), typeof(UnexpectedFieldBehaviour)}));
-                ilg.Emit(OpCodes.Ldarg_0); // unpacker
+                ilg.Emit(OpCodes.Ldloc, unpacker);
                 ilg.Emit(OpCodes.Call, typeof(Deserialiser).GetMethod(nameof(Deserialiser.Deserialise), new[] {typeof(Unpacker)}));
-                ilg.Emit(OpCodes.Castclass, type);
+                ilg.Emit(OpCodes.Castclass, local.LocalType);
                 ilg.Emit(OpCodes.Stloc, local);
                 return;
             }
 
-            throw new NotImplementedException($"No support yet exists for reading values of type {type} from MsgPack data");
+            throw new NotImplementedException($"No support yet exists for reading values of type {local.LocalType} from MsgPack data");
         }
 
         #endregion
