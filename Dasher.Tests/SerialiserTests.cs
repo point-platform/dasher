@@ -81,6 +81,16 @@ namespace Dasher.Tests
             public TimeSpan Time { get; }
         }
 
+        public sealed class WithIntPtrProperty
+        {
+            public WithIntPtrProperty(IntPtr intPtr)
+            {
+                IntPtr = intPtr;
+            }
+
+            public IntPtr IntPtr { get; }
+        }
+
         public enum TestEnum
         {
             Foo = 1,
@@ -176,6 +186,16 @@ namespace Dasher.Tests
             var after = RoundTrip(new WithTimeSpanProperty(timeSpan));
 
             Assert.Equal(timeSpan, after.Time);
+        }
+
+        [Fact]
+        public void HandlesIntPtr()
+        {
+            var timeSpan = new IntPtr(12345678);
+
+            var after = RoundTrip(new WithIntPtrProperty(timeSpan));
+
+            Assert.Equal(timeSpan, after.IntPtr);
         }
 
         [Fact]

@@ -23,6 +23,7 @@ namespace Dasher.TypeProviders
             new DecimalProvider(),
             new DateTimeProvider(),
             new TimeSpanProvider(),
+            new IntPtrProvider(),
             new EnumProvider()
         };
     }

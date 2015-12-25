@@ -97,6 +97,16 @@ namespace Dasher.Tests
             public TimeSpan Time { get; }
         }
 
+        public sealed class WithIntPtrProperty
+        {
+            public WithIntPtrProperty(IntPtr intPtr)
+            {
+                IntPtr = intPtr;
+            }
+
+            public IntPtr IntPtr { get; }
+        }
+
         public enum TestEnum
         {
             Foo = 1,
@@ -283,6 +293,22 @@ namespace Dasher.Tests
             var after = new Deserialiser<WithTimeSpanProperty>().Deserialise(bytes);
 
             Assert.Equal(timeSpan, after.Time);
+        }
+
+        [Fact]
+        public void HandlesIntPtr()
+        {
+            var intPtr = new IntPtr(12345678);
+
+            var bytes = PackBytes(packer =>
+            {
+                packer.PackMapHeader(1)
+                    .Pack("IntPtr").Pack(intPtr.ToInt64());
+            });
+
+            var after = new Deserialiser<WithIntPtrProperty>().Deserialise(bytes);
+
+            Assert.Equal(intPtr, after.IntPtr);
         }
 
         [Fact]
