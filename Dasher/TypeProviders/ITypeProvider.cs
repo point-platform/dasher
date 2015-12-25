@@ -24,7 +24,8 @@ namespace Dasher.TypeProviders
             new DateTimeProvider(),
             new TimeSpanProvider(),
             new IntPtrProvider(),
-            new EnumProvider()
+            new EnumProvider(),
+            new VersionProvider()
         };
     }
 }

@@ -50,6 +50,7 @@
     <Compile Include="Packer.cs" />
     <Compile Include="TypeProviders\MsgPackTypeProvider.cs" />
     <Compile Include="TypeProviders\TimeSpanProvider.cs" />
+    <Compile Include="TypeProviders\VersionProvider.cs" />
     <Compile Include="Unpacker.cs" />
     <Compile Include="DeserialisationException.cs" />
     <Compile Include="Deserialiser.cs" />

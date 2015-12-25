@@ -107,6 +107,16 @@ namespace Dasher.Tests
             public IntPtr IntPtr { get; }
         }
 
+        public sealed class WithVersionProperty
+        {
+            public WithVersionProperty(Version version)
+            {
+                Version = version;
+            }
+
+            public Version Version { get; }
+        }
+
         public enum TestEnum
         {
             Foo = 1,
@@ -309,6 +319,22 @@ namespace Dasher.Tests
             var after = new Deserialiser<WithIntPtrProperty>().Deserialise(bytes);
 
             Assert.Equal(intPtr, after.IntPtr);
+        }
+
+        [Fact]
+        public void HandlesVersion()
+        {
+            var version = new Version("1.2.3");
+
+            var bytes = PackBytes(packer =>
+            {
+                packer.PackMapHeader(1)
+                    .Pack("Version").Pack(version.ToString());
+            });
+
+            var after = new Deserialiser<WithVersionProperty>().Deserialise(bytes);
+
+            Assert.Equal(version, after.Version);
         }
 
         [Fact]

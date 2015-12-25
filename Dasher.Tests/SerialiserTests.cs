@@ -91,6 +91,16 @@ namespace Dasher.Tests
             public IntPtr IntPtr { get; }
         }
 
+        public sealed class WithVersionProperty
+        {
+            public WithVersionProperty(Version version)
+            {
+                Version = version;
+            }
+
+            public Version Version { get; }
+        }
+
         public enum TestEnum
         {
             Foo = 1,
@@ -196,6 +206,16 @@ namespace Dasher.Tests
             var after = RoundTrip(new WithIntPtrProperty(timeSpan));
 
             Assert.Equal(timeSpan, after.IntPtr);
+        }
+
+        [Fact]
+        public void HandlesVersion()
+        {
+            var version = new Version("1.2.3");
+
+            var after = RoundTrip(new WithVersionProperty(version));
+
+            Assert.Equal(version, after.Version);
         }
 
         [Fact]
