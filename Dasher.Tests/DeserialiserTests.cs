@@ -87,6 +87,16 @@ namespace Dasher.Tests
             public DateTime Date { get; }
         }
 
+        public sealed class WithTimeSpanProperty
+        {
+            public WithTimeSpanProperty(TimeSpan time)
+            {
+                Time = time;
+            }
+
+            public TimeSpan Time { get; }
+        }
+
         public enum TestEnum
         {
             Foo = 1,
@@ -257,6 +267,22 @@ namespace Dasher.Tests
             var after = new Deserialiser<WithDateTimeProperty>().Deserialise(bytes);
 
             Assert.Equal(dateTime, after.Date);
+        }
+
+        [Fact]
+        public void HandlesTimeSpan()
+        {
+            var timeSpan = TimeSpan.FromSeconds(1234.5678);
+
+            var bytes = PackBytes(packer =>
+            {
+                packer.PackMapHeader(1)
+                    .Pack("Time").Pack(timeSpan.Ticks);
+            });
+
+            var after = new Deserialiser<WithTimeSpanProperty>().Deserialise(bytes);
+
+            Assert.Equal(timeSpan, after.Time);
         }
 
         [Fact]

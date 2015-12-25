@@ -71,6 +71,16 @@ namespace Dasher.Tests
             public DateTime Date { get; }
         }
 
+        public sealed class WithTimeSpanProperty
+        {
+            public WithTimeSpanProperty(TimeSpan time)
+            {
+                Time = time;
+            }
+
+            public TimeSpan Time { get; }
+        }
+
         public enum TestEnum
         {
             Foo = 1,
@@ -156,6 +166,16 @@ namespace Dasher.Tests
             var after = RoundTrip(new WithDateTimeProperty(dateTime));
 
             Assert.Equal(dateTime, after.Date);
+        }
+
+        [Fact]
+        public void HandlesTimeSpan()
+        {
+            var timeSpan = new TimeSpan(12345678);
+
+            var after = RoundTrip(new WithTimeSpanProperty(timeSpan));
+
+            Assert.Equal(timeSpan, after.Time);
         }
 
         [Fact]

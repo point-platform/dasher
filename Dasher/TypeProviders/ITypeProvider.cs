@@ -15,13 +15,14 @@ namespace Dasher.TypeProviders
 
     internal static class TypeProviders
     {
-        // TODO TimeSpan, nullable values
+        // TODO nullable values
 
         public static IEnumerable<ITypeProvider> Default { get; } = new ITypeProvider[]
         {
             new MsgPackTypeProvider(),
             new DecimalProvider(),
             new DateTimeProvider(),
+            new TimeSpanProvider(),
             new EnumProvider()
         };
     }
