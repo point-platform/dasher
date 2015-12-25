@@ -17,6 +17,8 @@ namespace Dasher
         }
 
         public T Deserialise(byte[] bytes) => (T)_inner.Deserialise(bytes);
+
+        public T Deserialise(Stream stream) => (T)_inner.Deserialise(stream);
     }
 
     public sealed class Deserialiser
@@ -36,6 +38,11 @@ namespace Dasher
         public object Deserialise(Unpacker unpacker)
         {
             return _func(unpacker);
+        }
+
+        public object Deserialise(Stream stream)
+        {
+            return Deserialise(new Unpacker(stream));
         }
 
         private static Func<Unpacker, object> BuildUnpacker(Type type)
