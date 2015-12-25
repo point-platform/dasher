@@ -112,7 +112,7 @@ namespace Dasher
 
             Action throwException = () =>
             {
-                LoadType(ilg, type);
+                ilg.LoadType(type);
                 ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             };
@@ -375,7 +375,7 @@ namespace Dasher
                     ilg.Emit(OpCodes.Ldloc, format);
                     ilg.Emit(OpCodes.Box, typeof(Format));
                     ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object), typeof(object) }));
-                    LoadType(ilg, targetType);
+                    ilg.LoadType(targetType);
                     ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                     ilg.Emit(OpCodes.Throw);
                 }
@@ -425,9 +425,9 @@ namespace Dasher
                 {
                     ilg.Emit(OpCodes.Ldstr, "Unable to read string value for enum property {0} of type {1}");
                     ilg.Emit(OpCodes.Ldstr, name);
-                    LoadType(ilg, type);
+                    ilg.LoadType(type);
                     ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
-                    LoadType(ilg, targetType);
+                    ilg.LoadType(targetType);
                     ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
                     ilg.Emit(OpCodes.Throw);
                 }
@@ -443,9 +443,9 @@ namespace Dasher
                 {
                     ilg.Emit(OpCodes.Ldstr, "Unable to parse value \"{0}\" as a member of enum type {1}");
                     ilg.Emit(OpCodes.Ldloc, s);
-                    LoadType(ilg, type);
+                    ilg.LoadType(type);
                     ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
-                    LoadType(ilg, targetType);
+                    ilg.LoadType(targetType);
                     ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
                     ilg.Emit(OpCodes.Throw);
                 }
@@ -469,7 +469,7 @@ namespace Dasher
                 ilg.Emit(OpCodes.Brtrue, lbl1);
                 {
                     ilg.Emit(OpCodes.Ldstr, "Expecting collection data to be encoded as array");
-                    LoadType(ilg, targetType);
+                    ilg.LoadType(targetType);
                     ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
                     ilg.Emit(OpCodes.Throw);
                 }
@@ -528,7 +528,7 @@ namespace Dasher
             {
                 // TODO should support complex structs too
                 // TODO cache subtype deserialiser instances in fields of generated class (requires moving away from DynamicMethod)
-                LoadType(ilg, type);
+                ilg.LoadType(type);
                 ilg.Emit(OpCodes.Ldc_I4, (int)unexpectedFieldBehaviour);
                 ilg.Emit(OpCodes.Newobj, typeof(Deserialiser).GetConstructor(new[] {typeof(Type), typeof(UnexpectedFieldBehaviour)}));
                 ilg.Emit(OpCodes.Ldarg_0); // unpacker
@@ -539,12 +539,6 @@ namespace Dasher
             }
 
             throw new NotImplementedException($"No support yet exists for reading values of type {type} from MsgPack data");
-        }
-
-        private static void LoadType(ILGenerator ilg, Type type)
-        {
-            ilg.Emit(OpCodes.Ldtoken, type);
-            ilg.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
         }
 
         #endregion

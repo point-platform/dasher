@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Format.cs" />
+    <Compile Include="ILGeneratorExtensions.cs" />
     <Compile Include="MsgPackConstants.cs" />
     <Compile Include="FormatFamily.cs" />
     <Compile Include="Packer.cs" />
