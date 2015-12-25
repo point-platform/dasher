@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -58,6 +59,16 @@ namespace Dasher.Tests
 
             public string Name { get; }
             public decimal Score { get; }
+        }
+
+        public sealed class WithDateTimeProperty
+        {
+            public WithDateTimeProperty(DateTime date)
+            {
+                Date = date;
+            }
+
+            public DateTime Date { get; }
         }
 
         public enum TestEnum
@@ -135,6 +146,16 @@ namespace Dasher.Tests
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123.456m, after.Score);
+        }
+
+        [Fact]
+        public void HandlesDateTime()
+        {
+            var dateTime = new DateTime(2015, 12, 25);
+
+            var after = RoundTrip(new WithDateTimeProperty(dateTime));
+
+            Assert.Equal(dateTime, after.Date);
         }
 
         [Fact]

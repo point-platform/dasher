@@ -77,6 +77,16 @@ namespace Dasher.Tests
             public decimal Score { get; }
         }
 
+        public sealed class WithDateTimeProperty
+        {
+            public WithDateTimeProperty(DateTime date)
+            {
+                Date = date;
+            }
+
+            public DateTime Date { get; }
+        }
+
         public enum TestEnum
         {
             Foo = 1,
@@ -231,6 +241,22 @@ namespace Dasher.Tests
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123.4567m, after.Score);
+        }
+
+        [Fact]
+        public void HandlesDateTime()
+        {
+            var dateTime = new DateTime(2015, 12, 25);
+
+            var bytes = PackBytes(packer =>
+            {
+                packer.PackMapHeader(1)
+                    .Pack("Date").Pack(dateTime.Ticks);
+            });
+
+            var after = new Deserialiser<WithDateTimeProperty>().Deserialise(bytes);
+
+            Assert.Equal(dateTime, after.Date);
         }
 
         [Fact]

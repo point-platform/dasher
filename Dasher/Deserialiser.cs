@@ -335,8 +335,6 @@ namespace Dasher
 
         private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local, string name, Type targetType, UnexpectedFieldBehaviour unexpectedFieldBehaviour, LocalBuilder unpacker)
         {
-            // TODO DateTime, TimeSpan
-
             var provider = TypeProviders.TypeProviders.Default.FirstOrDefault(p => p.CanProvide(local.LocalType));
 
             if (provider != null)
