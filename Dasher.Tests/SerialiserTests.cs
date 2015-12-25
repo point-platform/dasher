@@ -190,11 +190,11 @@ namespace Dasher.Tests
         {
             var stream = new MemoryStream();
 
-            Serialiser.Get<T>().Serialise(stream, before);
+            new Serialiser<T>().Serialise(stream, before);
 
             stream.Position = 0;
 
-            return Deserialiser.Get<T>().Deserialise(stream.ToArray());
+            return new Deserialiser<T>().Deserialise(stream.ToArray());
         }
 
         #endregion

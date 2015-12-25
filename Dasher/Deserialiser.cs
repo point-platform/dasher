@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,9 +11,9 @@ namespace Dasher
     {
         private readonly Deserialiser _inner;
 
-        internal Deserialiser(Deserialiser inner)
+        public Deserialiser()
         {
-            _inner = inner;
+            _inner = new Deserialiser(typeof(T));
         }
 
         public T Deserialise(byte[] bytes) => (T)_inner.Deserialise(bytes);
@@ -23,32 +21,9 @@ namespace Dasher
 
     public sealed class Deserialiser
     {
-        #region Instance accessors
-
-        private static readonly ConcurrentDictionary<Type, Deserialiser> _deserialiserByType = new ConcurrentDictionary<Type, Deserialiser>();
-
-        public static Deserialiser<T> Get<T>()
-        {
-            return new Deserialiser<T>(Get(typeof(T)));
-        }
-
-        public static Deserialiser Get(Type type)
-        {
-            Deserialiser deserialiser;
-            if (_deserialiserByType.TryGetValue(type, out deserialiser))
-                return deserialiser;
-
-            _deserialiserByType.TryAdd(type, new Deserialiser(type));
-            var present = _deserialiserByType.TryGetValue(type, out deserialiser);
-            Debug.Assert(present);
-            return deserialiser;
-        }
-
-        #endregion
-
         private readonly Func<Unpacker, object> _func;
 
-        private Deserialiser(Type type)
+        public Deserialiser(Type type)
         {
             _func = BuildUnpacker(type);
         }
@@ -538,7 +513,7 @@ namespace Dasher
                 // TODO should support complex structs too
                 // TODO cache subtype deserialiser instances in fields of generated class (requires moving away from DynamicMethod)
                 LoadType(ilg, type);
-                ilg.Emit(OpCodes.Call, typeof(Deserialiser).GetMethod(nameof(Deserialiser.Get), new[] {typeof(Type)}));
+                ilg.Emit(OpCodes.Newobj, typeof(Deserialiser).GetConstructor(new[] {typeof(Type)}));
                 ilg.Emit(OpCodes.Ldarg_0); // unpacker
                 ilg.Emit(OpCodes.Call, typeof(Deserialiser).GetMethod(nameof(Deserialiser.Deserialise), new[] {typeof(Unpacker)}));
                 ilg.Emit(OpCodes.Castclass, type);

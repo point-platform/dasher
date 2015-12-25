@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,9 +11,9 @@ namespace Dasher
     {
         private readonly Serialiser _inner;
 
-        internal Serialiser(Serialiser inner)
+        public Serialiser()
         {
-            _inner = inner;
+            _inner = new Serialiser(typeof(T));
         }
 
         public void Serialise(Stream stream, T value)
@@ -36,32 +34,9 @@ namespace Dasher
 
     public sealed class Serialiser
     {
-        #region Instance accessors
-
-        private static readonly ConcurrentDictionary<Type, Serialiser> _serialiserByType = new ConcurrentDictionary<Type, Serialiser>();
-
-        public static Serialiser<T> Get<T>()
-        {
-            return new Serialiser<T>(Get(typeof(T)));
-        }
-
-        public static Serialiser Get(Type type)
-        {
-            Serialiser deserialiser;
-            if (_serialiserByType.TryGetValue(type, out deserialiser))
-                return deserialiser;
-
-            _serialiserByType.TryAdd(type, new Serialiser(type));
-            var present = _serialiserByType.TryGetValue(type, out deserialiser);
-            Debug.Assert(present);
-            return deserialiser;
-        }
-
-        #endregion
-
         private readonly Action<UnsafePacker, object> _action;
 
-        private Serialiser(Type type)
+        public Serialiser(Type type)
         {
             _action = BuildPacker(type);
         }
