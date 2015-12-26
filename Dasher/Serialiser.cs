@@ -56,7 +56,7 @@ namespace Dasher
         {
             var stream = new MemoryStream();
             using (var packer = new UnsafePacker(stream))
-                _action(packer, value);
+                Serialise(packer, value);
             return stream.ToArray();
         }
 
