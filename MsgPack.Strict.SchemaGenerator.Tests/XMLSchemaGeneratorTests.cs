@@ -135,13 +135,13 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
         public void GenerateXMLSchemaForSimpleType()
         {
             /*
-            <UserScore>
+            <Message = "UserScore">
               <Field name="name" type="System.String" />
               <Field name="score" type = "System.Int32" />
             </UserScore>
             */
 
-            var expected = new XElement("UserScore",
+            var expected = new XElement("Message", new XAttribute("name", "UserScore"),
                 new XElement("Field",
                     new XAttribute("name", "name"),
                     new XAttribute("type", "System.String")),
@@ -160,12 +160,12 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
         public void GenerateXMLSchemaForSimpleTypeWithDefaults()
         {
             /*
-            <UserScoreWithDefaultScore>
+            <Message name=UserScoreWithDefaultScore">
               <Field name="name" type="System.String" />
               <Field name="score" type="System.Int32" default="100" />
             </UserScoreWithDefaultScore>
             */
-            var expected = new XElement("UserScoreWithDefaultScore",
+            var expected = new XElement("Message", new XAttribute("name", "UserScoreWithDefaultScore"),
                             new XElement("Field",
                                 new XAttribute("name", "name"),
                                 new XAttribute("type", "System.String")),
@@ -184,13 +184,13 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
         public void GenerateXMLSchemaForTypeContainingList()
         {
             /*
-            <UserScoreList>
+            <Message name="UserScoreList">
               <Field name="name" type="System.String" />
               <Field name="scores" type="System.Collections.Generic.IReadOnlyList`1[System.Int32]" />
             </UserScoreList>
             */
 
-            var expected = new XElement("UserScoreList",
+            var expected = new XElement("Message", new XAttribute("name", "UserScoreList"),
                 new XElement("Field",
                     new XAttribute("name", "name"),
                     new XAttribute("type", "System.String")),
@@ -229,7 +229,7 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
         public void GenerateSchemaForTypeContainingComplexType()
         {
             /*
-<TestDefaultParams>
+<Message name="TestDefaultParams">
   <Field name="sb" type="System.SByte" default="-12" />
   <Field name="b" type="System.Byte" default="12" />
   <Field name="s" type="System.Int16" default="-1234" />
@@ -253,7 +253,7 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
 </TestDefaultParams>
             */
 
-            var expected = new XElement("TestDefaultParams",
+            var expected = new XElement("Message", new XAttribute("name", "TestDefaultParams"),
                             new XElement("Field",
                                 new XAttribute("name", "sb"),
                                 new XAttribute("type", "System.SByte"),
@@ -310,7 +310,7 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
                                 new XAttribute("name", "complex"),
                                 new XAttribute("type", "MsgPack.Strict.SchemaGenerator.Tests.XMLSchemaGeneratorTests+UserScore"),
                                 new XAttribute("default", "null"),
-                                    new XElement("UserScore",
+                                    new XElement("Message", new XAttribute("name", "UserScore"),
                                         new XElement("Field",
                                             new XAttribute("name", "name"),
                                             new XAttribute("type", "System.String")),

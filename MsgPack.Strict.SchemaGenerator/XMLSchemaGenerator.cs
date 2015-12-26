@@ -14,7 +14,7 @@ namespace MsgPack.Strict.SchemaGenerator
             if (ctors.Length != 1)
                 throw new SchemaGenerationException("Type must have a single public constructor.", type);
 
-            var result = new XElement(type.Name);
+            var result = new XElement("Message", new XAttribute("name", type.Name));
 
             foreach (var ctorArg in type.GetConstructors().Single().GetParameters())
             {

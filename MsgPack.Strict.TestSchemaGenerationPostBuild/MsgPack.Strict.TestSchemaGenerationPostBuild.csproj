@@ -107,6 +107,11 @@
       <Name>MsgPack.Strict</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="App.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>$(SolutionDir)\MsgPack.Strict.SchemaGenerator\bin\Debug\MsgPack.Strict.SchemaGenerator.exe --targetDir=$(TargetDir) --targetPath=$(TargetPath) --projectDir=$(ProjectDir)</PostBuildEvent>
