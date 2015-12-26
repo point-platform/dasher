@@ -5,8 +5,6 @@ using static Dasher.MsgPackConstants;
 
 namespace Dasher
 {
-    // TODO support nullable values
-
     public sealed class Packer
     {
         private readonly Stream _stream;

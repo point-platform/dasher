@@ -22,7 +22,8 @@ namespace Dasher
                 new IntPtrProvider(),
                 new EnumProvider(),
                 new VersionProvider(),
-                new ReadOnlyListProvider()
+                new ReadOnlyListProvider(),
+                new NullableValueProvider()
             };
 
             if (typeProviders == null)

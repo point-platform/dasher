@@ -245,6 +245,22 @@ namespace Dasher.Tests
             }
         }
 
+        public sealed class WithNullableProperties
+        {
+            public int? Int { get; }
+            public double? Double { get; }
+            public DateTime? DateTime { get; }
+            public decimal? Decimal { get; }
+
+            public WithNullableProperties(int? @int, double? @double, DateTime? dateTime, decimal? @decimal)
+            {
+                Int = @int;
+                Double = @double;
+                DateTime = dateTime;
+                Decimal = @decimal;
+            }
+        }
+
         #endregion
 
         [Fact]
@@ -335,6 +351,26 @@ namespace Dasher.Tests
             var after = new Deserialiser<WithVersionProperty>().Deserialise(bytes);
 
             Assert.Equal(version, after.Version);
+        }
+
+        [Fact]
+        public void HandlesNullableValueTypes()
+        {
+            var bytes = PackBytes(packer =>
+            {
+                packer.PackMapHeader(4)
+                    .Pack("Int").PackNull()
+                    .Pack("Double").PackNull()
+                    .Pack("DateTime").PackNull()
+                    .Pack("Decimal").PackNull();
+            });
+
+            var after = new Deserialiser<WithNullableProperties>().Deserialise(bytes);
+
+            Assert.Null(after.Int);
+            Assert.Null(after.Double);
+            Assert.Null(after.DateTime);
+            Assert.Null(after.Decimal);
         }
 
         [Fact]

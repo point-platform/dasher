@@ -101,6 +101,22 @@ namespace Dasher.Tests
             public Version Version { get; }
         }
 
+        public sealed class WithNullableProperties
+        {
+            public int? Int { get; }
+            public double? Double { get; }
+            public DateTime? DateTime { get; }
+            public decimal? Decimal { get; }
+
+            public WithNullableProperties(int? @int, double? @double, DateTime? dateTime, decimal? @decimal)
+            {
+                Int = @int;
+                Double = @double;
+                DateTime = dateTime;
+                Decimal = @decimal;
+            }
+        }
+
         public enum TestEnum
         {
             Foo = 1,
@@ -216,6 +232,24 @@ namespace Dasher.Tests
             var after = RoundTrip(new WithVersionProperty(version));
 
             Assert.Equal(version, after.Version);
+        }
+
+        [Fact]
+        public void HandlesNullableValueTypes()
+        {
+            var after = RoundTrip(new WithNullableProperties(null, null, null, null));
+
+            Assert.Null(after.Int);
+            Assert.Null(after.Double);
+            Assert.Null(after.DateTime);
+            Assert.Null(after.Decimal);
+
+            after = RoundTrip(new WithNullableProperties(123, 2.3d, DateTime.Today, 12.3m));
+
+            Assert.Equal(123, after.Int);
+            Assert.Equal(2.3d, after.Double);
+            Assert.Equal(DateTime.Today, after.DateTime);
+            Assert.Equal(12.3m, after.Decimal);
         }
 
         [Fact]
