@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<App>
+  <ID>
+    <Name>MsgPack.Strict.TestSchemaGenerationPostBuild</Name>
+    <Version>1.0.0</Version>
+  </ID>
+  <DisplayName>MsgPack-strict SchemaGenerator Test Project</DisplayName>
+  <IsSupportApp>False</IsSupportApp>
+  <HasView>True</HasView>
+  <AllowMultipleProcesses>False</AllowMultipleProcesses>
+  <AllowMultipleViews>True</AllowMultipleViews>
+  <Dependencies></Dependencies>
+  <Files>
+    <File>MsgPack.Strict.TestSchemaGenerationPostBuild.exe</File>
+    <File>MsgPack.Strict.dll</File>
+    <File>App.ico</File>
+  </Files>
+  <SendsMessages>
+    <Message name="ListOfList">
+      <Field name="jagged" type="System.Collections.Generic.IReadOnlyList`1[System.Collections.Generic.IReadOnlyList`1[System.Int32]]" />
+    </Message>
+    <Message name="UserScoreList">
+      <Field name="name" type="System.String" />
+      <Field name="scores" type="System.Collections.Generic.IReadOnlyList`1[System.Int32]" />
+    </Message>
+    <Message name="WithEnumProperty">
+      <Field name="testEnum" type="MsgPack.Strict.TestSchemaGenerationPostBuild.TestEnum" />
+    </Message>
+    <Message name="UserScoreDecimal">
+      <Field name="name" type="System.String" />
+      <Field name="score" type="System.Decimal" />
+    </Message>
+    <Message name="UserScoreWrapper">
+      <Field name="weight" type="System.Double" />
+      <Field name="userScore" type="MsgPack.Strict.TestSchemaGenerationPostBuild.UserScore">
+        <Type name="UserScore">
+          <Field name="name" type="System.String" />
+          <Field name="score" type="System.Int32" />
+        </Type>
+      </Field>
+    </Message>
+    <Message name="UserScoreStruct">
+      <Field name="name" type="System.String" />
+      <Field name="score" type="System.Int32" />
+    </Message>
+    <Message name="UserScore">
+      <Field name="name" type="System.String" />
+      <Field name="score" type="System.Int32" />
+    </Message>
+  </SendsMessages>
+  <ReceivesMessages>
+    <Message name="ListOfList">
+      <Field name="jagged" type="System.Collections.Generic.IReadOnlyList`1[System.Collections.Generic.IReadOnlyList`1[System.Int32]]" />
+    </Message>
+    <Message name="UserScoreList">
+      <Field name="name" type="System.String" />
+      <Field name="scores" type="System.Collections.Generic.IReadOnlyList`1[System.Int32]" />
+    </Message>
+    <Message name="WithEnumProperty">
+      <Field name="testEnum" type="MsgPack.Strict.TestSchemaGenerationPostBuild.TestEnum" />
+    </Message>
+    <Message name="UserScoreDecimal">
+      <Field name="name" type="System.String" />
+      <Field name="score" type="System.Decimal" />
+    </Message>
+    <Message name="UserScoreWrapper">
+      <Field name="weight" type="System.Double" />
+      <Field name="userScore" type="MsgPack.Strict.TestSchemaGenerationPostBuild.UserScore">
+        <Type name="UserScore">
+          <Field name="name" type="System.String" />
+          <Field name="score" type="System.Int32" />
+        </Type>
+      </Field>
+    </Message>
+    <Message name="UserScoreStruct">
+      <Field name="name" type="System.String" />
+      <Field name="score" type="System.Int32" />
+    </Message>
+    <Message name="UserScore">
+      <Field name="name" type="System.String" />
+      <Field name="score" type="System.Int32" />
+    </Message>
+    <Message name="TestDefaultParams">
+      <Field name="sb" type="System.SByte" default="-12" />
+      <Field name="b" type="System.Byte" default="12" />
+      <Field name="s" type="System.Int16" default="-1234" />
+      <Field name="us" type="System.UInt16" default="1234" />
+      <Field name="i" type="System.Int32" default="-12345" />
+      <Field name="ui" type="System.UInt32" default="12345" />
+      <Field name="l" type="System.Int64" default="-12345678900" />
+      <Field name="ul" type="System.UInt64" default="12345678900" />
+      <Field name="str" type="System.String" default="str" />
+      <Field name="f" type="System.Single" default="1.23" />
+      <Field name="d" type="System.Double" default="1.23" />
+      <Field name="dc" type="System.Decimal" default="1.23" />
+      <Field name="e" type="MsgPack.Strict.TestSchemaGenerationPostBuild.TestEnum" default="Bar" />
+      <Field name="complex" type="MsgPack.Strict.TestSchemaGenerationPostBuild.UserScore" default="null">
+        <Type name="UserScore">
+          <Field name="name" type="System.String" />
+          <Field name="score" type="System.Int32" />
+        </Type>
+      </Field>
+      <Field name="bo" type="System.Boolean" default="true" />
+    </Message>
+    <Message name="UserScoreWithDefaultScore">
+      <Field name="name" type="System.String" />
+      <Field name="score" type="System.Int32" default="100" />
+    </Message>
+  </ReceivesMessages>
+</App>

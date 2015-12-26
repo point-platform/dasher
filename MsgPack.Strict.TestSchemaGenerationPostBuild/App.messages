@@ -1,0 +1,103 @@
+Sends:
+UserScore
+{
+    name: System.String
+    score: System.Int32
+}
+UserScoreStruct
+{
+    name: System.String
+    score: System.Int32
+}
+UserScoreWrapper
+{
+    weight: System.Double
+    userScore: UserScore
+    {
+        name: System.String
+        score: System.Int32
+    }
+}
+UserScoreDecimal
+{
+    name: System.String
+    score: System.Decimal
+}
+WithEnumProperty
+{
+    testEnum: MsgPack.Strict.TestSchemaGenerationPostBuild.TestEnum
+}
+UserScoreList
+{
+    name: System.String
+    scores: System.Collections.Generic.IReadOnlyList`1[System.Int32]
+}
+ListOfList
+{
+    jagged: System.Collections.Generic.IReadOnlyList`1[System.Collections.Generic.IReadOnlyList`1[System.Int32]]
+}
+Receives:
+UserScoreWithDefaultScore
+{
+    name: System.String
+    score: System.Int32 = 100
+}
+TestDefaultParams
+{
+    sb: System.SByte = -12
+    b: System.Byte = 12
+    s: System.Int16 = -1234
+    us: System.UInt16 = 1234
+    i: System.Int32 = -12345
+    ui: System.UInt32 = 12345
+    l: System.Int64 = -12345678900
+    ul: System.UInt64 = 12345678900
+    str: System.String = str
+    f: System.Single = 1.23
+    d: System.Double = 1.23
+    dc: System.Decimal = 1.23
+    e: MsgPack.Strict.TestSchemaGenerationPostBuild.TestEnum = Bar
+    complex: UserScore
+    {
+        name: System.String
+        score: System.Int32
+    }
+    bo: System.Boolean = True
+}
+UserScore
+{
+    name: System.String
+    score: System.Int32
+}
+UserScoreStruct
+{
+    name: System.String
+    score: System.Int32
+}
+UserScoreWrapper
+{
+    weight: System.Double
+    userScore: UserScore
+    {
+        name: System.String
+        score: System.Int32
+    }
+}
+UserScoreDecimal
+{
+    name: System.String
+    score: System.Decimal
+}
+WithEnumProperty
+{
+    testEnum: MsgPack.Strict.TestSchemaGenerationPostBuild.TestEnum
+}
+UserScoreList
+{
+    name: System.String
+    scores: System.Collections.Generic.IReadOnlyList`1[System.Int32]
+}
+ListOfList
+{
+    jagged: System.Collections.Generic.IReadOnlyList`1[System.Collections.Generic.IReadOnlyList`1[System.Int32]]
+}

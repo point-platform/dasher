@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -44,7 +46,7 @@ namespace MsgPack.Strict
 
         #endregion
 
-        private readonly Func<Unpacker, object> _func;
+        private readonly Func<MsgPackUnpacker, object> _func;
 
         private StrictDeserialiser(Type type)
         {
@@ -53,16 +55,23 @@ namespace MsgPack.Strict
 
         public object Deserialise(byte[] bytes)
         {
-            var unpacker = Unpacker.Create(new MemoryStream(bytes));
+            return Deserialise(new MsgPackUnpacker(new MemoryStream(bytes)));
+        }
+
+        public object Deserialise(MsgPackUnpacker unpacker)
+        {
             return _func(unpacker);
         }
 
-        private static Func<Unpacker, object> BuildUnpacker(Type type)
+        private static Func<MsgPackUnpacker, object> BuildUnpacker(Type type)
         {
             #region Verify and prepare for target type
 
             if (type.IsPrimitive)
                 throw new Exception("TEST THIS CASE 1");
+
+            if(type.GetCustomAttributes(typeof(ReceiveMessageAttribute), true).Length == 0)
+                throw new StrictDeserialisationException("Type must have a ReceiveMessage attribute.", type);
 
             var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (ctors.Length != 1)
@@ -78,7 +87,7 @@ namespace MsgPack.Strict
             var method = new DynamicMethod(
                 $"Deserialiser{type.Name}",
                 typeof(object),
-                new[] {typeof(Unpacker)});
+                new[] {typeof(MsgPackUnpacker) });
 
             var ilg = method.GetILGenerator();
 
@@ -99,7 +108,7 @@ namespace MsgPack.Strict
                 if (parameter.HasDefaultValue)
                 {
                     // set default values on params
-                    StoreValue(ilg, parameter.DefaultValue);
+                    LoadConstant(ilg, parameter.DefaultValue);
                     ilg.Emit(OpCodes.Stloc, valueLocals[i]);
                     // set 'valueSet' to true
                     // note we use the second LSb to indicate a default value
@@ -118,15 +127,14 @@ namespace MsgPack.Strict
 
             Action throwException = () =>
             {
-                ilg.Emit(OpCodes.Ldtoken, type);
-                ilg.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+                LoadType(ilg, type);
                 ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             };
 
             #region Read map length
 
-            var mapSize = ilg.DeclareLocal(typeof(long));
+            var mapSize = ilg.DeclareLocal(typeof(int));
             {
                 // MsgPack messages may be single values, arrays, maps, or any arbitrary
                 // combination of these types. Our convention is to require messages to
@@ -136,13 +144,20 @@ namespace MsgPack.Strict
                 // within the map. We read this here.
                 ilg.Emit(OpCodes.Ldarg_0); // unpacker
                 ilg.Emit(OpCodes.Ldloca, mapSize);
-                ilg.Emit(OpCodes.Callvirt, typeof(Unpacker).GetMethod("ReadMapLength"));
+                ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadMapLength)));
 
                 // If false was returned, the data stream ended
                 var ifLabel = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, ifLabel);
                 {
-                    ilg.Emit(OpCodes.Ldstr, "Data stream ended.");
+                    ilg.Emit(OpCodes.Ldarg_0); // unpacker
+                    ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetProperty(nameof(MsgPackUnpacker.HasStreamEnded)).GetMethod);
+                    var lblNotEmpty = ilg.DefineLabel();
+                    ilg.Emit(OpCodes.Brfalse, lblNotEmpty);
+                    ilg.Emit(OpCodes.Ldstr, "Data stream empty");
+                    throwException();
+                    ilg.MarkLabel(lblNotEmpty);
+                    ilg.Emit(OpCodes.Ldstr, "Message must be encoded as a MsgPack map");
                     throwException();
                 }
                 ilg.MarkLabel(ifLabel);
@@ -175,7 +190,7 @@ namespace MsgPack.Strict
                 {
                     ilg.Emit(OpCodes.Ldarg_0); // unpacker
                     ilg.Emit(OpCodes.Ldloca, key);
-                    ilg.Emit(OpCodes.Callvirt, typeof(Unpacker).GetMethod("ReadString"));
+                    ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
 
                     // If false was returned, the data stream ended
                     var ifLabel = ilg.DefineLabel();
@@ -221,7 +236,7 @@ namespace MsgPack.Strict
                         {
                             ilg.Emit(OpCodes.Ldstr, "Encountered duplicate field \"{0}\".");
                             ilg.Emit(OpCodes.Ldloc, key);
-                            ilg.Emit(OpCodes.Call, typeof(string).GetMethod("Format", new[] { typeof(string), typeof(object) }));
+                            ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object) }));
                             throwException();
                         }
 
@@ -234,23 +249,7 @@ namespace MsgPack.Strict
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
-                    // Read value
-                    // The unpacker method expects, on the stack, the unpacker and the address of the value to store to
-                    ilg.Emit(OpCodes.Ldarg_0); // unpacker
-                    ilg.Emit(OpCodes.Ldloca, valueLocals[parameterIndex]);
-                    var unpackerMethod = ValueUnpacker.GetUnpackerMethodForType(parameters[parameterIndex].ParameterType);
-                    ilg.Emit(OpCodes.Call, unpackerMethod);
-
-                    // If the unpacker method failed (returned false), throw
-                    var typeGetterSuccess = ilg.DefineLabel();
-                    ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
-                    {
-                        // TODO throw better exception
-                        ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 4");
-                        ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
-                        ilg.Emit(OpCodes.Throw);
-                    }
-                    ilg.MarkLabel(typeGetterSuccess);
+                    ReadPropertyValue(ilg, valueLocals[parameterIndex], parameters[parameterIndex].Name, type);
 
                     ilg.Emit(OpCodes.Br, lblEndIfChain);
                 }
@@ -261,7 +260,7 @@ namespace MsgPack.Strict
                 // If we got here then the property was not recognised. Throw.
                 ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\".");
                 ilg.Emit(OpCodes.Ldloc, key);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod("Format", new[] {typeof(string), typeof(object)}));
+                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)}));
                 throwException();
 
                 ilg.MarkLabel(lblEndIfChain);
@@ -277,6 +276,7 @@ namespace MsgPack.Strict
                 ilg.MarkLabel(lblLoopTest);
                 ilg.Emit(OpCodes.Ldloc, loopIndex);
                 ilg.Emit(OpCodes.Ldloc, mapSize);
+                ilg.Emit(OpCodes.Conv_I8, mapSize);
                 // If the loop is done, jump to the first instruction after the loop
                 ilg.Emit(OpCodes.Beq, lblLoopExit);
 
@@ -292,11 +292,17 @@ namespace MsgPack.Strict
             var lblValuesMissing = ilg.DefineLabel();
             var lblValuesOk = ilg.DefineLabel();
 
-            foreach (var valueSetLocal in valueSetLocals)
+            var paramName = ilg.DeclareLocal(typeof(string));
+            for (var i = 0; i < valueSetLocals.Length; i++)
             {
+                // Store the name of the parameter we are inspecting
+                // for use in the exception later.
+                ilg.Emit(OpCodes.Ldstr, parameters[i].Name);
+                ilg.Emit(OpCodes.Stloc, paramName);
+
                 // If any value is zero then neither a default nor specified value
                 // exists for that parameter, and we cannot continue.
-                ilg.Emit(OpCodes.Ldloc, valueSetLocal);
+                ilg.Emit(OpCodes.Ldloc, valueSetLocals[i]);
                 ilg.Emit(OpCodes.Ldc_I4_0);
                 ilg.Emit(OpCodes.Beq, lblValuesMissing);
             }
@@ -307,8 +313,9 @@ namespace MsgPack.Strict
             {
                 // If we got here then one or more values is missing.
                 ilg.MarkLabel(lblValuesMissing);
-                // TODO include more detailed information about the missing fields
-                ilg.Emit(OpCodes.Ldstr, "Missing one or more required fields");
+                ilg.Emit(OpCodes.Ldstr, "Missing required field \"{0}\".");
+                ilg.Emit(OpCodes.Ldloc, paramName);
+                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object) }));
                 throwException();
             }
             ilg.MarkLabel(lblValuesOk);
@@ -322,14 +329,237 @@ namespace MsgPack.Strict
             // Call the target type's constructor
             ilg.Emit(OpCodes.Newobj, ctor);
 
+            if (type.IsValueType)
+                ilg.Emit(OpCodes.Box, type);
+
             // Return the newly constructed object!
             ilg.Emit(OpCodes.Ret);
 
             // Return a delegate that performs the above operations
-            return (Func<Unpacker, object>)method.CreateDelegate(typeof(Func<Unpacker, object>));
+            return (Func<MsgPackUnpacker, object>)method.CreateDelegate(typeof(Func<MsgPackUnpacker, object>));
         }
 
-        private static void StoreValue(ILGenerator ilg, object value)
+        #region Read value to local
+
+        private static readonly Dictionary<Type, MethodInfo> _unpackerTryReadMethodByType = new Dictionary<Type, MethodInfo>
+        {
+            {typeof(sbyte),  typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadSByte))},
+            {typeof(byte),   typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadByte))},
+            {typeof(short),  typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadInt16))},
+            {typeof(ushort), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadUInt16))},
+            {typeof(int),    typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadInt32))},
+            {typeof(uint),   typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadUInt32))},
+            {typeof(long),   typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadInt64))},
+            {typeof(ulong),  typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadUInt64))},
+            {typeof(float),  typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadSingle))},
+            {typeof(double), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadDouble))},
+            {typeof(bool),   typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadBoolean))},
+            {typeof(string), typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] {typeof(string).MakeByRefType()})}
+        };
+
+        private static void ReadPropertyValue(ILGenerator ilg, LocalBuilder local, string name, Type targetType)
+        {
+            // TODO DateTime, TimeSpan
+
+            var type = local.LocalType;
+
+            MethodInfo unpackerMethod;
+            if (_unpackerTryReadMethodByType.TryGetValue(type, out unpackerMethod))
+            {
+                ilg.Emit(OpCodes.Ldarg_0); // unpacker
+                ilg.Emit(OpCodes.Ldloca, local);
+                ilg.Emit(OpCodes.Call, unpackerMethod);
+
+                // If the unpacker method failed (returned false), throw
+                var typeGetterSuccess = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
+                {
+                    var format = ilg.DeclareLocal(typeof(Format));
+                    ilg.Emit(OpCodes.Ldarg_0);
+                    ilg.Emit(OpCodes.Ldloca, format);
+                    ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryPeekFormat)));
+                    ilg.Emit(OpCodes.Pop);
+
+                    ilg.Emit(OpCodes.Ldstr, "Unexpected type for \"{0}\". Expected {1}, got {2}.");
+                    ilg.Emit(OpCodes.Ldstr, name);
+                    ilg.Emit(OpCodes.Ldstr, type.Name);
+                    ilg.Emit(OpCodes.Ldloc, format);
+                    ilg.Emit(OpCodes.Box, typeof(Format));
+                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object), typeof(object) }));
+                    LoadType(ilg, targetType);
+                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
+                    ilg.Emit(OpCodes.Throw);
+                }
+                ilg.MarkLabel(typeGetterSuccess);
+                return;
+            }
+
+            if (type == typeof(decimal))
+            {
+                // Read value as a string
+                var s = ilg.DeclareLocal(typeof(string));
+
+                ilg.Emit(OpCodes.Ldarg_0);
+                ilg.Emit(OpCodes.Ldloca, s);
+                ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
+
+                ilg.Emit(OpCodes.Ldloc, s); // unpacker
+                ilg.Emit(OpCodes.Ldloca, local);
+                ilg.Emit(OpCodes.Call, typeof(decimal).GetMethod(nameof(decimal.TryParse), new[] { typeof(string), typeof(decimal).MakeByRefType() }));
+
+                ilg.Emit(OpCodes.And);
+
+                // If the unpacker method failed (returned false), throw
+                var typeGetterSuccess = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
+                {
+                    // TODO throw better exception
+                    ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 4b");
+                    ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] { typeof(string) }));
+                    ilg.Emit(OpCodes.Throw);
+                }
+                ilg.MarkLabel(typeGetterSuccess);
+                return;
+            }
+
+            if (type.IsEnum)
+            {
+                // Read value as a string
+                var s = ilg.DeclareLocal(typeof(string));
+
+                ilg.Emit(OpCodes.Ldarg_0);
+                ilg.Emit(OpCodes.Ldloca, s);
+                ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
+
+                var lbl1 = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Brtrue, lbl1);
+                {
+                    ilg.Emit(OpCodes.Ldstr, "Unable to read string value for enum property {0} of type {1}");
+                    ilg.Emit(OpCodes.Ldstr, name);
+                    LoadType(ilg, type);
+                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
+                    LoadType(ilg, targetType);
+                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                    ilg.Emit(OpCodes.Throw);
+                }
+                ilg.MarkLabel(lbl1);
+
+                ilg.Emit(OpCodes.Ldloc, s);
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                ilg.Emit(OpCodes.Ldloca, local);
+                ilg.Emit(OpCodes.Call, typeof(Enum).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(m => m.Name == "TryParse" && m.GetParameters().Length == 3).MakeGenericMethod(type));
+
+                var lbl2 = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Brtrue, lbl2);
+                {
+                    ilg.Emit(OpCodes.Ldstr, "Unable to parse value \"{0}\" as a member of enum type {1}");
+                    ilg.Emit(OpCodes.Ldloc, s);
+                    LoadType(ilg, type);
+                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
+                    LoadType(ilg, targetType);
+                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                    ilg.Emit(OpCodes.Throw);
+                }
+                ilg.MarkLabel(lbl2);
+                return;
+            }
+
+            var listType = type.GetInterfaces().SingleOrDefault(i => i.Name == "IReadOnlyCollection`1" && i.Namespace == "System.Collections.Generic");
+            if (listType != null)
+            {
+                var elementType = listType.GetGenericArguments().Single();
+
+                // read list length
+                var count = ilg.DeclareLocal(typeof(int));
+                ilg.Emit(OpCodes.Ldarg_0);
+                ilg.Emit(OpCodes.Ldloca, count);
+                ilg.Emit(OpCodes.Call, typeof(MsgPackUnpacker).GetMethod(nameof(MsgPackUnpacker.TryReadArrayLength)));
+
+                // verify read correctly
+                var lbl1 = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Brtrue, lbl1);
+                {
+                    ilg.Emit(OpCodes.Ldstr, "Expecting collection data to be encoded as array");
+                    LoadType(ilg, targetType);
+                    ilg.Emit(OpCodes.Newobj, typeof(StrictDeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                    ilg.Emit(OpCodes.Throw);
+                }
+                ilg.MarkLabel(lbl1);
+
+                // create an array to store values
+                ilg.Emit(OpCodes.Ldloc, count);
+                ilg.Emit(OpCodes.Newarr, elementType);
+
+                var array = ilg.DeclareLocal(elementType.MakeArrayType());
+                ilg.Emit(OpCodes.Stloc, array);
+
+                // begin loop
+                var loopStart = ilg.DefineLabel();
+                var loopTest = ilg.DefineLabel();
+                var loopEnd = ilg.DefineLabel();
+
+                var i = ilg.DeclareLocal(typeof(int));
+                ilg.Emit(OpCodes.Ldc_I4_0);
+                ilg.Emit(OpCodes.Stloc, i);
+
+                ilg.Emit(OpCodes.Br, loopTest);
+                ilg.MarkLabel(loopStart);
+
+                // loop body
+                var element = ilg.DeclareLocal(elementType);
+                ReadPropertyValue(ilg, element, name, targetType);
+
+                ilg.Emit(OpCodes.Ldloc, array);
+                ilg.Emit(OpCodes.Ldloc, i);
+                ilg.Emit(OpCodes.Ldloc, element);
+                ilg.Emit(OpCodes.Stelem, elementType);
+
+                // loop counter increment
+                ilg.Emit(OpCodes.Ldloc, i);
+                ilg.Emit(OpCodes.Ldc_I4_1);
+                ilg.Emit(OpCodes.Add);
+                ilg.Emit(OpCodes.Stloc, i);
+
+                // loop test
+                ilg.MarkLabel(loopTest);
+                ilg.Emit(OpCodes.Ldloc, i);
+                ilg.Emit(OpCodes.Ldloc, count);
+                ilg.Emit(OpCodes.Clt);
+                ilg.Emit(OpCodes.Brtrue, loopStart);
+
+                // after loop
+                ilg.MarkLabel(loopEnd);
+
+                ilg.Emit(OpCodes.Ldloc, array);
+                ilg.Emit(OpCodes.Stloc, local);
+                return;
+            }
+
+            if (type.IsClass && type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1)
+            {
+                // TODO should support complex structs too
+                // TODO cache subtype deserialiser instances in fields of generated class (requires moving away from DynamicMethod)
+                LoadType(ilg, type);
+                ilg.Emit(OpCodes.Call, typeof(StrictDeserialiser).GetMethod(nameof(StrictDeserialiser.Get), new[] {typeof(Type)}));
+                ilg.Emit(OpCodes.Ldarg_0); // unpacker
+                ilg.Emit(OpCodes.Call, typeof(StrictDeserialiser).GetMethod(nameof(StrictDeserialiser.Deserialise), new[] {typeof(MsgPackUnpacker)}));
+                ilg.Emit(OpCodes.Castclass, type);
+                ilg.Emit(OpCodes.Stloc, local);
+                return;
+            }
+
+            throw new NotImplementedException($"No support yet exists for reading values of type {type} from MsgPack data");
+        }
+
+        private static void LoadType(ILGenerator ilg, Type type)
+        {
+            ilg.Emit(OpCodes.Ldtoken, type);
+            ilg.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
+        }
+
+        #endregion
+
+        private static void LoadConstant(ILGenerator ilg, object value)
         {
             if (value == null)
                 ilg.Emit(OpCodes.Ldnull);
@@ -370,6 +600,11 @@ namespace MsgPack.Strict
                     ilg.Emit(OpCodes.Stelem_I4);
                 }
                 ilg.Emit(OpCodes.Newobj, typeof(decimal).GetConstructor(new[] {typeof(int[])}));
+            }
+            else if (value.GetType().IsEnum)
+            {
+                // TODO test and cater for non-4-byte enums too
+                ilg.Emit(OpCodes.Ldc_I4, (int)value);
             }
             else
             {
