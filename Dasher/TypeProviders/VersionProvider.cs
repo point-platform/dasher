@@ -7,7 +7,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type == typeof(Version);
 
-        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer)
+        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, DasherContext context)
         {
             // write the string form
             ilg.Emit(OpCodes.Ldloc, packer);
@@ -16,7 +16,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(string) }));
         }
 
-        public void Deserialise(ILGenerator ilg, LocalBuilder value, LocalBuilder unpacker, string name, Type targetType)
+        public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // read value as string
             var s = ilg.DeclareLocal(typeof(string));

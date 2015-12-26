@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
+using Dasher.TypeProviders;
 
 namespace Dasher
 {
@@ -36,9 +34,9 @@ namespace Dasher
     {
         private readonly Action<UnsafePacker, object> _action;
 
-        public Serialiser(Type type)
+        public Serialiser(Type type, DasherContext context = null)
         {
-            _action = BuildPacker(type);
+            _action = BuildPacker(type, context ?? new DasherContext());
         }
 
         public void Serialise(Stream stream, object value)
@@ -60,7 +58,7 @@ namespace Dasher
             return stream.ToArray();
         }
 
-        private static Action<UnsafePacker, object> BuildPacker(Type type)
+        private static Action<UnsafePacker, object> BuildPacker(Type type, DasherContext context)
         {
             if (type.IsPrimitive)
                 throw new Exception("TEST THIS CASE 1");
@@ -83,108 +81,16 @@ namespace Dasher
             ilg.Emit(type.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
             ilg.Emit(OpCodes.Stloc, value);
 
-            WriteObject(ilg, packer, value);
+            ITypeProvider provider;
+            if (!context.TryGetTypeProvider(value.LocalType, out provider))
+                throw new Exception($"Cannot serialise type {value.LocalType}.");
+
+            provider.Serialise(ilg, value, packer, context);
 
             ilg.Emit(OpCodes.Ret);
 
             // Return a delegate that performs the above operations
             return (Action<UnsafePacker, object>)method.CreateDelegate(typeof(Action<UnsafePacker, object>));
-        }
-
-        private static void WriteObject(ILGenerator ilg, LocalBuilder packer, LocalBuilder value)
-        {
-            var provider = TypeProviders.TypeProviders.Default.FirstOrDefault(p => p.CanProvide(value.LocalType));
-
-            if (provider != null)
-            {
-                provider.Serialise(ilg, value, packer);
-                return;
-            }
-
-            var type = value.LocalType;
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>))
-            {
-                var elementType = type.GetGenericArguments().Single();
-
-                // read list length
-                var count = ilg.DeclareLocal(typeof(int));
-                ilg.Emit(OpCodes.Ldloc, value);
-                ilg.Emit(OpCodes.Callvirt, typeof(IReadOnlyCollection<>).MakeGenericType(elementType).GetProperty(nameof(IReadOnlyList<int>.Count)).GetMethod);
-                ilg.Emit(OpCodes.Stloc, count);
-
-                // write array header
-                ilg.Emit(OpCodes.Ldloc, packer);
-                ilg.Emit(OpCodes.Ldloc, count);
-                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackArrayHeader)));
-
-                // begin loop
-                var loopStart = ilg.DefineLabel();
-                var loopTest = ilg.DefineLabel();
-                var loopEnd = ilg.DefineLabel();
-
-                var i = ilg.DeclareLocal(typeof(int));
-                ilg.Emit(OpCodes.Ldc_I4_0);
-                ilg.Emit(OpCodes.Stloc, i);
-
-                ilg.Emit(OpCodes.Br, loopTest);
-                ilg.MarkLabel(loopStart);
-
-                // loop body
-                ilg.Emit(OpCodes.Ldloc, value);
-                ilg.Emit(OpCodes.Ldloc, i);
-                ilg.Emit(OpCodes.Callvirt, type.GetProperties(BindingFlags.Public|BindingFlags.Instance).Single(p => p.Name == "Item" && p.GetIndexParameters().Length == 1).GetMethod);
-                var elementValue = ilg.DeclareLocal(elementType);
-                ilg.Emit(OpCodes.Stloc, elementValue);
-                WriteObject(ilg, packer, elementValue);
-
-                // loop counter increment
-                ilg.Emit(OpCodes.Ldloc, i);
-                ilg.Emit(OpCodes.Ldc_I4_1);
-                ilg.Emit(OpCodes.Add);
-                ilg.Emit(OpCodes.Stloc, i);
-
-                // loop test
-                ilg.MarkLabel(loopTest);
-                ilg.Emit(OpCodes.Ldloc, i);
-                ilg.Emit(OpCodes.Ldloc, count);
-                ilg.Emit(OpCodes.Clt);
-                ilg.Emit(OpCodes.Brtrue, loopStart);
-
-                // after loop
-                ilg.MarkLabel(loopEnd);
-                return;
-            }
-
-            // treat as complex object and recur
-            var props = type
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => p.CanRead)
-                .ToList();
-
-            // write map header
-            ilg.Emit(OpCodes.Ldloc, packer);
-            ilg.Emit(OpCodes.Ldc_I4, props.Count);
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackMapHeader)));
-
-            // write each property's value
-            foreach (var prop in props)
-            {
-                var propValue = ilg.DeclareLocal(prop.PropertyType);
-
-                // write property name
-                ilg.Emit(OpCodes.Ldloc, packer);
-                ilg.Emit(OpCodes.Ldstr, prop.Name);
-                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
-
-                // get property value
-                ilg.Emit(type.IsValueType ? OpCodes.Ldloca : OpCodes.Ldloc, value);
-                ilg.Emit(OpCodes.Call, prop.GetMethod);
-                ilg.Emit(OpCodes.Stloc, propValue);
-
-                // write property value
-                WriteObject(ilg, packer, propValue);
-            }
         }
     }
 }
