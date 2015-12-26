@@ -58,6 +58,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PackerPerfTests.cs" />
     <Compile Include="PackerTests.cs" />
     <Compile Include="UnpackerTests.cs" />
     <Compile Include="DeserialiserTests.cs" />
