@@ -101,6 +101,16 @@ namespace Dasher.Tests
             public Version Version { get; }
         }
 
+        public sealed class WithGuidProperty
+        {
+            public WithGuidProperty(Guid guid)
+            {
+                Guid = guid;
+            }
+
+            public Guid Guid { get; }
+        }
+
         public sealed class WithNullableProperties
         {
             public int? Int { get; }
@@ -232,6 +242,16 @@ namespace Dasher.Tests
             var after = RoundTrip(new WithVersionProperty(version));
 
             Assert.Equal(version, after.Version);
+        }
+
+        [Fact]
+        public void HandlesGuid()
+        {
+            var guid = new Guid();
+
+            var after = RoundTrip(new WithGuidProperty(guid));
+
+            Assert.Equal(guid, after.Guid);
         }
 
         [Fact]

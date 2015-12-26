@@ -20,6 +20,7 @@ namespace Dasher
                 new DateTimeProvider(),
                 new TimeSpanProvider(),
                 new IntPtrProvider(),
+                new GuidProvider(),
                 new EnumProvider(),
                 new VersionProvider(),
                 new ReadOnlyListProvider(),

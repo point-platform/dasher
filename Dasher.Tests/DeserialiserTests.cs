@@ -117,6 +117,16 @@ namespace Dasher.Tests
             public Version Version { get; }
         }
 
+        public sealed class WithGuidProperty
+        {
+            public WithGuidProperty(Guid guid)
+            {
+                Guid = guid;
+            }
+
+            public Guid Guid { get; }
+        }
+
         public enum TestEnum
         {
             Foo = 1,
@@ -351,6 +361,22 @@ namespace Dasher.Tests
             var after = new Deserialiser<WithVersionProperty>().Deserialise(bytes);
 
             Assert.Equal(version, after.Version);
+        }
+
+        [Fact]
+        public void HandlesGuid()
+        {
+            var guid = new Guid();
+
+            var bytes = PackBytes(packer =>
+            {
+                packer.PackMapHeader(1)
+                    .Pack("Guid").Pack(guid.ToString());
+            });
+
+            var after = new Deserialiser<WithGuidProperty>().Deserialise(bytes);
+
+            Assert.Equal(guid, after.Guid);
         }
 
         [Fact]
