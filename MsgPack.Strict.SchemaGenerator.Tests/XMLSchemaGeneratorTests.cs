@@ -244,7 +244,7 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
   <Field name="dc" type="System.Decimal" default="1.23" />
   <Field name="e" type="MsgPack.Strict.SchemaGenerator.Tests.XMLSchemaGeneratorTests+TestEnum" default="Bar" />
   <Field name="complex" type="MsgPack.Strict.SchemaGenerator.Tests.XMLSchemaGeneratorTests+UserScore" default="null">
-    <UserScore>
+    <Type name="UserScore">
       <Field name="name" type="System.String" />
       <Field name="score" type="System.Int32" />
     </UserScore>
@@ -310,7 +310,7 @@ namespace MsgPack.Strict.SchemaGenerator.Tests
                                 new XAttribute("name", "complex"),
                                 new XAttribute("type", "MsgPack.Strict.SchemaGenerator.Tests.XMLSchemaGeneratorTests+UserScore"),
                                 new XAttribute("default", "null"),
-                                    new XElement("Message", new XAttribute("name", "UserScore"),
+                                    new XElement("Type", new XAttribute("name", "UserScore"),
                                         new XElement("Field",
                                             new XAttribute("name", "name"),
                                             new XAttribute("type", "System.String")),

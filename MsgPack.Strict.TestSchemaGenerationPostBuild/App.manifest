@@ -33,10 +33,10 @@
     <Message name="UserScoreWrapper">
       <Field name="weight" type="System.Double" />
       <Field name="userScore" type="MsgPack.Strict.TestSchemaGenerationPostBuild.UserScore">
-        <Message name="UserScore">
+        <Type name="UserScore">
           <Field name="name" type="System.String" />
           <Field name="score" type="System.Int32" />
-        </Message>
+        </Type>
       </Field>
     </Message>
     <Message name="UserScoreStruct">
@@ -66,10 +66,10 @@
     <Message name="UserScoreWrapper">
       <Field name="weight" type="System.Double" />
       <Field name="userScore" type="MsgPack.Strict.TestSchemaGenerationPostBuild.UserScore">
-        <Message name="UserScore">
+        <Type name="UserScore">
           <Field name="name" type="System.String" />
           <Field name="score" type="System.Int32" />
-        </Message>
+        </Type>
       </Field>
     </Message>
     <Message name="UserScoreStruct">
@@ -95,10 +95,10 @@
       <Field name="dc" type="System.Decimal" default="1.23" />
       <Field name="e" type="MsgPack.Strict.TestSchemaGenerationPostBuild.TestEnum" default="Bar" />
       <Field name="complex" type="MsgPack.Strict.TestSchemaGenerationPostBuild.UserScore" default="null">
-        <Message name="UserScore">
+        <Type name="UserScore">
           <Field name="name" type="System.String" />
           <Field name="score" type="System.Int32" />
-        </Message>
+        </Type>
       </Field>
       <Field name="bo" type="System.Boolean" default="true" />
     </Message>

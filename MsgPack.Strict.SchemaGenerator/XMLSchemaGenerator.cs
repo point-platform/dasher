@@ -10,11 +10,24 @@ namespace MsgPack.Strict.SchemaGenerator
     {
         public static XElement GenerateSchema(Type type)
         {
+            return GenerateSchema(type, false);
+        }
+
+        private static XElement GenerateSchema(Type type, bool isSubType)
+        {
             var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (ctors.Length != 1)
                 throw new SchemaGenerationException("Type must have a single public constructor.", type);
 
-            var result = new XElement("Message", new XAttribute("name", type.Name));
+            XElement result;
+            if (isSubType)
+            {
+                result = new XElement("Type", new XAttribute("name", type.Name));
+            }
+            else
+            {
+                result = new XElement("Message", new XAttribute("name", type.Name));
+            }
 
             foreach (var ctorArg in type.GetConstructors().Single().GetParameters())
             {
@@ -41,7 +54,7 @@ namespace MsgPack.Strict.SchemaGenerator
                     {
                         fieldElem.Add(new XAttribute("default", ctorArg.DefaultValue == null ? "null" : ctorArg.DefaultValue));
                     }
-                    fieldElem.AddFirst(GenerateSchema(ctorArg.ParameterType));
+                    fieldElem.AddFirst(GenerateSchema(ctorArg.ParameterType, true));
                     result.Add(fieldElem);
                 }
             }
