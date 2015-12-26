@@ -172,6 +172,25 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void TryReadNull()
+        {
+            var stream = new MemoryStream();
+
+            var packer = MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None);
+            packer.PackNull();
+            packer.PackNull();
+            packer.Pack(1);
+
+            stream.Position = 0;
+
+            var unpacker = new Unpacker(stream);
+
+            Assert.True(unpacker.TryReadNull());
+            Assert.True(unpacker.TryReadNull());
+            Assert.False(unpacker.TryReadNull());
+        }
+
+        [Fact]
         public void TryReadArrayLength()
         {
             var inputs = new[] {0, 1, 2, 8, 50, 127, 128, 255, 256, short.MaxValue, ushort.MaxValue, int.MaxValue};

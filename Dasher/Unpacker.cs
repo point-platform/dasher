@@ -364,6 +364,17 @@ namespace Dasher
             return false;
         }
 
+        public bool TryReadNull()
+        {
+            if (TryPrepareNextByte() && _nextByte == NullByte)
+            {
+                _nextByte = -1;
+                return true;
+            }
+
+            return false;
+        }
+
         public bool TryReadArrayLength(out int value)
         {
             if (TryPrepareNextByte())
