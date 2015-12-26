@@ -52,6 +52,21 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void TryReadUInt16()
+        {
+            var inputs = new ushort[] { ushort.MinValue, ushort.MaxValue, 0, 1, 127, 128, 1000 };
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                ushort value;
+                Assert.True(unpacker.TryReadUInt16(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
         public void TryReadInt32()
         {
             var inputs = new[] {int.MinValue, int.MaxValue, 0, 1, -1, 127, -127, 128, -128, 1000, -1000, 12345678, -12345678};
@@ -67,6 +82,21 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void TryReadUInt32()
+        {
+            var inputs = new uint[] {uint.MinValue, uint.MaxValue, 0, 1, 127, 128, 1000, 12345678};
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                uint value;
+                Assert.True(unpacker.TryReadUInt32(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
         public void TryReadInt64()
         {
             var inputs = new[] {long.MinValue, long.MaxValue, 0, 1, -1, 127, -127, 128, -128, 1000, -1000, 12345678, -12345678, int.MinValue, int.MaxValue};
@@ -77,6 +107,21 @@ namespace Dasher.Tests
 
                 long value;
                 Assert.True(unpacker.TryReadInt64(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+        }
+
+        [Fact]
+        public void TryReadUInt64()
+        {
+            var inputs = new ulong[] {ulong.MinValue, ulong.MaxValue, 0, 1, 127, 128, 1000, 12345678, int.MaxValue, long.MaxValue};
+
+            foreach (var input in inputs)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
+
+                ulong value;
+                Assert.True(unpacker.TryReadUInt64(out value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
