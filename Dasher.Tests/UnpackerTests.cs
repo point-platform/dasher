@@ -39,7 +39,7 @@ namespace Dasher.Tests
         [Fact]
         public void TryReadInt16()
         {
-            var inputs = new short[] { short.MinValue, short.MaxValue, 0, 1, -1, 127, -127, 128, 128, 1000, -1000 };
+            var inputs = new short[] { short.MinValue, short.MaxValue, 0, 1, -1, 127, -127, 128, -128, 1000, -1000 };
 
             foreach (var input in inputs)
             {
@@ -54,7 +54,7 @@ namespace Dasher.Tests
         [Fact]
         public void TryReadInt32()
         {
-            var inputs = new[] {int.MinValue, int.MaxValue, 0, 1, -1, 127, -127, 128, 128, 1000, -1000, 12345678, -12345678};
+            var inputs = new[] {int.MinValue, int.MaxValue, 0, 1, -1, 127, -127, 128, -128, 1000, -1000, 12345678, -12345678};
 
             foreach (var input in inputs)
             {
@@ -69,7 +69,7 @@ namespace Dasher.Tests
         [Fact]
         public void TryReadInt64()
         {
-            var inputs = new[] {long.MinValue, long.MaxValue, 0, 1, -1, 127, -127, 128, 128, 1000, -1000, 12345678, -12345678, int.MinValue, int.MaxValue};
+            var inputs = new[] {long.MinValue, long.MaxValue, 0, 1, -1, 127, -127, 128, -128, 1000, -1000, 12345678, -12345678, int.MinValue, int.MaxValue};
 
             foreach (var input in inputs)
             {
