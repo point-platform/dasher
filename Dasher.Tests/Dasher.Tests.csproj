@@ -60,6 +60,7 @@
   <ItemGroup>
     <Compile Include="PackerPerfTests.cs" />
     <Compile Include="PackerTests.cs" />
+    <Compile Include="TestTypes.cs" />
     <Compile Include="UnpackerTests.cs" />
     <Compile Include="DeserialiserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
