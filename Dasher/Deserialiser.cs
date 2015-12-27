@@ -39,20 +39,11 @@ namespace Dasher
             _func = BuildUnpacker(type, unexpectedFieldBehaviour, _context);
         }
 
-        public object Deserialise(byte[] bytes)
-        {
-            return Deserialise(new Unpacker(new MemoryStream(bytes)));
-        }
+        public object Deserialise(byte[] bytes) => Deserialise(new Unpacker(new MemoryStream(bytes)));
 
-        public object Deserialise(Unpacker unpacker)
-        {
-            return _func(unpacker, _context);
-        }
+        public object Deserialise(Stream stream) => Deserialise(new Unpacker(stream));
 
-        public object Deserialise(Stream stream)
-        {
-            return Deserialise(new Unpacker(stream));
-        }
+        public object Deserialise(Unpacker unpacker) => _func(unpacker, _context);
 
         private static Func<Unpacker, DasherContext, object> BuildUnpacker(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour, DasherContext context)
         {
