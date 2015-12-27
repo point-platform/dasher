@@ -24,6 +24,8 @@ namespace Dasher
         public T Deserialise(byte[] bytes) => (T)_inner.Deserialise(bytes);
 
         public T Deserialise(Stream stream) => (T)_inner.Deserialise(stream);
+
+        public T Deserialise(Unpacker unpacker) => (T)_inner.Deserialise(unpacker);
     }
 
     public sealed class Deserialiser
