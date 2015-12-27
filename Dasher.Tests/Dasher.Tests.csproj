@@ -58,8 +58,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeserialiserPerfTests.cs" />
     <Compile Include="PackerPerfTests.cs" />
     <Compile Include="PackerTests.cs" />
+    <Compile Include="SerialiserPerfTests.cs" />
     <Compile Include="TestTypes.cs" />
     <Compile Include="UnpackerTests.cs" />
     <Compile Include="DeserialiserTests.cs" />

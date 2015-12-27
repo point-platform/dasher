@@ -43,6 +43,8 @@ namespace Dasher.Tests
 
             Console.Out.WriteLine("oneByOneTime = {0}", oneByOneTime);
             Console.Out.WriteLine("inChunksTime = {0}", inChunksTime);
+
+            Assert.True(inChunksTime < oneByOneTime);
         }
 
 //        [Fact]
@@ -148,7 +150,10 @@ namespace Dasher.Tests
 
             var thatPackTime = sw.Elapsed.TotalMilliseconds;
 
-            Assert.True(false, $"thisBytePackTime={thisBytePackTime}, thisUnsafeTime={thisUnsafeTime}, thatPackTime={thatPackTime}");
+            Console.Out.WriteLine($"thisBytePackTime={thisBytePackTime}, thisUnsafeTime={thisUnsafeTime}, thatPackTime={thatPackTime}");
+
+            Assert.True(thisUnsafeTime < thisBytePackTime);
+            Assert.True(thisUnsafeTime < thatPackTime);
         }
     }
 }
