@@ -44,6 +44,10 @@ namespace Dasher.Tests
         [Fact]
         public void SerialisationPerf()
         {
+#if DEBUG
+            Assert.True(false, "Performance comparison must be performed on a release build.");
+#endif
+
             var dasherSer = new Serialiser<UserScore>();
             var dasherPacker = new UnsafePacker(Stream.Null);
 
@@ -103,10 +107,6 @@ namespace Dasher.Tests
             var dasherMs = sw.Elapsed.TotalMilliseconds;
 
             ////
-
-#if DEBUG
-            Assert.True(false, "Performance comparison must be performed on a release build.");
-#endif
 
             TestOutput.WriteLine($"{nameof(dasherMs)}={dasherMs} {nameof(cliMs)}={cliMs}");
 
