@@ -28,11 +28,19 @@ using System.IO;
 using MsgPack;
 using MsgPack.Serialization;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Dasher.Tests
 {
     public sealed class SerialiserPerfTests
     {
+        private ITestOutputHelper TestOutput { get; }
+
+        public SerialiserPerfTests(ITestOutputHelper testOutput)
+        {
+            TestOutput = testOutput;
+        }
+
         [Fact]
         public void SerialisationPerf()
         {
@@ -99,6 +107,8 @@ namespace Dasher.Tests
 #if DEBUG
             Assert.True(false, "Performance comparison must be performed on a release build.");
 #endif
+
+            TestOutput.WriteLine($"{nameof(dasherMs)}={dasherMs} {nameof(cliMs)}={cliMs}");
 
             // serialisation performance is on par with MsgPack.Cli. should always be within 10%.
             Assert.True(dasherMs < cliMs * 1.1, $"{nameof(dasherMs)}={dasherMs} {nameof(cliMs)}={cliMs}");

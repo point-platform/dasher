@@ -28,11 +28,19 @@ using System.IO;
 using System.Linq;
 using MsgPack;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Dasher.Tests
 {
     public sealed class PackerPerfTests
     {
+        private ITestOutputHelper TestOutput { get; }
+
+        public PackerPerfTests(ITestOutputHelper testOutput)
+        {
+            TestOutput = testOutput;
+        }
+
         [Fact]
         public void StreamWritePerfTest()
         {
@@ -65,8 +73,8 @@ namespace Dasher.Tests
 
             var inChunksTime = sw.Elapsed.TotalMilliseconds;
 
-            Console.Out.WriteLine("oneByOneTime = {0}", oneByOneTime);
-            Console.Out.WriteLine("inChunksTime = {0}", inChunksTime);
+            TestOutput.WriteLine("oneByOneTime = {0}", oneByOneTime);
+            TestOutput.WriteLine("inChunksTime = {0}", inChunksTime);
 
             Assert.True(inChunksTime < oneByOneTime);
         }
@@ -174,7 +182,7 @@ namespace Dasher.Tests
 
             var thatPackTime = sw.Elapsed.TotalMilliseconds;
 
-            Console.Out.WriteLine($"thisBytePackTime={thisBytePackTime}, thisUnsafeTime={thisUnsafeTime}, thatPackTime={thatPackTime}");
+            TestOutput.WriteLine($"thisBytePackTime={thisBytePackTime}, thisUnsafeTime={thisUnsafeTime}, thatPackTime={thatPackTime}");
 
             Assert.True(thisUnsafeTime < thisBytePackTime);
             Assert.True(thisUnsafeTime < thatPackTime);
