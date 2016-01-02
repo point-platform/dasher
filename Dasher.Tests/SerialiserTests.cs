@@ -166,6 +166,15 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void HandlesNullList()
+        {
+            var after = RoundTrip(new UserScoreList("Bob", null));
+
+            Assert.Equal("Bob", after.Name);
+            Assert.Null(after.Scores);
+        }
+
+        [Fact]
         public void HandlesEnum()
         {
             var after = RoundTrip(new WithEnumProperty(TestEnum.Bar));
