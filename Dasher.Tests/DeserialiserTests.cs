@@ -215,7 +215,22 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void IgnoresUnexpectedField()
+        public void IgnoresUnexpectedFieldAtBeginning()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(3)
+                .Pack("SUPRISE").Pack("Unexpected")
+                .Pack("Name").Pack("Bob")
+                .Pack("Score").Pack(123));
+
+            var deserialiser = new Deserialiser<UserScore>(UnexpectedFieldBehaviour.Ignore);
+            var after = deserialiser.Deserialise(bytes);
+
+            Assert.Equal("Bob", after.Name);
+            Assert.Equal(123, after.Score);
+        }
+
+        [Fact]
+        public void IgnoresUnexpectedFieldAtEnd()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(3)
                 .Pack("Name").Pack("Bob")

@@ -282,6 +282,12 @@ namespace Dasher
                     ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)}));
                     throwException();
                 }
+                else
+                {
+                    // skip unexpected value
+                    ilg.Emit(OpCodes.Ldloc, unpacker);
+                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.SkipValue)));
+                }
 
                 ilg.MarkLabel(lblEndIfChain);
 
