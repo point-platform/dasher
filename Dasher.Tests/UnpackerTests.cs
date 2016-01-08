@@ -28,12 +28,20 @@ using System.IO;
 using System.Linq;
 using MsgPack;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Dasher.Tests
 {
     public sealed class UnpackerTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public UnpackerTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [Fact]
         public void TryReadByte()
         {
@@ -552,7 +560,7 @@ namespace Dasher.Tests
                 catch (XunitException)
                 {
                     foreach (var step in sequence.Skip(sequence.Count - 10))
-                        Console.Out.WriteLine(step);
+                        _output.WriteLine(step);
 
                     throw;
                 }
