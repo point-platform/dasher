@@ -757,7 +757,7 @@ namespace Dasher
             var b4 = _stream.ReadByte();
             if (b4 == -1)
                 throw new IOException("Unexpected end of stream.");
-            return (int)(b1 << 24 | b2 << 16 | b3 << 8 | b4);
+            return b1 << 24 | b2 << 16 | b3 << 8 | b4;
         }
 
         private long ReadInt64()
