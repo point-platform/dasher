@@ -567,6 +567,116 @@ namespace Dasher.Tests
             }
         }
 
+        [Fact]
+        public void SkipValue()
+        {
+            var stream = new MemoryStream();
+            var packer = new Packer(stream);
+
+            var unpacker = new Unpacker(stream);
+            var random = new Random();
+
+            Action<int> packArray = count =>
+            {
+                packer.PackArrayHeader((uint)count);
+                for (var i = 0; i < count; i++)
+                    packer.PackNull();
+            };
+
+            Action<int> packMap = count =>
+            {
+                packer.PackMapHeader((uint)count);
+                for (var i = 0; i < count; i++)
+                {
+                    packer.PackNull();
+                    packer.PackNull();
+                }
+            };
+
+            Action[] scenarios =
+            {
+                // Array
+                () => packArray(0),
+                () => packArray(1),
+                () => packArray(10),
+                () => packArray(127),
+                () => packArray(255),
+                () => packArray(1024),
+                // Map
+                () => packMap(0),
+                () => packMap(1),
+                () => packMap(10),
+                () => packMap(127),
+                () => packMap(255),
+                () => packMap(1024),
+                // SByte
+                () => packer.Pack((sbyte)random.Next()),
+                // Int16
+                () => packer.Pack((short)random.Next()),
+                // UInt16
+                () => packer.Pack((ushort)random.Next()),
+                // Int32
+                () => packer.Pack(random.Next()),
+                // UInt32
+                () => packer.Pack((uint)random.Next()),
+                // Int64
+                #pragma warning disable CS0675
+                () => packer.Pack(random.Next() | ((long)random.Next() << 32)),
+                #pragma warning restore CS0675
+                // UInt64
+                #pragma warning disable CS0675
+                () => packer.Pack((ulong)random.Next() | ((ulong)random.Next() << 32)),
+                #pragma warning restore CS0675
+                // Boolean
+                () => packer.Pack(true),
+                () => packer.Pack(false),
+                // Null
+                () => packer.PackNull(),
+                // String
+                () => packer.Pack(new string('A', 0)),
+                () => packer.Pack(new string('A', 10)),
+                () => packer.Pack(new string('A', 127)),
+                () => packer.Pack(new string('A', 255)),
+                () => packer.Pack(new string('A', 1024)),
+                // Single
+                () => packer.Pack((float)random.NextDouble()),
+                // Double
+                () => packer.Pack(random.NextDouble())
+            };
+
+            foreach (var scenario in scenarios)
+            {
+                stream.Position = 0;
+
+                packer.Pack(float.NaN);
+                scenario();
+                packer.Pack(float.NaN);
+
+                stream.Position = 0;
+
+                float value;
+                Assert.True(unpacker.TryReadSingle(out value));
+                Assert.True(float.IsNaN(value));
+
+                Format format;
+                Assert.True(unpacker.TryPeekFormat(out format));
+
+                try
+                {
+                    unpacker.SkipValue();
+
+                    Assert.True(unpacker.TryReadSingle(out value));
+                    Assert.True(float.IsNaN(value));
+                }
+                catch (Exception ex)
+                {
+                    _output.WriteLine($"Error with format: {format}");
+                    _output.WriteLine(ex.ToString());
+                    throw;
+                }
+            }
+        }
+
         #region Test support
 
         private static Unpacker InitTest(Action<MsgPack.Packer> packerAction)

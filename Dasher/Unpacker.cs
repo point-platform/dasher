@@ -621,6 +621,130 @@ namespace Dasher
             }
         }
 
+        #region Skip value
+
+        public void SkipValue()
+        {
+            if (!TryPrepareNextByte())
+                throw new IOException("End of stream reached");
+
+            var b = (byte)_nextByte;
+
+            if (b <= PosFixIntMaxByte ||
+                b >= NegFixIntMinByte)
+            {
+                _nextByte = -1;
+                return;
+            }
+
+            if (b >= FixMapMinPrefixByte && b <= FixMapMaxPrefixByte)
+            {
+                _nextByte = -1;
+                SkipValues((uint)((b ^ FixMapPrefixBits)<<1));
+                return;
+            }
+
+            if (b >= FixArrayMinPrefixByte && b <= FixArrayMaxPrefixByte)
+            {
+                _nextByte = -1;
+                SkipValues((uint)(b ^ FixArrayPrefixBits));
+                return;
+            }
+
+            if (b >= FixStrMinPrefixByte && b <= FixStrMaxPrefixByte)
+            {
+                _nextByte = -1;
+                SkipBytes((uint)(b ^ FixStrPrefixBits));
+                return;
+            }
+
+            switch (b)
+            {
+                case NullByte:           _nextByte = -1; return;
+                case FalseByte:          _nextByte = -1; return;
+                case TrueByte:           _nextByte = -1; return;
+                case Bin8PrefixByte:     _nextByte = -1; SkipBytes(ReadByte());   return;
+                case Bin16PrefixByte:    _nextByte = -1; SkipBytes(ReadUInt16()); return;
+                case Bin32PrefixByte:    _nextByte = -1; SkipBytes(ReadUInt32()); return;
+                case Ext8PrefixByte:     _nextByte = -1; SkipBytes(ReadByte());   return;
+                case Ext16PrefixByte:    _nextByte = -1; SkipBytes(ReadUInt16()); return;
+                case Ext32PrefixByte:    _nextByte = -1; SkipBytes(ReadUInt32()); return;
+                case Float32PrefixByte:  SkipBytes(5); return;
+                case Float64PrefixByte:  SkipBytes(9); return;
+                case UInt8PrefixByte:    SkipBytes(2); return;
+                case UInt16PrefixByte:   SkipBytes(3); return;
+                case UInt32PrefixByte:   SkipBytes(5); return;
+                case UInt64PrefixByte:   SkipBytes(9); return;
+                case Int8PrefixByte:     SkipBytes(2); return;
+                case Int16PrefixByte:    SkipBytes(3); return;
+                case Int32PrefixByte:    SkipBytes(5); return;
+                case Int64PrefixByte:    SkipBytes(9); return;
+                case FixExt1PrefixByte:  SkipBytes(3); return;
+                case FixExt2PrefixByte:  SkipBytes(4); return;
+                case FixExt4PrefixByte:  SkipBytes(6); return;
+                case FixExt8PrefixByte:  SkipBytes(10); return;
+                case FixExt16PrefixByte: SkipBytes(18); return;
+                case Str8PrefixByte:     _nextByte = -1; SkipBytes(ReadByte());    return;
+                case Str16PrefixByte:    _nextByte = -1; SkipBytes(ReadUInt16());  return;
+                case Str32PrefixByte:    _nextByte = -1; SkipBytes(ReadUInt32());  return;
+                case Array16PrefixByte:  _nextByte = -1; SkipValues(ReadUInt16()); return;
+                case Array32PrefixByte:  _nextByte = -1; SkipValues(ReadUInt32()); return;
+                case Map16PrefixByte:    _nextByte = -1; SkipValues((uint)ReadUInt16()<<1); return;
+                case Map32PrefixByte:    _nextByte = -1; SkipValues((ulong)ReadUInt32()<<1); return;
+
+                default:
+                    throw new Exception("Cannot decode type to skip");
+            }
+        }
+
+        private void SkipValues(uint count)
+        {
+            for (var i = 0; i < count; i++)
+                SkipValue();
+        }
+
+        private void SkipValues(ulong count)
+        {
+            for (var i = 0UL; i < count; i++)
+                SkipValue();
+        }
+
+        private void SkipBytes(uint count)
+        {
+            switch (count)
+            {
+                case 0:
+                    return;
+                case 1:
+                    if (_nextByte == -1 && !TryPrepareNextByte())
+                        throw new IOException("End of stream reached.");
+                    _nextByte = -1;
+                    return;
+            }
+
+            if (_nextByte != -1)
+            {
+                count--;
+                _nextByte = -1;
+            }
+
+            Debug.Assert(count > 0);
+
+            if (_stream.CanSeek)
+            {
+                var startPos = _stream.Position;
+                var endPos = _stream.Seek(count, SeekOrigin.Current);
+                if (endPos - startPos != count)
+                    throw new IOException("End of stream reached.");
+            }
+            else
+            {
+                Read(checked((int)count));
+            }
+        }
+
+        #endregion
+
         #region Reading strings
 
         public bool TryReadString(out string value)
