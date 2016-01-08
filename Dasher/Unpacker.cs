@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using static Dasher.MsgPackConstants;
@@ -486,8 +487,8 @@ namespace Dasher
                 {
                     if (length > int.MaxValue)
                         throw new Exception("Byte array length is too long to read");
-                    value = Read((int)length);
                     _nextByte = -1;
+                    value = Read((int)length);
                     return true;
                 }
             }
@@ -658,9 +659,9 @@ namespace Dasher
                     if (length > int.MaxValue)
                         throw new Exception("String length is too long to read");
 
+                    _nextByte = -1;
                     var bytes = Read((int)length);
                     value = encoding.GetString(bytes);
-                    _nextByte = -1;
                     return true;
                 }
             }
@@ -673,6 +674,8 @@ namespace Dasher
 
         private byte[] Read(int length)
         {
+            Debug.Assert(_nextByte == -1);
+
             var bytes = new byte[length];
             var pos = 0;
             while (pos != length)
