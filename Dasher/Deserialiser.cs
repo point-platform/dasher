@@ -96,6 +96,13 @@ namespace Dasher
 
             #endregion
 
+            Action throwException = () =>
+            {
+                ilg.LoadType(type);
+                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                ilg.Emit(OpCodes.Throw);
+            };
+
             #region Convert args to locals, so we can pass them around
 
             var unpacker = ilg.DeclareLocal(typeof(Unpacker));
@@ -107,45 +114,6 @@ namespace Dasher
             ilg.Emit(OpCodes.Stloc, contextLocal);
 
             #endregion
-
-            #region Initialise locals for constructor args
-
-            var valueLocals = new LocalBuilder[parameters.Length];
-            var valueSetLocals = new LocalBuilder[parameters.Length];
-
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                var parameter = parameters[i];
-
-                valueLocals[i] = ilg.DeclareLocal(parameter.ParameterType);
-                valueSetLocals[i] = ilg.DeclareLocal(typeof(int));
-
-                if (parameter.HasDefaultValue)
-                {
-                    // set default values on params
-                    LoadConstant(ilg, parameter.DefaultValue);
-                    ilg.Emit(OpCodes.Stloc, valueLocals[i]);
-                    // set 'valueSet' to true
-                    // note we use the second LSb to indicate a default value
-                    ilg.Emit(OpCodes.Ldc_I4_2);
-                    ilg.Emit(OpCodes.Stloc, valueSetLocals[i]);
-                }
-                else
-                {
-                    // set 'valueSet' to false
-                    ilg.Emit(OpCodes.Ldc_I4_0);
-                    ilg.Emit(OpCodes.Stloc, valueSetLocals[i]);
-                }
-            }
-
-            #endregion
-
-            Action throwException = () =>
-            {
-                ilg.LoadType(type);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
-                ilg.Emit(OpCodes.Throw);
-            };
 
             #region Read map length
 
@@ -186,6 +154,38 @@ namespace Dasher
                     throwException();
                 }
                 ilg.MarkLabel(lblHaveMapSize);
+            }
+
+            #endregion
+
+            #region Initialise locals for constructor args
+
+            var valueLocals = new LocalBuilder[parameters.Length];
+            var valueSetLocals = new LocalBuilder[parameters.Length];
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+
+                valueLocals[i] = ilg.DeclareLocal(parameter.ParameterType);
+                valueSetLocals[i] = ilg.DeclareLocal(typeof(int));
+
+                if (parameter.HasDefaultValue)
+                {
+                    // set default values on params
+                    LoadConstant(ilg, parameter.DefaultValue);
+                    ilg.Emit(OpCodes.Stloc, valueLocals[i]);
+                    // set 'valueSet' to true
+                    // note we use the second LSb to indicate a default value
+                    ilg.Emit(OpCodes.Ldc_I4_2);
+                    ilg.Emit(OpCodes.Stloc, valueSetLocals[i]);
+                }
+                else
+                {
+                    // set 'valueSet' to false
+                    ilg.Emit(OpCodes.Ldc_I4_0);
+                    ilg.Emit(OpCodes.Stloc, valueSetLocals[i]);
+                }
             }
 
             #endregion
