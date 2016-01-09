@@ -285,4 +285,16 @@ namespace Dasher.Tests
             Decimal = @decimal;
         }
     }
+
+    public sealed class Recurring
+    {
+        public int Num { get; }
+        public Recurring Inner { get; }
+
+        public Recurring(int num, Recurring inner)
+        {
+            Num = num;
+            Inner = inner;
+        }
+    }
 }

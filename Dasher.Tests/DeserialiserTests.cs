@@ -471,6 +471,30 @@ namespace Dasher.Tests
             Assert.Equal(new byte[] {1, 2, 3, 4}, after.Bytes);
         }
 
+        [Fact]
+        public void HandlesNullRootObject()
+        {
+            var stream = new MemoryStream();
+            var packer = new Packer(stream);
+            packer.PackNull();
+            stream.Position = 0;
+            Assert.Null(new Deserialiser<Recurring>().Deserialise(stream));
+        }
+
+        [Fact]
+        public void HandlesNullNestedObject()
+        {
+            var stream = new MemoryStream();
+            var packer = new Packer(stream);
+            packer.PackMapHeader(2);
+            packer.Pack("Num");
+            packer.Pack(1);
+            packer.Pack("Inner");
+            packer.PackNull();
+            stream.Position = 0;
+            Assert.Null(new Deserialiser<Recurring>().Deserialise(stream).Inner);
+        }
+
         #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)

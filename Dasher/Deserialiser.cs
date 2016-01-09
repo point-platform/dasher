@@ -160,9 +160,19 @@ namespace Dasher
                 ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadMapLength)));
 
                 // If false was returned, the data stream ended
-                var ifLabel = ilg.DefineLabel();
-                ilg.Emit(OpCodes.Brtrue, ifLabel);
+                var lblHaveMapSize = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Brtrue, lblHaveMapSize);
                 {
+                    ilg.Emit(OpCodes.Ldloc, unpacker);
+                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
+                    var lblNotNull = ilg.DefineLabel();
+                    ilg.Emit(OpCodes.Brfalse, lblNotNull);
+                    {
+                        // value is null
+                        ilg.Emit(OpCodes.Ldnull);
+                        ilg.Emit(OpCodes.Ret);
+                    }
+                    ilg.MarkLabel(lblNotNull);
                     ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Call, typeof(Unpacker).GetProperty(nameof(Unpacker.HasStreamEnded)).GetMethod);
                     var lblNotEmpty = ilg.DefineLabel();
@@ -173,7 +183,7 @@ namespace Dasher
                     ilg.Emit(OpCodes.Ldstr, "Message must be encoded as a MsgPack map");
                     throwException();
                 }
-                ilg.MarkLabel(ifLabel);
+                ilg.MarkLabel(lblHaveMapSize);
             }
 
             #endregion
