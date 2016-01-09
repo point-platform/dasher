@@ -33,9 +33,9 @@ namespace Dasher
     {
         private readonly Serialiser _inner;
 
-        public Serialiser()
+        public Serialiser(DasherContext context = null)
         {
-            _inner = new Serialiser(typeof(T));
+            _inner = new Serialiser(typeof(T), context);
         }
 
         public void Serialise(Stream stream, T value)
