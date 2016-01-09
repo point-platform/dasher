@@ -53,7 +53,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Call, type.GetProperty(nameof(Nullable<int>.Value)).GetMethod);
             ilg.Emit(OpCodes.Stloc, nonNullValue);
-            provider.Serialise(ilg, nonNullValue, packer, context);
+            provider.Serialise(ilg, nonNullValue, packer, contextLocal, context);
 
             ilg.Emit(OpCodes.Br, lblExit);
 

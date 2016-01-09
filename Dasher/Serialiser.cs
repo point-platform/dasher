@@ -56,11 +56,14 @@ namespace Dasher
 
     public sealed class Serialiser
     {
-        private readonly Action<UnsafePacker, object> _action;
+        private readonly Action<UnsafePacker, DasherContext, object> _action;
+        private readonly DasherContext _context;
 
         public Serialiser(Type type, DasherContext context = null)
         {
-            _action = BuildPacker(type, context ?? new DasherContext());
+            _context = context ?? new DasherContext();
+            _context.RegisterSerialiser(type, this);
+            _action = BuildPacker(type, _context);
         }
 
         public void Serialise(Stream stream, object value)
@@ -71,7 +74,7 @@ namespace Dasher
 
         public void Serialise(UnsafePacker packer, object value)
         {
-            _action(packer, value);
+            _action(packer, _context, value);
         }
 
         public byte[] Serialise(object value)
@@ -82,7 +85,7 @@ namespace Dasher
             return stream.ToArray();
         }
 
-        private static Action<UnsafePacker, object> BuildPacker(Type type, DasherContext context)
+        private static Action<UnsafePacker, DasherContext, object> BuildPacker(Type type, DasherContext context)
         {
             if (type.IsPrimitive)
                 throw new Exception("TEST THIS CASE 1");
@@ -90,7 +93,8 @@ namespace Dasher
             var method = new DynamicMethod(
                 $"Serialiser{type.Name}",
                 null,
-                new[] { typeof(UnsafePacker), typeof(object) });
+                new[] { typeof(UnsafePacker), typeof(DasherContext), typeof(object) },
+                restrictedSkipVisibility: true);
 
             var ilg = method.GetILGenerator();
 
@@ -99,9 +103,14 @@ namespace Dasher
             ilg.Emit(OpCodes.Ldarg_0); // packer
             ilg.Emit(OpCodes.Stloc, packer);
 
+            // store context in a local so we can pass it easily
+            var contextLocal = ilg.DeclareLocal(typeof(DasherContext));
+            ilg.Emit(OpCodes.Ldarg_1); // context
+            ilg.Emit(OpCodes.Stloc, contextLocal);
+
             // cast value to a local of required type
             var value = ilg.DeclareLocal(type);
-            ilg.Emit(OpCodes.Ldarg_1); // value
+            ilg.Emit(OpCodes.Ldarg_2); // value
             ilg.Emit(type.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
             ilg.Emit(OpCodes.Stloc, value);
 
@@ -109,12 +118,12 @@ namespace Dasher
             if (!context.TryGetTypeProvider(value.LocalType, out provider))
                 throw new Exception($"Cannot serialise type {value.LocalType}.");
 
-            provider.Serialise(ilg, value, packer, context);
+            provider.Serialise(ilg, value, packer, contextLocal, context);
 
             ilg.Emit(OpCodes.Ret);
 
             // Return a delegate that performs the above operations
-            return (Action<UnsafePacker, object>)method.CreateDelegate(typeof(Action<UnsafePacker, object>));
+            return (Action<UnsafePacker, DasherContext, object>)method.CreateDelegate(typeof(Action<UnsafePacker, DasherContext, object>));
         }
     }
 }

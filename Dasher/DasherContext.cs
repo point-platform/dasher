@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Dasher.TypeProviders;
@@ -55,6 +56,18 @@ namespace Dasher
                 _typeProviders = defaults;
             else
                 _typeProviders = typeProviders.Concat(defaults).ToList();
+        }
+
+        private readonly ConcurrentDictionary<Type, Serialiser> _serialiserByType = new ConcurrentDictionary<Type, Serialiser>();
+
+        internal void RegisterSerialiser(Type type, Serialiser serialiser)
+        {
+            _serialiserByType.TryAdd(type, serialiser);
+        }
+
+        internal Serialiser GetOrCreateSerialiser(Type type)
+        {
+            return _serialiserByType.GetOrAdd(type, t => new Serialiser(t));
         }
 
         internal bool TryGetTypeProvider(Type type, out ITypeProvider provider)

@@ -86,7 +86,7 @@ namespace Dasher.TypeProviders
             if (!context.TryGetTypeProvider(elementValue.LocalType, out provider))
                 throw new Exception($"Cannot serialise IReadOnlyList<> element type {value.LocalType}.");
 
-            provider.Serialise(ilg, elementValue, packer, context);
+            provider.Serialise(ilg, elementValue, packer, contextLocal, context);
 
             // loop counter increment
             ilg.Emit(OpCodes.Ldloc, i);

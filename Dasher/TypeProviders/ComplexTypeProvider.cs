@@ -71,8 +71,22 @@ namespace Dasher.TypeProviders
                 if (!context.TryGetTypeProvider(prop.PropertyType, out provider))
                     throw new Exception($"Unable to serialise type {prop.PropertyType}");
 
-                // write property value
-                provider.Serialise(ilg, propValue, packer, context);
+                if (provider is ComplexTypeProvider)
+                {
+                    // prevent endless code generation for recursive types by delegating to a method call
+                    ilg.Emit(OpCodes.Ldloc, contextLocal);
+                    ilg.LoadType(prop.PropertyType);
+                    ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateSerialiser), BindingFlags.NonPublic | BindingFlags.Instance, null, new[] {typeof(Type)}, null));
+
+                    ilg.Emit(OpCodes.Ldloc, packer);
+                    ilg.Emit(OpCodes.Ldloc, propValue);
+                    ilg.Emit(OpCodes.Call, typeof(Serialiser).GetMethod(nameof(Serialiser.Serialise), new[] {typeof(UnsafePacker), typeof(object)}));
+                }
+                else
+                {
+                    // write property value
+                    provider.Serialise(ilg, propValue, packer, contextLocal, context);
+                }
             }
         }
 

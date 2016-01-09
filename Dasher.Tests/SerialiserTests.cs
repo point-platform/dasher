@@ -182,6 +182,13 @@ namespace Dasher.Tests
             Assert.Equal(TestEnum.Bar, after.TestEnum);
         }
 
+        [Fact]
+        public void HandlesRecurringType()
+        {
+            // ReSharper disable once ObjectCreationAsStatement
+            new Serialiser<Recurring>();
+        }
+
         #region Test helpers
 
         private static T RoundTrip<T>(T before)
