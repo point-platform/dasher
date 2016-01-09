@@ -96,17 +96,19 @@ namespace Dasher
 
             #endregion
 
-            #region Initialise locals
+            #region Convert args to locals, so we can pass them around
 
-            // Store the Unpacker arg as a local so we can pass it around
             var unpacker = ilg.DeclareLocal(typeof(Unpacker));
             ilg.Emit(OpCodes.Ldarg_0);
             ilg.Emit(OpCodes.Stloc, unpacker);
 
-            // Store the context as a local so we can pass it around
             var contextLocal = ilg.DeclareLocal(typeof(DasherContext));
             ilg.Emit(OpCodes.Ldarg_1);
             ilg.Emit(OpCodes.Stloc, contextLocal);
+
+            #endregion
+
+            #region Initialise locals for constructor args
 
             var valueLocals = new LocalBuilder[parameters.Length];
             var valueSetLocals = new LocalBuilder[parameters.Length];
