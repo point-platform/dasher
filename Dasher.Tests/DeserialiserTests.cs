@@ -495,6 +495,36 @@ namespace Dasher.Tests
             Assert.Null(new Deserialiser<Recurring>().Deserialise(stream).Inner);
         }
 
+        [Fact]
+        public void HandlesRecurringType()
+        {
+            var stream = new MemoryStream();
+            var packer = new Packer(stream);
+
+            packer.PackMapHeader(2);
+
+            packer.Pack("Num");
+            packer.Pack(1);
+
+            packer.Pack("Inner");
+            {
+                packer.PackMapHeader(2);
+                packer.Pack("Num");
+                packer.Pack(2);
+                packer.Pack("Inner");
+                packer.PackNull();
+            }
+
+            stream.Position = 0;
+
+            var after = new Deserialiser<Recurring>().Deserialise(stream);
+
+            Assert.Equal(1, after.Num);
+            Assert.NotNull(after.Inner);
+            Assert.Equal(2, after.Inner.Num);
+            Assert.Null(after.Inner.Inner);
+        }
+
         #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)
