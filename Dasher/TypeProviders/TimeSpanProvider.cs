@@ -31,7 +31,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type == typeof(TimeSpan);
 
-        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, DasherContext context)
+        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write the ticks form of the value as int64
             ilg.Emit(OpCodes.Ldloc, packer);

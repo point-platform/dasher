@@ -35,6 +35,7 @@ namespace Dasher.TypeProviders
             ILGenerator ilg,
             LocalBuilder value,
             LocalBuilder packer,
+            LocalBuilder contextLocal,
             DasherContext context);
 
         void Deserialise(
