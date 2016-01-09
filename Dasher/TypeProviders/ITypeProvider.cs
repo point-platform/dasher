@@ -27,8 +27,6 @@ using System.Reflection.Emit;
 
 namespace Dasher.TypeProviders
 {
-    // TODO nullable values
-
     public interface ITypeProvider
     {
         bool CanProvide(Type type);
