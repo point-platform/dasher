@@ -114,11 +114,8 @@ namespace Dasher
             ilg.Emit(type.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
             ilg.Emit(OpCodes.Stloc, value);
 
-            ITypeProvider provider;
-            if (!context.TryGetTypeProvider(value.LocalType, out provider))
+            if (!context.TrySerialise(ilg, value, packer, contextLocal))
                 throw new Exception($"Cannot serialise type {value.LocalType}.");
-
-            provider.Serialise(ilg, value, packer, contextLocal, context);
 
             ilg.Emit(OpCodes.Ret);
 

@@ -46,14 +46,13 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Brfalse, lblNull);
 
             // has a value to serialise
-            ITypeProvider provider;
-            if (!context.TryGetTypeProvider(valueType, out provider))
-                throw new Exception($"Cannot serialise underlying type of Nullable<{valueType}>");
             var nonNullValue = ilg.DeclareLocal(valueType);
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Call, type.GetProperty(nameof(Nullable<int>.Value)).GetMethod);
             ilg.Emit(OpCodes.Stloc, nonNullValue);
-            provider.Serialise(ilg, nonNullValue, packer, contextLocal, context);
+
+            if (!context.TrySerialise(ilg, nonNullValue, packer, contextLocal))
+                throw new Exception($"Cannot serialise underlying type of Nullable<{valueType}>");
 
             ilg.Emit(OpCodes.Br, lblExit);
 
@@ -71,10 +70,6 @@ namespace Dasher.TypeProviders
             var nullableType = value.LocalType;
             var valueType = nullableType.GetGenericArguments().Single();
 
-            ITypeProvider valueProvider;
-            if (!context.TryGetTypeProvider(valueType, out valueProvider))
-                throw new Exception($"Unable to deserialise values of type Nullable<{valueType}> from MsgPack data.");
-
             var lblNull = ilg.DefineLabel();
             var lblExit = ilg.DefineLabel();
 
@@ -85,7 +80,10 @@ namespace Dasher.TypeProviders
 
             // non-null
             var nonNullValue = ilg.DeclareLocal(valueType);
-            valueProvider.Deserialise(ilg, name, targetType, nonNullValue, unpacker, contextLocal, context, unexpectedFieldBehaviour);
+
+            if (!context.TryDeserialise(ilg, name, targetType, nonNullValue, unpacker, contextLocal, unexpectedFieldBehaviour))
+                throw new Exception($"Unable to deserialise values of type Nullable<{valueType}> from MsgPack data.");
+
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Ldloc, nonNullValue);
             ilg.Emit(OpCodes.Call, nullableType.GetConstructor(new [] {valueType}));

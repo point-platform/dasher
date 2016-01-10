@@ -26,6 +26,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using Dasher.TypeProviders;
 
 namespace Dasher
@@ -87,6 +88,26 @@ namespace Dasher
 
             provider = found;
             return found != null;
+        }
+
+        internal bool TrySerialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal)
+        {
+            ITypeProvider provider;
+            if (!TryGetTypeProvider(value.LocalType, out provider))
+                return false;
+
+            provider.Serialise(ilg, value, packer, contextLocal, this);
+            return true;
+        }
+
+        internal bool TryDeserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder valueLocal, LocalBuilder unpacker, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        {
+            ITypeProvider provider;
+            if (!TryGetTypeProvider(valueLocal.LocalType, out provider))
+                return false;
+
+            provider.Deserialise(ilg, name, targetType, valueLocal, unpacker, contextLocal, this, unexpectedFieldBehaviour);
+            return true;
         }
     }
 }
