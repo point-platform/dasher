@@ -32,7 +32,6 @@ namespace Dasher.TypeProviders
     internal sealed class ComplexTypeProvider : ITypeProvider
     {
         // TODO should support complex structs too
-        // TODO cache subtype deserialiser instances in fields of generated class (requires moving away from DynamicMethod)
 
         public bool CanProvide(Type type) => type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1;
 
@@ -92,10 +91,10 @@ namespace Dasher.TypeProviders
 
         public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
+            ilg.Emit(OpCodes.Ldloc, contextLocal);
             ilg.LoadType(value.LocalType);
             ilg.Emit(OpCodes.Ldc_I4, (int)unexpectedFieldBehaviour);
-            ilg.Emit(OpCodes.Ldloc, contextLocal);
-            ilg.Emit(OpCodes.Newobj, typeof(Deserialiser).GetConstructor(new[] { typeof(Type), typeof(UnexpectedFieldBehaviour), typeof(DasherContext) }));
+            ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateDeserialiser), BindingFlags.Instance|BindingFlags.NonPublic, null, new[] { typeof(Type), typeof(UnexpectedFieldBehaviour) }, null));
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Call, typeof(Deserialiser).GetMethod(nameof(Deserialiser.Deserialise), new[] { typeof(Unpacker) }));
             ilg.Emit(OpCodes.Castclass, value.LocalType);

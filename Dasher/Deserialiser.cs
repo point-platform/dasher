@@ -60,6 +60,7 @@ namespace Dasher
         {
             _context = context ?? new DasherContext();
             _func = BuildUnpacker(type, unexpectedFieldBehaviour, _context);
+            _context.RegisterDeserialiser(type, unexpectedFieldBehaviour, this);
         }
 
         public object Deserialise(byte[] bytes) => Deserialise(new Unpacker(new MemoryStream(bytes)));
@@ -89,7 +90,8 @@ namespace Dasher
             var method = new DynamicMethod(
                 $"Deserialiser{type.Name}",
                 typeof(object),
-                new[] {typeof(Unpacker), typeof(DasherContext) });
+                new[] {typeof(Unpacker), typeof(DasherContext) },
+                restrictedSkipVisibility: true);
 
             var ilg = method.GetILGenerator();
 

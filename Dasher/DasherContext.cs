@@ -35,6 +35,8 @@ namespace Dasher
     {
         private static readonly ComplexTypeProvider _complexTypeProvider = new ComplexTypeProvider();
 
+        private readonly ConcurrentDictionary<Type, Serialiser> _serialiserByType = new ConcurrentDictionary<Type, Serialiser>();
+        private readonly ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Deserialiser> _deserialiserByType = new ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Deserialiser>();
         private readonly IReadOnlyList<ITypeProvider> _typeProviders;
 
         public DasherContext(IEnumerable<ITypeProvider> typeProviders = null)
@@ -59,8 +61,6 @@ namespace Dasher
                 _typeProviders = typeProviders.Concat(defaults).ToList();
         }
 
-        private readonly ConcurrentDictionary<Type, Serialiser> _serialiserByType = new ConcurrentDictionary<Type, Serialiser>();
-
         internal void RegisterSerialiser(Type type, Serialiser serialiser)
         {
             _serialiserByType.TryAdd(type, serialiser);
@@ -69,6 +69,16 @@ namespace Dasher
         internal Serialiser GetOrCreateSerialiser(Type type)
         {
             return _serialiserByType.GetOrAdd(type, t => new Serialiser(t, this));
+        }
+
+        internal void RegisterDeserialiser(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour, Deserialiser deserialiser)
+        {
+            _deserialiserByType.TryAdd(Tuple.Create(type, unexpectedFieldBehaviour), deserialiser);
+        }
+
+        internal Deserialiser GetOrCreateDeserialiser(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        {
+            return _deserialiserByType.GetOrAdd(Tuple.Create(type, unexpectedFieldBehaviour), _ => new Deserialiser(type, unexpectedFieldBehaviour, this));
         }
 
         internal bool TryGetTypeProvider(Type type, out ITypeProvider provider)
