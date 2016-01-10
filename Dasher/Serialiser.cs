@@ -62,8 +62,8 @@ namespace Dasher
         public Serialiser(Type type, DasherContext context = null)
         {
             _context = context ?? new DasherContext();
-            _context.RegisterSerialiser(type, this);
             _action = BuildPacker(type, _context);
+            _context.RegisterSerialiser(type, this);
         }
 
         public void Serialise(Stream stream, object value)
