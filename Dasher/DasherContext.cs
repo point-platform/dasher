@@ -26,6 +26,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using Dasher.TypeProviders;
 
@@ -81,7 +82,7 @@ namespace Dasher
             return _deserialiserByType.GetOrAdd(Tuple.Create(type, unexpectedFieldBehaviour), _ => new Deserialiser(type, unexpectedFieldBehaviour, this));
         }
 
-        internal bool TryGetTypeProvider(Type type, out ITypeProvider provider)
+        private bool TryGetTypeProvider(Type type, out ITypeProvider provider)
         {
             ITypeProvider found = null;
             foreach (var p in _typeProviders)
@@ -100,13 +101,27 @@ namespace Dasher
             return found != null;
         }
 
-        internal bool TrySerialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal)
+        internal bool TrySerialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, bool isRoot = false)
         {
             ITypeProvider provider;
             if (!TryGetTypeProvider(value.LocalType, out provider))
                 return false;
 
-            provider.Serialise(ilg, value, packer, contextLocal, this);
+            if (!isRoot && provider is ComplexTypeProvider)
+            {
+                // prevent endless code generation for recursive types by delegating to a method call
+                ilg.Emit(OpCodes.Ldloc, contextLocal);
+                ilg.LoadType(value.LocalType);
+                ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(GetOrCreateSerialiser), BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(Type) }, null));
+
+                ilg.Emit(OpCodes.Ldloc, packer);
+                ilg.Emit(OpCodes.Ldloc, value);
+                ilg.Emit(OpCodes.Call, typeof(Serialiser).GetMethod(nameof(Serialiser.Serialise), new[] { typeof(UnsafePacker), typeof(object) }));
+            }
+            else
+            {
+                provider.Serialise(ilg, value, packer, contextLocal, this);
+            }
             return true;
         }
 

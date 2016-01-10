@@ -297,4 +297,16 @@ namespace Dasher.Tests
             Inner = inner;
         }
     }
+
+    public sealed class RecurringTree
+    {
+        public int Num { get; }
+        public IReadOnlyList<RecurringTree> Inner { get; }
+
+        public RecurringTree(int num, IReadOnlyList<RecurringTree> inner)
+        {
+            Num = num;
+            Inner = inner;
+        }
+    }
 }

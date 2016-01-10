@@ -525,6 +525,48 @@ namespace Dasher.Tests
             Assert.Null(after.Inner.Inner);
         }
 
+        [Fact]
+        public void HandlesRecurringTreeType()
+        {
+            var stream = new MemoryStream();
+            var packer = new Packer(stream);
+
+            packer.PackMapHeader(2);
+
+            packer.Pack("Num");
+            packer.Pack(1);
+
+            packer.Pack("Inner");
+            {
+                packer.PackArrayHeader(2);
+                {
+                    packer.PackMapHeader(2);
+                    packer.Pack("Num");
+                    packer.Pack(2);
+                    packer.Pack("Inner");
+                    packer.PackNull();
+
+                    packer.PackMapHeader(2);
+                    packer.Pack("Num");
+                    packer.Pack(3);
+                    packer.Pack("Inner");
+                    packer.PackNull();
+                }
+            }
+
+            stream.Position = 0;
+
+            var after = new Deserialiser<RecurringTree>().Deserialise(stream);
+
+            Assert.Equal(1, after.Num);
+            Assert.NotNull(after.Inner);
+            Assert.Equal(2, after.Inner.Count);
+            Assert.Equal(2, after.Inner[0].Num);
+            Assert.Null(after.Inner[0].Inner);
+            Assert.Equal(3, after.Inner[1].Num);
+            Assert.Null(after.Inner[1].Inner);
+        }
+
         #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)

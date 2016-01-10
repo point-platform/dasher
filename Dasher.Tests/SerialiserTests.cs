@@ -189,6 +189,13 @@ namespace Dasher.Tests
             new Serialiser<Recurring>();
         }
 
+        [Fact]
+        public void HandlesRecurringTreeType()
+        {
+            // ReSharper disable once ObjectCreationAsStatement
+            new Serialiser<RecurringTree>();
+        }
+
         #region Test helpers
 
         private static T RoundTrip<T>(T before)
