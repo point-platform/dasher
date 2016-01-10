@@ -67,7 +67,7 @@ namespace Dasher
 
         internal Serialiser GetOrCreateSerialiser(Type type)
         {
-            return _serialiserByType.GetOrAdd(type, t => new Serialiser(t));
+            return _serialiserByType.GetOrAdd(type, t => new Serialiser(t, this));
         }
 
         internal bool TryGetTypeProvider(Type type, out ITypeProvider provider)
