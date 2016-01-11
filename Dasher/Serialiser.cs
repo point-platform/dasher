@@ -30,26 +30,32 @@ namespace Dasher
 {
     public sealed class Serialiser<T>
     {
-        private readonly Serialiser _inner;
+        private readonly Action<UnsafePacker, DasherContext, object> _action;
+        private readonly DasherContext _context;
 
         public Serialiser(DasherContext context = null)
         {
-            _inner = new Serialiser(typeof(T), context);
+            _context = context ?? new DasherContext();
+            _action = _context.GetOrCreateSerialiser(typeof(T));
         }
 
         public void Serialise(Stream stream, T value)
         {
-            _inner.Serialise(stream, value);
+            using (var packer = new UnsafePacker(stream))
+                Serialise(packer, value);
         }
 
         public void Serialise(UnsafePacker packer, T value)
         {
-            _inner.Serialise(packer, value);
+            _action(packer, _context, value);
         }
 
         public byte[] Serialise(T value)
         {
-            return _inner.Serialise(value);
+            var stream = new MemoryStream();
+            using (var packer = new UnsafePacker(stream))
+                Serialise(packer, value);
+            return stream.ToArray();
         }
     }
 
@@ -61,8 +67,7 @@ namespace Dasher
         public Serialiser(Type type, DasherContext context = null)
         {
             _context = context ?? new DasherContext();
-            _action = BuildPacker(type, _context);
-            _context.RegisterSerialiser(type, this);
+            _action = _context.GetOrCreateSerialiser(type);
         }
 
         public void Serialise(Stream stream, object value)
@@ -83,8 +88,11 @@ namespace Dasher
                 Serialise(packer, value);
             return stream.ToArray();
         }
+    }
 
-        private static Action<UnsafePacker, DasherContext, object> BuildPacker(Type type, DasherContext context)
+    internal static class SerialiserEmitter
+    {
+        public static Action<UnsafePacker, DasherContext, object> Build(Type type, DasherContext context)
         {
             if (type.IsPrimitive)
                 throw new Exception("TEST THIS CASE 1");

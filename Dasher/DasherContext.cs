@@ -36,8 +36,8 @@ namespace Dasher
     {
         private static readonly ComplexTypeProvider _complexTypeProvider = new ComplexTypeProvider();
 
-        private readonly ConcurrentDictionary<Type, Serialiser> _serialiserByType = new ConcurrentDictionary<Type, Serialiser>();
-        private readonly ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Deserialiser> _deserialiserByType = new ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Deserialiser>();
+        private readonly ConcurrentDictionary<Type, Action<UnsafePacker, DasherContext, object>> _serialiserByType = new ConcurrentDictionary<Type, Action<UnsafePacker, DasherContext, object>>();
+        private readonly ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>> _deserialiserByType = new ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>>();
         private readonly IReadOnlyList<ITypeProvider> _typeProviders;
 
         public DasherContext(IEnumerable<ITypeProvider> typeProviders = null)
@@ -62,25 +62,13 @@ namespace Dasher
                 _typeProviders = typeProviders.Concat(defaults).ToList();
         }
 
-        internal void RegisterSerialiser(Type type, Serialiser serialiser)
-        {
-            _serialiserByType.TryAdd(type, serialiser);
-        }
+        internal Action<UnsafePacker, DasherContext, object> GetOrCreateSerialiser(Type type)
+            => _serialiserByType.GetOrAdd(type, _ => SerialiserEmitter.Build(type, this));
 
-        internal Serialiser GetOrCreateSerialiser(Type type)
-        {
-            return _serialiserByType.GetOrAdd(type, t => new Serialiser(t, this));
-        }
-
-        internal void RegisterDeserialiser(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour, Deserialiser deserialiser)
-        {
-            _deserialiserByType.TryAdd(Tuple.Create(type, unexpectedFieldBehaviour), deserialiser);
-        }
-
-        internal Deserialiser GetOrCreateDeserialiser(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
-        {
-            return _deserialiserByType.GetOrAdd(Tuple.Create(type, unexpectedFieldBehaviour), _ => new Deserialiser(type, unexpectedFieldBehaviour, this));
-        }
+        internal Func<Unpacker, DasherContext, object> GetOrCreateDeserialiser(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+            => _deserialiserByType.GetOrAdd(
+                Tuple.Create(type, unexpectedFieldBehaviour),
+                _ => DeserialiserEmitter.Build(type, unexpectedFieldBehaviour, this));
 
         private bool TryGetTypeProvider(Type type, out ITypeProvider provider)
         {
@@ -115,8 +103,9 @@ namespace Dasher
                 ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(GetOrCreateSerialiser), BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(Type) }, null));
 
                 ilg.Emit(OpCodes.Ldloc, packer);
+                ilg.Emit(OpCodes.Ldloc, contextLocal);
                 ilg.Emit(OpCodes.Ldloc, value);
-                ilg.Emit(OpCodes.Call, typeof(Serialiser).GetMethod(nameof(Serialiser.Serialise), new[] { typeof(UnsafePacker), typeof(object) }));
+                ilg.Emit(OpCodes.Call, typeof(Action<UnsafePacker, DasherContext, object>).GetMethod(nameof(Func<UnsafePacker, DasherContext, object>.Invoke), new[] { typeof(UnsafePacker), typeof(DasherContext), typeof(object) }));
             }
             else
             {

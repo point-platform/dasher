@@ -37,18 +37,20 @@ namespace Dasher
 
     public sealed class Deserialiser<T>
     {
-        private readonly Deserialiser _inner;
+        private readonly Func<Unpacker, DasherContext, object> _func;
+        private readonly DasherContext _context;
 
         public Deserialiser(UnexpectedFieldBehaviour unexpectedFieldBehaviour = UnexpectedFieldBehaviour.Throw, DasherContext context = null)
         {
-            _inner = new Deserialiser(typeof(T), unexpectedFieldBehaviour, context);
+            _context = context ?? new DasherContext();
+            _func = _context.GetOrCreateDeserialiser(typeof(T), unexpectedFieldBehaviour);
         }
 
-        public T Deserialise(byte[] bytes) => (T)_inner.Deserialise(bytes);
+        public T Deserialise(byte[] bytes) => Deserialise(new Unpacker(new MemoryStream(bytes)));
 
-        public T Deserialise(Stream stream) => (T)_inner.Deserialise(stream);
+        public T Deserialise(Stream stream) => Deserialise(new Unpacker(stream));
 
-        public T Deserialise(Unpacker unpacker) => (T)_inner.Deserialise(unpacker);
+        public T Deserialise(Unpacker unpacker) => (T)_func(unpacker, _context);
     }
 
     public sealed class Deserialiser
@@ -59,8 +61,7 @@ namespace Dasher
         public Deserialiser(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour = UnexpectedFieldBehaviour.Throw, DasherContext context = null)
         {
             _context = context ?? new DasherContext();
-            _func = BuildUnpacker(type, unexpectedFieldBehaviour, _context);
-            _context.RegisterDeserialiser(type, unexpectedFieldBehaviour, this);
+            _func = _context.GetOrCreateDeserialiser(type, unexpectedFieldBehaviour);
         }
 
         public object Deserialise(byte[] bytes) => Deserialise(new Unpacker(new MemoryStream(bytes)));
@@ -68,8 +69,11 @@ namespace Dasher
         public object Deserialise(Stream stream) => Deserialise(new Unpacker(stream));
 
         public object Deserialise(Unpacker unpacker) => _func(unpacker, _context);
+    }
 
-        private static Func<Unpacker, DasherContext, object> BuildUnpacker(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour, DasherContext context)
+    internal static class DeserialiserEmitter
+    {
+        public static Func<Unpacker, DasherContext, object> Build(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour, DasherContext context)
         {
             #region Verify and prepare for target type
 
