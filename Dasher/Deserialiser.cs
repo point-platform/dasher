@@ -94,7 +94,7 @@ namespace Dasher
             var method = new DynamicMethod(
                 $"Deserialiser{type.Name}",
                 typeof(object),
-                new[] {typeof(Unpacker), typeof(DasherContext) },
+                new[] { typeof(Unpacker), typeof(DasherContext) },
                 restrictedSkipVisibility: true);
 
             var ilg = method.GetILGenerator();
@@ -220,7 +220,7 @@ namespace Dasher
                 {
                     ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Ldloca, key);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
+                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
 
                     // If false was returned, the data stream ended
                     var ifLabel = ilg.DefineLabel();
@@ -249,7 +249,7 @@ namespace Dasher
                     ilg.Emit(OpCodes.Ldloc, key);
                     ilg.Emit(OpCodes.Ldstr, parameters[parameterIndex].Name);
                     ilg.Emit(OpCodes.Ldc_I4_5);
-                    ilg.Emit(OpCodes.Callvirt, typeof(string).GetMethod("Equals", new[] {typeof(string), typeof(StringComparison)}));
+                    ilg.Emit(OpCodes.Callvirt, typeof(string).GetMethod("Equals", new[] { typeof(string), typeof(StringComparison) }));
 
                     // If the key doesn't match this property, go to the next block
                     ilg.Emit(OpCodes.Brfalse, nextLabel.Value);
@@ -293,7 +293,7 @@ namespace Dasher
                 {
                     ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\".");
                     ilg.Emit(OpCodes.Ldloc, key);
-                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)}));
+                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object) }));
                     throwException();
                 }
                 else
@@ -419,7 +419,7 @@ namespace Dasher
                     ilg.Emit(OpCodes.Ldc_I4, bits[i]); // value
                     ilg.Emit(OpCodes.Stelem_I4);
                 }
-                ilg.Emit(OpCodes.Newobj, typeof(decimal).GetConstructor(new[] {typeof(int[])}));
+                ilg.Emit(OpCodes.Newobj, typeof(decimal).GetConstructor(new[] { typeof(int[]) }));
             }
             else if (value.GetType().IsEnum)
             {
