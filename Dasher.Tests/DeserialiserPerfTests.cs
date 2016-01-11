@@ -71,9 +71,7 @@ namespace Dasher.Tests
                 dasherDeser.Deserialise(stream);
             }
 
-            GC.Collect(2, GCCollectionMode.Forced);
-            GC.WaitForFullGCComplete(1000);
-            GC.WaitForPendingFinalizers();
+            CleanUpForPerfTest();
 
             sw.Restart();
 
@@ -93,9 +91,7 @@ namespace Dasher.Tests
                 cliSer.Unpack(stream);
             }
 
-            GC.Collect(2, GCCollectionMode.Forced);
-            GC.WaitForFullGCComplete(1000);
-            GC.WaitForPendingFinalizers();
+            CleanUpForPerfTest();
 
             sw.Restart();
 
@@ -131,6 +127,13 @@ namespace Dasher.Tests
             sw.Stop();
 
             Assert.True(false, $"{sw.Elapsed.TotalMilliseconds}");
+        }
+
+        private static void CleanUpForPerfTest()
+        {
+            GC.Collect(2, GCCollectionMode.Forced);
+            GC.WaitForFullGCComplete(1000);
+            GC.WaitForPendingFinalizers();
         }
     }
 }
