@@ -44,6 +44,10 @@ namespace Dasher.Tests
 //        [Fact]
         public void DeserialisationPerf()
         {
+#if DEBUG
+            Assert.True(false, "Performance comparison must be performed on a release build.");
+#endif
+
             var stream = new MemoryStream();
             new Serialiser<UserScore>().Serialise(stream, new UserScore("Bob", 12345));
 
@@ -104,10 +108,6 @@ namespace Dasher.Tests
             var cliMs = sw.Elapsed.TotalMilliseconds;
 
             ////
-
-#if DEBUG
-            Assert.True(false, "Performance comparison must be performed on a release build.");
-#endif
 
             _output.WriteLine($"{nameof(dasherMs)}={dasherMs} {nameof(cliMs)}={cliMs}");
             Assert.True(dasherMs < cliMs, $"{nameof(dasherMs)}={dasherMs} should be less than {nameof(cliMs)}={cliMs}");
