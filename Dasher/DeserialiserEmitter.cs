@@ -135,7 +135,7 @@ namespace Dasher
                 if (parameter.HasDefaultValue)
                 {
                     // set default values on params
-                    LoadConstant(ilg, parameter.DefaultValue);
+                    ilg.LoadConstant(parameter.DefaultValue);
                     ilg.Emit(OpCodes.Stloc, valueLocals[i]);
                     // set 'valueSet' to true
                     // note we use the second LSb to indicate a default value
@@ -334,59 +334,6 @@ namespace Dasher
 
             // Return a delegate that performs the above operations
             return (Func<Unpacker, DasherContext, object>)method.CreateDelegate(typeof(Func<Unpacker, DasherContext, object>));
-        }
-
-        private static void LoadConstant(ILGenerator ilg, object value)
-        {
-            if (value == null)
-                ilg.Emit(OpCodes.Ldnull);
-            else if (value is int)
-                ilg.Emit(OpCodes.Ldc_I4, (int)value);
-            else if (value is uint)
-                ilg.Emit(OpCodes.Ldc_I4, (int)(uint)value);
-            else if (value is byte)
-                ilg.Emit(OpCodes.Ldc_I4, (int)(byte)value);
-            else if (value is sbyte)
-                ilg.Emit(OpCodes.Ldc_I4, (int)(sbyte)value);
-            else if (value is short)
-                ilg.Emit(OpCodes.Ldc_I4, (int)(short)value);
-            else if (value is ushort)
-                ilg.Emit(OpCodes.Ldc_I4, (int)(ushort)value);
-            else if (value is long)
-                ilg.Emit(OpCodes.Ldc_I8, (long)value);
-            else if (value is ulong)
-                ilg.Emit(OpCodes.Ldc_I8, (long)(ulong)value);
-            else if (value is string)
-                ilg.Emit(OpCodes.Ldstr, (string)value);
-            else if (value is bool)
-                ilg.Emit(OpCodes.Ldc_I4, (bool)value ? 1 : 0);
-            else if (value is float)
-                ilg.Emit(OpCodes.Ldc_R4, (float)value);
-            else if (value is double)
-                ilg.Emit(OpCodes.Ldc_R8, (double)value);
-            else if (value is decimal)
-            {
-                var bits = decimal.GetBits((decimal)value);
-                ilg.Emit(OpCodes.Ldc_I4_4);
-                ilg.Emit(OpCodes.Newarr, typeof(int));
-                for (var i = 0; i < 4; i++)
-                {
-                    ilg.Emit(OpCodes.Dup);
-                    ilg.Emit(OpCodes.Ldc_I4, i); // index
-                    ilg.Emit(OpCodes.Ldc_I4, bits[i]); // value
-                    ilg.Emit(OpCodes.Stelem_I4);
-                }
-                ilg.Emit(OpCodes.Newobj, typeof(decimal).GetConstructor(new[] { typeof(int[]) }));
-            }
-            else if (value.GetType().IsEnum)
-            {
-                // TODO test and cater for non-4-byte enums too
-                ilg.Emit(OpCodes.Ldc_I4, (int)value);
-            }
-            else
-            {
-                throw new NotImplementedException($"No support for default values of type {value?.GetType().Name} (yet).");
-            }
         }
     }
 }
