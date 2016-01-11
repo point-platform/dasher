@@ -22,9 +22,10 @@
 //
 #endregion
 
-using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using MsgPack;
 using MsgPack.Serialization;
 using Xunit;
@@ -114,19 +115,98 @@ namespace Dasher.Tests
         }
 
         [Fact(Skip = "For informational purposes, with nothing to assert")]
+        [SuppressMessage("ReSharper", "ObjectCreationAsStatement")]
         public void ConstructionPerf()
         {
-            var stream = new MemoryStream();
-            new Packer(stream).PackMapHeader(0);
-            var bytes = stream.GetBuffer();
-            var sw = Stopwatch.StartNew();
+#if DEBUG
+            Assert.True(false, "Performance comparison must be performed on a release build.");
+#endif
 
-            for (var i = 0; i < 100; i++)
-                new Deserialiser<TestDefaultParams>().Deserialise(bytes);
+            const int iterations = 100;
 
-            sw.Stop();
+            // Warm up the deserialiser, with a different type
+            new Deserialiser<RecurringTree>();
 
-            Assert.True(false, $"{sw.Elapsed.TotalMilliseconds}");
+            ////////////////////////////////////////////////////////////////////////////
+
+            Stopwatch buildTime;
+            {
+                TestUtils.CleanUpForPerfTest();
+
+                buildTime = Stopwatch.StartNew();
+
+                for (var i = 0; i < iterations; i++)
+                    new Deserialiser<TestDefaultParams>();
+
+                buildTime.Stop();
+            }
+
+            ////////////////////////////////////////////////////////////////////////////
+
+            Stopwatch buildWithSharedContextTime;
+            {
+                TestUtils.CleanUpForPerfTest();
+
+                buildWithSharedContextTime = Stopwatch.StartNew();
+
+                var context = new DasherContext();
+
+                for (var i = 0; i < iterations; i++)
+                    new Deserialiser<TestDefaultParams>(context: context);
+
+                buildWithSharedContextTime.Stop();
+            }
+
+            ////////////////////////////////////////////////////////////////////////////
+
+            Stopwatch buildAndUseTime;
+            {
+                var stream = new MemoryStream();
+                new Packer(stream).PackMapHeader(0);
+                var bytes = stream.GetBuffer();
+
+                var builtDeserialisers = Enumerable.Range(0, iterations).Select(i => new Deserialiser<TestDefaultParams>()).ToList();
+
+                builtDeserialisers[0].Deserialise(bytes);
+
+                TestUtils.CleanUpForPerfTest();
+
+                buildAndUseTime = Stopwatch.StartNew();
+
+                for (var i = 0; i < iterations; i++)
+                    builtDeserialisers[i].Deserialise(bytes);
+
+                buildAndUseTime.Stop();
+            }
+
+            ////////////////////////////////////////////////////////////////////////////
+
+            Stopwatch buildAndUseWithSharedContextTime;
+            {
+                var stream = new MemoryStream();
+                new Packer(stream).PackMapHeader(0);
+                var bytes = stream.GetBuffer();
+
+                var builtDeserialisers = Enumerable.Range(0, iterations).Select(i => new Deserialiser<TestDefaultParams>()).ToList();
+
+                builtDeserialisers[0].Deserialise(bytes);
+
+                TestUtils.CleanUpForPerfTest();
+
+                buildAndUseWithSharedContextTime = Stopwatch.StartNew();
+
+                for (var i = 0; i < iterations; i++)
+                    builtDeserialisers[i].Deserialise(bytes);
+
+                buildAndUseWithSharedContextTime.Stop();
+            }
+
+            ////////////////////////////////////////////////////////////////////////////
+
+            _output.WriteLine($"{iterations} constructions in {buildTime.Elapsed.TotalMilliseconds} ms");
+            _output.WriteLine($"{iterations} constructions with shared context in {buildWithSharedContextTime.Elapsed.TotalMilliseconds} ms");
+            _output.WriteLine($"{iterations} deserialisations in {buildAndUseTime.Elapsed.TotalMilliseconds} ms");
+            _output.WriteLine($"{iterations} deserialisations with shared context in {buildAndUseWithSharedContextTime.Elapsed.TotalMilliseconds} ms");
         }
     }
 }
