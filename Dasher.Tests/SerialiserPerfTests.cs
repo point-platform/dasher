@@ -73,9 +73,7 @@ namespace Dasher.Tests
             for (var i = 0; i < warmUpLoopCount; i++)
                 cliSer.PackTo(cliPacker, obj);
 
-            GC.Collect(2, GCCollectionMode.Forced);
-            GC.WaitForFullGCComplete(1000);
-            GC.WaitForPendingFinalizers();
+            TestUtils.CleanUpForPerfTest();
 
             sw.Restart();
 
@@ -92,9 +90,7 @@ namespace Dasher.Tests
                 dasherPacker.Flush();
             }
 
-            GC.Collect(2, GCCollectionMode.Forced);
-            GC.WaitForFullGCComplete(1000);
-            GC.WaitForPendingFinalizers();
+            TestUtils.CleanUpForPerfTest();
 
             sw.Restart();
 
