@@ -132,7 +132,7 @@ namespace Dasher.TypeProviders
             {
                 ilg.Emit(OpCodes.Ldstr, "Expecting collection data to be encoded as array");
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl1);

@@ -40,7 +40,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Constrained, value.LocalType);
             ilg.Emit(OpCodes.Callvirt, typeof(object).GetMethod(nameof(ToString), new Type[0]));
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(string) }));
+            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
         }
 
         public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
@@ -50,7 +50,7 @@ namespace Dasher.TypeProviders
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloca, s);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] { typeof(string).MakeByRefType() }));
+            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
 
             var lbl1 = ilg.DefineLabel();
             ilg.Emit(OpCodes.Brtrue, lbl1);
@@ -58,9 +58,9 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Ldstr, "Unable to read string value for enum property {0} of type {1}");
                 ilg.Emit(OpCodes.Ldstr, name);
                 ilg.LoadType(value.LocalType);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
+                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl1);
@@ -76,9 +76,9 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Ldstr, "Unable to parse value \"{0}\" as a member of enum type {1}");
                 ilg.Emit(OpCodes.Ldloc, s);
                 ilg.LoadType(value.LocalType);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
+                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl2);

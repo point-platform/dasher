@@ -58,7 +58,7 @@ namespace Dasher.TypeProviders
                 // write property name
                 ilg.Emit(OpCodes.Ldloc, packer);
                 ilg.Emit(OpCodes.Ldstr, prop.Name);
-                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(string) }));
+                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
 
                 // get property value
                 ilg.Emit(type.IsValueType ? OpCodes.Ldloca : OpCodes.Ldloc, value);

@@ -37,7 +37,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloc, value);
             ilg.Emit(OpCodes.Call, typeof(Version).GetMethod(nameof(Version.ToString), new Type[0]));
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(string) }));
+            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
         }
 
         public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
@@ -55,13 +55,13 @@ namespace Dasher.TypeProviders
             {
                 ilg.Emit(OpCodes.Ldstr, $"Expecting string value for Version property {name}");
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl);
 
             ilg.Emit(OpCodes.Ldloc, s);
-            ilg.Emit(OpCodes.Newobj, typeof(Version).GetConstructor(new[] { typeof(string) }));
+            ilg.Emit(OpCodes.Newobj, typeof(Version).GetConstructor(new[] {typeof(string)}));
             ilg.Emit(OpCodes.Stloc, value);
         }
     }

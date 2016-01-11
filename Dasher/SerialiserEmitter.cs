@@ -37,7 +37,7 @@ namespace Dasher
             var method = new DynamicMethod(
                 $"Serialiser{type.Name}",
                 null,
-                new[] { typeof(UnsafePacker), typeof(DasherContext), typeof(object) },
+                new[] {typeof(UnsafePacker), typeof(DasherContext), typeof(object)},
                 restrictedSkipVisibility: true);
 
             var ilg = method.GetILGenerator();

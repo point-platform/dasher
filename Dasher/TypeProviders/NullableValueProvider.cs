@@ -86,7 +86,7 @@ namespace Dasher.TypeProviders
 
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Ldloc, nonNullValue);
-            ilg.Emit(OpCodes.Call, nullableType.GetConstructor(new [] {valueType}));
+            ilg.Emit(OpCodes.Call, nullableType.GetConstructor(new[] {valueType}));
 
             ilg.Emit(OpCodes.Br, lblExit);
             ilg.MarkLabel(lblNull);

@@ -100,12 +100,12 @@ namespace Dasher
                 // prevent endless code generation for recursive types by delegating to a method call
                 ilg.Emit(OpCodes.Ldloc, contextLocal);
                 ilg.LoadType(value.LocalType);
-                ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(GetOrCreateSerialiser), BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(Type) }, null));
+                ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(GetOrCreateSerialiser), BindingFlags.NonPublic | BindingFlags.Instance, null, new[] {typeof(Type)}, null));
 
                 ilg.Emit(OpCodes.Ldloc, packer);
                 ilg.Emit(OpCodes.Ldloc, contextLocal);
                 ilg.Emit(OpCodes.Ldloc, value);
-                ilg.Emit(OpCodes.Call, typeof(Action<UnsafePacker, DasherContext, object>).GetMethod(nameof(Func<UnsafePacker, DasherContext, object>.Invoke), new[] { typeof(UnsafePacker), typeof(DasherContext), typeof(object) }));
+                ilg.Emit(OpCodes.Call, typeof(Action<UnsafePacker, DasherContext, object>).GetMethod(nameof(Func<UnsafePacker, DasherContext, object>.Invoke), new[] {typeof(UnsafePacker), typeof(DasherContext), typeof(object)}));
             }
             else
             {

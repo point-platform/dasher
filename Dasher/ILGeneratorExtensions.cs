@@ -50,7 +50,7 @@ namespace Dasher
             else if (value is short)
                 ilg.Emit(OpCodes.Ldc_I4, (int)(short)value);
             else if (value is ushort)
-                ilg.Emit(OpCodes.Ldc_I4, (int)(ushort)value);
+                ilg.Emit(OpCodes.Ldc_I4, (ushort)value);
             else if (value is long)
                 ilg.Emit(OpCodes.Ldc_I8, (long)value);
             else if (value is ulong)
@@ -65,7 +65,7 @@ namespace Dasher
                 ilg.Emit(OpCodes.Ldc_R8, (double)value);
             else if (value is decimal)
             {
-                var bits = Decimal.GetBits((decimal)value);
+                var bits = decimal.GetBits((decimal)value);
                 ilg.Emit(OpCodes.Ldc_I4_4);
                 ilg.Emit(OpCodes.Newarr, typeof(int));
                 for (var i = 0; i < 4; i++)
@@ -75,7 +75,7 @@ namespace Dasher
                     ilg.Emit(OpCodes.Ldc_I4, bits[i]); // value
                     ilg.Emit(OpCodes.Stelem_I4);
                 }
-                ilg.Emit(OpCodes.Newobj, typeof(decimal).GetConstructor(new[] { typeof(int[]) }));
+                ilg.Emit(OpCodes.Newobj, typeof(decimal).GetConstructor(new[] {typeof(int[])}));
             }
             else if (value.GetType().IsEnum)
             {

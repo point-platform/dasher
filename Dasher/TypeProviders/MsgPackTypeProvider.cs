@@ -52,7 +52,7 @@ namespace Dasher.TypeProviders
 
         public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
-            var packerMethod = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { value.LocalType });
+            var packerMethod = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {value.LocalType});
 
             if (packerMethod == null)
                 throw new InvalidOperationException("Type not supported. Call CanProvide first.");
@@ -87,9 +87,9 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Ldstr, value.LocalType.Name);
                 ilg.Emit(OpCodes.Ldloc, format);
                 ilg.Emit(OpCodes.Box, typeof(Format));
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object), typeof(object) }));
+                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object), typeof(object)}));
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(typeGetterSuccess);
