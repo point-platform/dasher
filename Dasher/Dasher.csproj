@@ -39,8 +39,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DasherContext.cs" />
+    <Compile Include="DeserialiserEmitter.cs" />
     <Compile Include="Format.cs" />
     <Compile Include="ILGeneratorExtensions.cs" />
+    <Compile Include="SerialiserEmitter.cs" />
     <Compile Include="TypeProviders\ComplexTypeProvider.cs" />
     <Compile Include="TypeProviders\DateTimeProvider.cs" />
     <Compile Include="TypeProviders\DecimalProvider.cs" />
@@ -56,6 +58,7 @@
     <Compile Include="TypeProviders\ReadOnlyListProvider.cs" />
     <Compile Include="TypeProviders\TimeSpanProvider.cs" />
     <Compile Include="TypeProviders\VersionProvider.cs" />
+    <Compile Include="UnexpectedFieldBehaviour.cs" />
     <Compile Include="Unpacker.cs" />
     <Compile Include="DeserialisationException.cs" />
     <Compile Include="Deserialiser.cs" />
