@@ -41,7 +41,7 @@ namespace Dasher.Tests
             _output = output;
         }
 
-//        [Fact]
+        [Fact(Skip = "For informational purposes, with nothing to assert")]
         public void DeserialisationPerf()
         {
 #if DEBUG
@@ -113,7 +113,7 @@ namespace Dasher.Tests
             Assert.True(dasherMs < cliMs, $"{nameof(dasherMs)}={dasherMs} should be less than {nameof(cliMs)}={cliMs}");
         }
 
-//        [Fact]
+        [Fact(Skip = "For informational purposes, with nothing to assert")]
         public void ConstructionPerf()
         {
             var stream = new MemoryStream();

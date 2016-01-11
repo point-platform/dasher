@@ -40,7 +40,7 @@ namespace Dasher.Tests
             TestOutput = testOutput;
         }
 
-        [Fact]
+        [Fact(Skip = "For informational purposes, with nothing to assert")]
         public void SerialisationPerf()
         {
 #if DEBUG
