@@ -28,11 +28,19 @@ using System.IO;
 using MsgPack;
 using MsgPack.Serialization;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Dasher.Tests
 {
     public sealed class DeserialiserPerfTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public DeserialiserPerfTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
 //        [Fact]
         public void DeserialisationPerf()
         {
@@ -105,6 +113,7 @@ namespace Dasher.Tests
             Assert.True(false, "Performance comparison must be performed on a release build.");
 #endif
 
+            _output.WriteLine($"{nameof(dasherMs)}={dasherMs} {nameof(cliMs)}={cliMs}");
             Assert.True(dasherMs < cliMs, $"{nameof(dasherMs)}={dasherMs} should be less than {nameof(cliMs)}={cliMs}");
         }
 
