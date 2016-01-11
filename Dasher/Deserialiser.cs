@@ -39,9 +39,9 @@ namespace Dasher
     {
         private readonly Deserialiser _inner;
 
-        public Deserialiser(UnexpectedFieldBehaviour unexpectedFieldBehaviour = UnexpectedFieldBehaviour.Throw)
+        public Deserialiser(UnexpectedFieldBehaviour unexpectedFieldBehaviour = UnexpectedFieldBehaviour.Throw, DasherContext context = null)
         {
-            _inner = new Deserialiser(typeof(T), unexpectedFieldBehaviour);
+            _inner = new Deserialiser(typeof(T), unexpectedFieldBehaviour, context);
         }
 
         public T Deserialise(byte[] bytes) => (T)_inner.Deserialise(bytes);
