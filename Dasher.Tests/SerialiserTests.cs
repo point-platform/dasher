@@ -185,15 +185,17 @@ namespace Dasher.Tests
         [Fact]
         public void HandlesRecurringType()
         {
-            // ReSharper disable once ObjectCreationAsStatement
-            new Serialiser<Recurring>();
+            var serialiser = new Serialiser<Recurring>();
+            serialiser.Serialise(new Recurring(1, null));
+            serialiser.Serialise(new Recurring(1, new Recurring(2, null)));
         }
 
         [Fact]
         public void HandlesRecurringTreeType()
         {
-            // ReSharper disable once ObjectCreationAsStatement
-            new Serialiser<RecurringTree>();
+            var serialiser = new Serialiser<RecurringTree>();
+            serialiser.Serialise(new RecurringTree(1, new [] {new RecurringTree(2, null), new RecurringTree(3, null) }));
+            serialiser.Serialise(new RecurringTree(1, new RecurringTree[] { null, null }));
         }
 
         #region Test helpers

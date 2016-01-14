@@ -39,6 +39,19 @@ namespace Dasher.TypeProviders
         {
             var type = value.LocalType;
 
+            var end = ilg.DefineLabel();
+
+            if (!type.IsValueType)
+            {
+                var nonNull = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Ldloc, value);
+                ilg.Emit(OpCodes.Brtrue, nonNull);
+                ilg.Emit(OpCodes.Ldloc, packer);
+                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackNull)));
+                ilg.Emit(OpCodes.Br, end);
+                ilg.MarkLabel(nonNull);
+            }
+
             // treat as complex object and recur
             var props = type
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
@@ -68,6 +81,8 @@ namespace Dasher.TypeProviders
                 if (!context.TrySerialise(ilg, propValue, packer, contextLocal))
                     throw new Exception($"Unable to serialise type {prop.PropertyType}");
             }
+
+            ilg.MarkLabel(end);
         }
 
         public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
