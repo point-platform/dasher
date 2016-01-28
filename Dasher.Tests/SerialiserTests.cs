@@ -206,6 +206,15 @@ namespace Dasher.Tests
             Assert.Equal("Hello", after.Content);
         }
 
+        [Fact]
+        public void HandlesComplexGenericType()
+        {
+            var after = RoundTrip(new GenericWrapper<UserScore>(new UserScore("Bob", 123)));
+
+            Assert.Equal("Bob", after.Content.Name);
+            Assert.Equal(123, after.Content.Score);
+        }
+
         #region Test helpers
 
         private static T RoundTrip<T>(T before)
