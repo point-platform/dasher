@@ -198,6 +198,14 @@ namespace Dasher.Tests
             serialiser.Serialise(new RecurringTree(1, new RecurringTree[] { null, null }));
         }
 
+        [Fact]
+        public void HandlesGenericType()
+        {
+            var after = RoundTrip(new GenericWrapper<string>("Hello"));
+
+            Assert.Equal("Hello", after.Content);
+        }
+
         #region Test helpers
 
         private static T RoundTrip<T>(T before)

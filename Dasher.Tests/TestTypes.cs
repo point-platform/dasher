@@ -309,4 +309,14 @@ namespace Dasher.Tests
             Inner = inner;
         }
     }
+
+    public sealed class GenericWrapper<T>
+    {
+        public T Content { get; }
+
+        public GenericWrapper(T content)
+        {
+            Content = content;
+        }
+    }
 }

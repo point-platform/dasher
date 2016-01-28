@@ -567,6 +567,17 @@ namespace Dasher.Tests
             Assert.Null(after.Inner[1].Inner);
         }
 
+        [Fact]
+        public void HandlesGenericType()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("Content").Pack("Bob"));
+
+            var after = new Deserialiser<GenericWrapper<string>>().Deserialise(bytes);
+
+            Assert.Equal("Bob", after.Content);
+        }
+
         #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)
