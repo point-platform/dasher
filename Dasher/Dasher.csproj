@@ -68,6 +68,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Dasher.nuspec" />
+    <None Include="MsgPack\README.md" />
+    <None Include="README.md" />
+    <None Include="TypeProviders\README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
