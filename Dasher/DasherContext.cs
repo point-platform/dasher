@@ -109,7 +109,22 @@ namespace Dasher
             }
             else
             {
+                var end = ilg.DefineLabel();
+
+                if (!value.LocalType.IsValueType)
+                {
+                    var nonNull = ilg.DefineLabel();
+                    ilg.Emit(OpCodes.Ldloc, value);
+                    ilg.Emit(OpCodes.Brtrue, nonNull);
+                    ilg.Emit(OpCodes.Ldloc, packer);
+                    ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackNull)));
+                    ilg.Emit(OpCodes.Br, end);
+                    ilg.MarkLabel(nonNull);
+                }
+
                 provider.Serialise(ilg, value, packer, contextLocal, this);
+
+                ilg.MarkLabel(end);
             }
             return true;
         }
@@ -120,7 +135,26 @@ namespace Dasher
             if (!TryGetTypeProvider(valueLocal.LocalType, out provider))
                 return false;
 
+            var end = ilg.DefineLabel();
+
+            if (!valueLocal.LocalType.IsValueType)
+            {
+                // check for null
+                var nonNullLabel = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Ldloc, unpacker);
+                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
+                ilg.Emit(OpCodes.Brfalse, nonNullLabel);
+                {
+                    ilg.Emit(OpCodes.Ldnull);
+                    ilg.Emit(OpCodes.Stloc, valueLocal);
+                    ilg.Emit(OpCodes.Br, end);
+                }
+                ilg.MarkLabel(nonNullLabel);
+            }
+
             provider.Deserialise(ilg, name, targetType, valueLocal, unpacker, contextLocal, this, unexpectedFieldBehaviour);
+
+            ilg.MarkLabel(end);
             return true;
         }
     }

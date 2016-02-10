@@ -39,20 +39,6 @@ namespace Dasher.TypeProviders
             var type = value.LocalType;
             var elementType = type.GetGenericArguments().Single();
 
-            var endLabel = ilg.DefineLabel();
-
-            // check for null
-            var nonNullLabel = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Ldloc, value);
-            ilg.Emit(OpCodes.Brtrue, nonNullLabel);
-            {
-                // write null
-                ilg.Emit(OpCodes.Ldloc, packer);
-                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackNull)));
-                ilg.Emit(OpCodes.Br, endLabel);
-            }
-            ilg.MarkLabel(nonNullLabel);
-
             // read list length
             var count = ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldloc, value);
@@ -97,28 +83,11 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, count);
             ilg.Emit(OpCodes.Clt);
             ilg.Emit(OpCodes.Brtrue, loopStart);
-
-            // end
-            ilg.MarkLabel(endLabel);
         }
 
         public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var elementType = value.LocalType.GetGenericArguments().Single();
-
-            var endLabel = ilg.DefineLabel();
-
-            // check for null
-            var nonNullLabel = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Ldloc, unpacker);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
-            ilg.Emit(OpCodes.Brfalse, nonNullLabel);
-            {
-                ilg.Emit(OpCodes.Ldnull);
-                ilg.Emit(OpCodes.Stloc, value);
-                ilg.Emit(OpCodes.Br, endLabel);
-            }
-            ilg.MarkLabel(nonNullLabel);
 
             // read list length
             var count = ilg.DeclareLocal(typeof(int));
@@ -185,9 +154,6 @@ namespace Dasher.TypeProviders
 
             ilg.Emit(OpCodes.Ldloc, array);
             ilg.Emit(OpCodes.Stloc, value);
-
-            // end
-            ilg.MarkLabel(endLabel);
         }
     }
 }

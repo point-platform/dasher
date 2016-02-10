@@ -96,6 +96,9 @@ namespace Dasher.Tests
             var after = RoundTrip(new WithVersionProperty(version));
 
             Assert.Equal(version, after.Version);
+
+            // check null version works ok
+            RoundTrip(new WithVersionProperty(null));
         }
 
         [Fact]
