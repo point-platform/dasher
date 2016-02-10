@@ -40,7 +40,7 @@
   <ItemGroup>
     <Compile Include="DasherContext.cs" />
     <Compile Include="DeserialiserEmitter.cs" />
-    <Compile Include="Format.cs" />
+    <Compile Include="MsgPack\Format.cs" />
     <Compile Include="ILGeneratorExtensions.cs" />
     <Compile Include="SerialiserEmitter.cs" />
     <Compile Include="TypeProviders\ComplexTypeProvider.cs" />
@@ -50,21 +50,21 @@
     <Compile Include="TypeProviders\GuidProvider.cs" />
     <Compile Include="TypeProviders\IntPtrProvider.cs" />
     <Compile Include="TypeProviders\ITypeProvider.cs" />
-    <Compile Include="MsgPackConstants.cs" />
-    <Compile Include="FormatFamily.cs" />
-    <Compile Include="Packer.cs" />
+    <Compile Include="MsgPack\MsgPackConstants.cs" />
+    <Compile Include="MsgPack\FormatFamily.cs" />
+    <Compile Include="MsgPack\Packer.cs" />
     <Compile Include="TypeProviders\MsgPackTypeProvider.cs" />
     <Compile Include="TypeProviders\NullableValueProvider.cs" />
     <Compile Include="TypeProviders\ReadOnlyListProvider.cs" />
     <Compile Include="TypeProviders\TimeSpanProvider.cs" />
     <Compile Include="TypeProviders\VersionProvider.cs" />
     <Compile Include="UnexpectedFieldBehaviour.cs" />
-    <Compile Include="Unpacker.cs" />
+    <Compile Include="MsgPack\Unpacker.cs" />
     <Compile Include="DeserialisationException.cs" />
     <Compile Include="Deserialiser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialiser.cs" />
-    <Compile Include="UnsafePacker.cs" />
+    <Compile Include="MsgPack\UnsafePacker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Dasher.nuspec" />
