@@ -1,8 +1,8 @@
 ![dasher logo](https://cdn.rawgit.com/drewnoakes/dasher/master/Resources/logo.svg)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/s8rusi6ir56tnvoj?svg=true)](https://ci.appveyor.com/project/drewnoakes/dasher)
-[![MetadataExtractor NuGet version](https://img.shields.io/nuget/v/Dasher.svg)](https://www.nuget.org/packages/Dasher/)
-[![MetadataExtractor download stats](https://img.shields.io/nuget/dt/Dasher.svg)](https://www.nuget.org/packages/Dasher/)
+[![Dasher NuGet version](https://img.shields.io/nuget/v/Dasher.svg)](https://www.nuget.org/packages/Dasher/)
+[![Dasher download stats](https://img.shields.io/nuget/dt/Dasher.svg)](https://www.nuget.org/packages/Dasher/)
 
 Dasher is a fast, lightweight, cross-platform serialisation tool.
 
