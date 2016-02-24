@@ -23,8 +23,10 @@
 #endregion
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Dasher.TypeProviders;
 
 namespace Dasher
 {
@@ -135,8 +137,24 @@ namespace Dasher
                 if (parameter.HasDefaultValue)
                 {
                     // set default values on params
-                    ilg.LoadConstant(parameter.DefaultValue);
-                    ilg.Emit(OpCodes.Stloc, valueLocals[i]);
+                    if (NullableValueProvider.IsNullableValueType(parameter.ParameterType))
+                    {
+                        ilg.Emit(OpCodes.Ldloca, valueLocals[i]);
+                        if (parameter.DefaultValue == null)
+                        {
+                            ilg.Emit(OpCodes.Initobj, parameter.ParameterType);
+                        }
+                        else
+                        {
+                            ilg.LoadConstant(parameter.DefaultValue);
+                            ilg.Emit(OpCodes.Call, parameter.ParameterType.GetConstructor(new[] { parameter.ParameterType.GetGenericArguments().Single() }));
+                        }
+                    }
+                    else
+                    {
+                        ilg.LoadConstant(parameter.DefaultValue);
+                        ilg.Emit(OpCodes.Stloc, valueLocals[i]);
+                    }
                     // set 'valueSet' to true
                     // note we use the second LSb to indicate a default value
                     ilg.Emit(OpCodes.Ldc_I4_2);

@@ -578,6 +578,16 @@ namespace Dasher.Tests
             Assert.Equal("Bob", after.Content);
         }
 
+        [Fact]
+        public void HandlesNullableWithDefault()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(0));
+
+            var after = new Deserialiser<NullableWithDefaultValue>().Deserialise(bytes);
+
+            Assert.True(after.B);
+        }
+
         #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)

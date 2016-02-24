@@ -319,4 +319,14 @@ namespace Dasher.Tests
             Content = content;
         }
     }
+
+    public sealed class NullableWithDefaultValue
+    {
+        public NullableWithDefaultValue(bool? b = true)
+        {
+            B = b;
+        }
+
+        public bool? B { get; }
+    }
 }

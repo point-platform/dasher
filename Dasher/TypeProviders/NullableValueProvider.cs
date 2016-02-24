@@ -30,7 +30,9 @@ namespace Dasher.TypeProviders
 {
     internal sealed class NullableValueProvider : ITypeProvider
     {
-        public bool CanProvide(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+        bool ITypeProvider.CanProvide(Type type) => IsNullableValueType(type);
+
+        public static bool IsNullableValueType(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
 
         public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
