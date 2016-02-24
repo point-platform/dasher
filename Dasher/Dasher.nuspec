@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>A a fast, lightweight, cross-platform serialisation tool.</summary>
     <description>
-      A a fast, lightweight, cross-platform serialisation tool.
+      A fast, lightweight, cross-platform serialisation tool.
     </description>
 <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
     <copyright>Copyright Drew Noakes 2015-2016</copyright>
