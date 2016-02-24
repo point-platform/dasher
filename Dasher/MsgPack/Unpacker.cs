@@ -60,6 +60,7 @@ namespace Dasher
             {
                 _nextByte = _stream.ReadByte();
 
+                // TODO wouldn't it be more consistent if this threw IOException too? otherwise some TryRead methods throw or return false depending upon how many bytes need to be read
                 if (_nextByte == -1)
                     return false;
             }

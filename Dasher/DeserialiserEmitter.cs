@@ -93,10 +93,11 @@ namespace Dasher
                 ilg.Emit(OpCodes.Ldloca, mapSize);
                 ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadMapLength)));
 
-                // If false was returned, the data stream ended
+                // If false was returned, then the next MsgPack value is not a map
                 var lblHaveMapSize = ilg.DefineLabel();
                 ilg.Emit(OpCodes.Brtrue, lblHaveMapSize);
                 {
+                    // Check if it's a null
                     ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
                     var lblNotNull = ilg.DefineLabel();
