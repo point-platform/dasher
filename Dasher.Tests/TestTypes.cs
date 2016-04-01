@@ -329,4 +329,24 @@ namespace Dasher.Tests
 
         public bool? B { get; }
     }
+
+    public sealed class TupleWrapper<T1, T2>
+    {
+        public TupleWrapper(Tuple<T1, T2> item)
+        {
+            Item = item;
+        }
+
+        public Tuple<T1, T2> Item { get; }
+    }
+
+    public sealed class TupleWrapper<T1, T2, T3>
+    {
+        public TupleWrapper(Tuple<T1, T2, T3> item)
+        {
+            Item = item;
+        }
+
+        public Tuple<T1, T2, T3> Item { get; }
+    }
 }

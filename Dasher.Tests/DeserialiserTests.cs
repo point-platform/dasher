@@ -588,6 +588,65 @@ namespace Dasher.Tests
             Assert.True(after.B);
         }
 
+        [Fact]
+        public void HandlesTuple2()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Item").PackArrayHeader(2).Pack(1).Pack("Hello"));
+
+            var after = new Deserialiser<TupleWrapper<int, string>>().Deserialise(bytes);
+
+            Assert.Equal(1, after.Item.Item1);
+            Assert.Equal("Hello", after.Item.Item2);
+        }
+
+        [Fact]
+        public void HandlesTuple3()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Item").PackArrayHeader(3).Pack(1).Pack("Hello").Pack(true));
+
+            var after = new Deserialiser<TupleWrapper<int, string, bool?>>().Deserialise(bytes);
+
+            Assert.Equal(1, after.Item.Item1);
+            Assert.Equal("Hello", after.Item.Item2);
+            Assert.True(after.Item.Item3);
+        }
+
+        [Fact]
+        public void TupleThrowsIfTooFewItems()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Item").PackArrayHeader(2).Pack(1).Pack("Hello"));
+
+            var ex = Assert.Throws(
+                typeof(DeserialisationException),
+                () => new Deserialiser<TupleWrapper<int, string, bool?>>().Deserialise(bytes));
+
+            Assert.Equal($"Received array must have length 3 for type {typeof(Tuple<int, string, bool?>).FullName}", ex.Message);
+        }
+
+        [Fact]
+        public void TupleThrowsIfTooManyItems()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Item").PackArrayHeader(3).Pack(1).Pack("Hello").Pack("Extra!!"));
+
+            var ex = Assert.Throws(
+                typeof(DeserialisationException),
+                () => new Deserialiser<TupleWrapper<int, string>>().Deserialise(bytes));
+
+            Assert.Equal($"Received array must have length 2 for type {typeof(Tuple<int, string>).FullName}", ex.Message);
+        }
+
+        [Fact]
+        public void TupleThrowsIfNotArray()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Item").Pack("Not an array"));
+
+            var ex = Assert.Throws(
+                typeof(DeserialisationException),
+                () => new Deserialiser<TupleWrapper<int, string>>().Deserialise(bytes));
+
+            Assert.Equal("Expecting tuple data to be encoded as array", ex.Message);
+        }
+
         #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)

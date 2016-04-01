@@ -218,6 +218,16 @@ namespace Dasher.Tests
             Assert.Equal(123, after.Content.Score);
         }
 
+        [Fact]
+        public void HandlesTuple()
+        {
+            var after = RoundTrip(new TupleWrapper<int, string, bool?>(Tuple.Create(1, "Bob", (bool?)true)));
+
+            Assert.Equal(1, after.Item.Item1);
+            Assert.Equal("Bob", after.Item.Item2);
+            Assert.Equal(true, after.Item.Item3);
+        }
+
         #region Test helpers
 
         private static T RoundTrip<T>(T before)

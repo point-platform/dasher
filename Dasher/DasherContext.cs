@@ -53,7 +53,8 @@ namespace Dasher
                 new EnumProvider(),
                 new VersionProvider(),
                 new ReadOnlyListProvider(),
-                new NullableValueProvider()
+                new NullableValueProvider(),
+                new TupleProvider()
             };
 
             if (typeProviders == null)
