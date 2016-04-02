@@ -53,6 +53,7 @@ namespace Dasher
                 new EnumProvider(),
                 new VersionProvider(),
                 new ReadOnlyListProvider(),
+                new ReadOnlyDictionaryProvider(),
                 new NullableValueProvider(),
                 new TupleProvider()
             };

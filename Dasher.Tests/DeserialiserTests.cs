@@ -647,6 +647,37 @@ namespace Dasher.Tests
             Assert.Equal("Expecting tuple data to be encoded as array", ex.Message);
         }
 
+        [Fact]
+        public void HandlesDictionary()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("Item")
+                .PackMapHeader(2)
+                    .Pack(1).Pack("Hello")
+                    .Pack(2).Pack("World"));
+
+            var after = new Deserialiser<DictionaryWrapper<int, string>>().Deserialise(bytes);
+
+            Assert.Equal(2, after.Item.Count);
+            Assert.Equal("Hello", after.Item[1]);
+            Assert.Equal("World", after.Item[2]);
+        }
+
+        [Fact]
+        public void DictionaryDataWithDuplicateKeyThrows()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("Item")
+                .PackMapHeader(2)
+                    .Pack(1).Pack("Hello")
+                    .Pack(1).Pack("Duplicate!"));
+
+            var ex = Assert.Throws<ArgumentException>(
+                () => new Deserialiser<DictionaryWrapper<int, string>>().Deserialise(bytes));
+
+            Assert.Equal("An item with the same key has already been added.", ex.Message);
+        }
+
         #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)

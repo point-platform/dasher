@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
@@ -226,6 +227,25 @@ namespace Dasher.Tests
             Assert.Equal(1, after.Item.Item1);
             Assert.Equal("Bob", after.Item.Item2);
             Assert.Equal(true, after.Item.Item3);
+        }
+
+        [Fact]
+        public void HandlesDictionary()
+        {
+            var after = RoundTrip(new DictionaryWrapper<int, string>(
+                new Dictionary<int, string> {{1, "Hello"}, {2, "World"}}));
+
+            Assert.Equal(2, after.Item.Count);
+            Assert.Equal("Hello", after.Item[1]);
+            Assert.Equal("World", after.Item[2]);
+
+            var after2 = RoundTrip(new DictionaryWrapper<int, bool?>(
+                new Dictionary<int, bool?> {{1, true}, {2, false}, {3, null} }));
+
+            Assert.Equal(3, after2.Item.Count);
+            Assert.Equal(true, after2.Item[1]);
+            Assert.Equal(false, after2.Item[2]);
+            Assert.Equal(null, after2.Item[3]);
         }
 
         #region Test helpers

@@ -55,6 +55,7 @@
     <Compile Include="MsgPack\Packer.cs" />
     <Compile Include="TypeProviders\MsgPackTypeProvider.cs" />
     <Compile Include="TypeProviders\NullableValueProvider.cs" />
+    <Compile Include="TypeProviders\ReadOnlyDictionaryProvider.cs" />
     <Compile Include="TypeProviders\ReadOnlyListProvider.cs" />
     <Compile Include="TypeProviders\TimeSpanProvider.cs" />
     <Compile Include="TypeProviders\TupleProvider.cs" />

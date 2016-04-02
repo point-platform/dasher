@@ -349,4 +349,14 @@ namespace Dasher.Tests
 
         public Tuple<T1, T2, T3> Item { get; }
     }
+
+    public sealed class DictionaryWrapper<TKey, TValue>
+    {
+        public DictionaryWrapper(IReadOnlyDictionary<TKey, TValue> item)
+        {
+            Item = item;
+        }
+
+        public IReadOnlyDictionary<TKey, TValue> Item { get; }
+    }
 }

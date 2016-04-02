@@ -44,7 +44,7 @@ public sealed class Holiday
 
 # Supported types
 
-Both serialiser and deserialiser support the core built-in types of `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `double`, `decimal`, `string`, as well as `DateTime`, `TimeSpan`, `Guid`, `IntPtr`, `Version`, `Nullable<T>`, `IReadOnlyList<T>`, `Tuple<...>` and enum types.
+Both serialiser and deserialiser support the core built-in types of `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `double`, `decimal`, `string`, as well as `DateTime`, `TimeSpan`, `Guid`, `IntPtr`, `Version`, `Nullable<T>`, `IReadOnlyList<T>`, `IReadOnlyDictionary<TKey, TValue>`, `Tuple<...>` and enum types.
 
 Types may contain fields of further complex types, which are nested.
 
