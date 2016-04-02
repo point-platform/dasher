@@ -90,16 +90,5 @@ namespace Dasher.TypeProviders
 
             ilg.Emit(OpCodes.Stloc, value);
         }
-
-        void Foo()
-        {
-            int i = 1;
-            string s = "Hello";
-            bool? b = false;
-
-            var t = new Tuple<int, string, bool?>(i, s, b);
-
-            t.ToString();
-        }
     }
 }
