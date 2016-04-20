@@ -131,6 +131,13 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void DisallowsPrimitiveTypes()
+        {
+            var exception = Assert.Throws<SerialisationException>(() => new Serialiser<int>());
+            Assert.Equal("Cannot serialise primitive types. The root type must contain properties and values to support future versioning.", exception.Message);
+        }
+
+        [Fact]
         public void HandlesComplex()
         {
             var after = RoundTrip(new UserScoreWrapper(1.0, new UserScore("Bob", 123)));

@@ -160,6 +160,13 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void DisallowsPrimitiveTypes()
+        {
+            var exception = Assert.Throws<DeserialisationException>(() => new Deserialiser<int>());
+            Assert.Equal("Cannot deserialise primitive types. The root type must contain properties and values to support future versioning.", exception.Message);
+        }
+
+        [Fact]
         public void DeserialiseToStruct()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(2)

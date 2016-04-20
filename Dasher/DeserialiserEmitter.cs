@@ -37,7 +37,7 @@ namespace Dasher
             #region Verify and prepare for target type
 
             if (type.IsPrimitive)
-                throw new Exception("TEST THIS CASE 1");
+                throw new DeserialisationException("Cannot deserialise primitive types. The root type must contain properties and values to support future versioning.", type);
 
             var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (ctors.Length != 1)

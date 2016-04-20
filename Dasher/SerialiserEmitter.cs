@@ -32,7 +32,7 @@ namespace Dasher
         public static Action<UnsafePacker, DasherContext, object> Build(Type type, DasherContext context)
         {
             if (type.IsPrimitive)
-                throw new Exception("TEST THIS CASE 1");
+                throw new SerialisationException("Cannot serialise primitive types. The root type must contain properties and values to support future versioning.", type);
 
             var method = new DynamicMethod(
                 $"Serialiser{type.Name}",
