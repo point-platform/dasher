@@ -693,6 +693,26 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void ThrowsWhenGuidNotEncodedAsString()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("Guid").Pack(1234));
+
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<WithGuidProperty>().Deserialise(bytes));
+            Assert.Equal("Unable to deserialise GUID value", ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsWhenGuidEncodedAsUnparseableString()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("Guid").Pack("NOTAGUID"));
+
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<WithGuidProperty>().Deserialise(bytes));
+            Assert.Equal("Unable to deserialise GUID value", ex.Message);
+        }
+
+        [Fact]
         public void DictionaryDataWithDuplicateKeyThrows()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
