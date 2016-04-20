@@ -671,6 +671,28 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void ThrowsWhenDecimalNotEncodedAsString()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("Name").Pack("Bob")
+                .Pack("Score").Pack(1234));
+
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<UserScoreDecimal>().Deserialise(bytes));
+            Assert.Equal("Unable to deserialise decimal value", ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsWhenDecimalEncodedAsUnparseableString()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(2)
+                .Pack("Name").Pack("Bob")
+                .Pack("Score").Pack("NOTADECIMAL"));
+
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<UserScoreDecimal>().Deserialise(bytes));
+            Assert.Equal("Unable to deserialise decimal value", ex.Message);
+        }
+
+        [Fact]
         public void DictionaryDataWithDuplicateKeyThrows()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)

@@ -59,9 +59,9 @@ namespace Dasher.TypeProviders
             var lbl = ilg.DefineLabel();
             ilg.Emit(OpCodes.Brtrue, lbl);
             {
-                // TODO throw better exception
-                ilg.Emit(OpCodes.Ldstr, "TEST THIS CASE 4b");
-                ilg.Emit(OpCodes.Newobj, typeof(Exception).GetConstructor(new[] {typeof(string)}));
+                ilg.Emit(OpCodes.Ldstr, "Unable to deserialise decimal value");
+                ilg.LoadType(targetType);
+                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl);
