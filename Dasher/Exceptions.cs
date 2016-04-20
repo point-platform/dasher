@@ -36,4 +36,15 @@ namespace Dasher
             TargetType = targetType;
         }
     }
+
+    public sealed class SerialisationException : Exception
+    {
+        public Type TargetType { get; }
+
+        public SerialisationException(string message, Type targetType)
+            : base(message)
+        {
+            TargetType = targetType;
+        }
+    }
 }

@@ -62,7 +62,7 @@
     <Compile Include="TypeProviders\VersionProvider.cs" />
     <Compile Include="UnexpectedFieldBehaviour.cs" />
     <Compile Include="MsgPack\Unpacker.cs" />
-    <Compile Include="DeserialisationException.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="Deserialiser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialiser.cs" />
