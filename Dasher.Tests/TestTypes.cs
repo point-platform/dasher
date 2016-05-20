@@ -56,6 +56,16 @@ namespace Dasher.Tests
         public int Score { get; }
     }
 
+    public sealed class StructWrapper
+    {
+        public UserScoreStruct Struct { get; }
+
+        public StructWrapper(UserScoreStruct @struct)
+        {
+            Struct = @struct;
+        }
+    }
+
     public sealed class UserScoreWithDefaultScore
     {
         public UserScoreWithDefaultScore(string name, int score = 100)

@@ -255,6 +255,15 @@ namespace Dasher.Tests
             Assert.Equal(null, after2.Item[3]);
         }
 
+        [Fact]
+        public void HandlesClassWrappingCustomStruct()
+        {
+            var after = RoundTrip(new StructWrapper(new UserScoreStruct("Foo", 123)));
+
+            Assert.Equal("Foo", after.Struct.Name);
+            Assert.Equal(123, after.Struct.Score);
+        }
+
         #region Test helpers
 
         private static T RoundTrip<T>(T before)

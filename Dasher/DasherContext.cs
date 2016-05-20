@@ -107,6 +107,8 @@ namespace Dasher
                 ilg.Emit(OpCodes.Ldloc, packer);
                 ilg.Emit(OpCodes.Ldloc, contextLocal);
                 ilg.Emit(OpCodes.Ldloc, value);
+                if (value.LocalType.IsValueType)
+                    ilg.Emit(OpCodes.Box, value.LocalType);
                 ilg.Emit(OpCodes.Call, typeof(Action<UnsafePacker, DasherContext, object>).GetMethod(nameof(Func<UnsafePacker, DasherContext, object>.Invoke), new[] {typeof(UnsafePacker), typeof(DasherContext), typeof(object)}));
             }
             else

@@ -727,6 +727,21 @@ namespace Dasher.Tests
             Assert.Equal("An item with the same key has already been added.", ex.Message);
         }
 
+        [Fact]
+        public void HandlesClassWrappingCustomStruct()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack("Struct")
+                .PackMapHeader(2)
+                    .Pack("Name").Pack("Foo")
+                    .Pack("Score").Pack(123));
+
+            var after = new Deserialiser<StructWrapper>().Deserialise(bytes);
+
+            Assert.Equal("Foo", after.Struct.Name);
+            Assert.Equal(123, after.Struct.Score);
+        }
+
         #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)

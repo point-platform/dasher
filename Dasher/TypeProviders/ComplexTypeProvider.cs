@@ -31,8 +31,6 @@ namespace Dasher.TypeProviders
 {
     internal sealed class ComplexTypeProvider : ITypeProvider
     {
-        // TODO should support complex structs too
-
         public bool CanProvide(Type type) => type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1;
 
         public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
@@ -78,7 +76,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloc, contextLocal);
             ilg.Emit(OpCodes.Call, typeof(Func<Unpacker, DasherContext, object>).GetMethod(nameof(Func<Unpacker, DasherContext, object>.Invoke), new[] {typeof(Unpacker), typeof(DasherContext)}));
-            ilg.Emit(OpCodes.Castclass, value.LocalType);
+            ilg.Emit(value.LocalType.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, value.LocalType);
             ilg.Emit(OpCodes.Stloc, value);
         }
     }
