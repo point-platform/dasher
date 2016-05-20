@@ -37,10 +37,9 @@ namespace Dasher.TypeProviders
 
         public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
-            var type = value.LocalType;
 
             // treat as complex object and recur
-            var props = type
+            var props = value.LocalType
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .Where(p => p.CanRead)
                 .ToList();
@@ -61,7 +60,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
 
                 // get property value
-                ilg.Emit(type.IsValueType ? OpCodes.Ldloca : OpCodes.Ldloc, value);
+                ilg.Emit(value.LocalType.IsValueType ? OpCodes.Ldloca : OpCodes.Ldloc, value);
                 ilg.Emit(OpCodes.Call, prop.GetMethod);
                 ilg.Emit(OpCodes.Stloc, propValue);
 
