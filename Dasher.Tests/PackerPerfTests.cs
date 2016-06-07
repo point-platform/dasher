@@ -41,7 +41,7 @@ namespace Dasher.Tests
             TestOutput = testOutput;
         }
 
-        [Fact]
+        [Fact(Skip = "Performance test")]
         public void StreamWritePerfTest()
         {
             const int bufferSize = 1024;
@@ -79,7 +79,7 @@ namespace Dasher.Tests
             Assert.True(inChunksTime < oneByOneTime);
         }
 
-//        [Fact]
+        [Fact(Skip = "Performance test")]
         public void PackerPerf()
         {
             var s = new MemoryStream();
