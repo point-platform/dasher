@@ -62,11 +62,22 @@ namespace Dasher.Tests
         [Fact]
         public void HandlesDateTime()
         {
-            var dateTime = new DateTime(2015, 12, 25);
+            Action<DateTime> test = dateTime =>
+            {
+                var after = RoundTrip(new WithDateTimeProperty(dateTime));
 
-            var after = RoundTrip(new WithDateTimeProperty(dateTime));
+                Assert.Equal(dateTime, after.Date);
+                Assert.Equal(dateTime.Kind, after.Date.Kind);
+            };
 
-            Assert.Equal(dateTime, after.Date);
+            test(new DateTime(2015, 12, 25));
+            test(DateTime.SpecifyKind(new DateTime(2015, 12, 25), DateTimeKind.Local));
+            test(DateTime.SpecifyKind(new DateTime(2015, 12, 25), DateTimeKind.Unspecified));
+            test(DateTime.SpecifyKind(new DateTime(2015, 12, 25), DateTimeKind.Utc));
+            test(DateTime.MinValue);
+            test(DateTime.MaxValue);
+            test(DateTime.Now);
+            test(DateTime.UtcNow);
         }
 
         [Fact]

@@ -67,7 +67,7 @@ namespace Dasher.Tests
             var bytes = PackBytes(packer =>
             {
                 packer.PackMapHeader(1)
-                    .Pack("Date").Pack(dateTime.Ticks);
+                    .Pack("Date").Pack(dateTime.ToBinary());
             });
 
             var after = new Deserialiser<WithDateTimeProperty>().Deserialise(bytes);

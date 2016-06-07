@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Dasher.TypeProviders
@@ -33,20 +34,20 @@ namespace Dasher.TypeProviders
 
         public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
-            // write the ticks form of the value as int64
+            // Write the binary form of the value as long
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Call, typeof(DateTime).GetProperty(nameof(DateTime.Ticks)).GetMethod);
+            ilg.Emit(OpCodes.Call, typeof(DateTime).GetMethod(nameof(DateTime.ToBinary)));
             ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(long)}));
         }
 
         public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // Read value as a long
-            var ticks = ilg.DeclareLocal(typeof(long));
+            var binary = ilg.DeclareLocal(typeof(long));
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
-            ilg.Emit(OpCodes.Ldloca, ticks);
+            ilg.Emit(OpCodes.Ldloca, binary);
             ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadInt64)));
 
             // If the unpacker method failed (returned false), throw
@@ -60,9 +61,9 @@ namespace Dasher.TypeProviders
             }
             ilg.MarkLabel(lbl);
 
-            ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Ldloc, ticks);
-            ilg.Emit(OpCodes.Call, typeof(DateTime).GetConstructor(new[] {typeof(long)}));
+            ilg.Emit(OpCodes.Ldloc, binary);
+            ilg.Emit(OpCodes.Call, typeof(DateTime).GetMethod(nameof(DateTime.FromBinary), BindingFlags.Static | BindingFlags.Public));
+            ilg.Emit(OpCodes.Stloc, value);
         }
     }
 }
