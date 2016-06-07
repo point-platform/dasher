@@ -44,6 +44,7 @@
     <Compile Include="ILGeneratorExtensions.cs" />
     <Compile Include="SerialiserEmitter.cs" />
     <Compile Include="TypeProviders\ComplexTypeProvider.cs" />
+    <Compile Include="TypeProviders\DateTimeOffsetProvider.cs" />
     <Compile Include="TypeProviders\DateTimeProvider.cs" />
     <Compile Include="TypeProviders\DecimalProvider.cs" />
     <Compile Include="TypeProviders\EnumProvider.cs" />

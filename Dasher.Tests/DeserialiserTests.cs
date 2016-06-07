@@ -76,6 +76,27 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void HandlesDateTimeOffset()
+        {
+            var dateTimeOffset = new DateTimeOffset(2015, 12, 25, 0, 0, 0, TimeSpan.FromMinutes(90));
+
+            var bytes = PackBytes(packer =>
+            {
+                packer.PackMapHeader(1)
+                    .Pack("Date").PackArrayHeader(2)
+                        .Pack(dateTimeOffset.DateTime.ToBinary())
+                        .Pack((short)dateTimeOffset.Offset.TotalMinutes);
+            });
+
+            var after = new Deserialiser<WithDateTimeOffsetProperty>().Deserialise(bytes);
+
+            Assert.Equal(dateTimeOffset, after.Date);
+            Assert.Equal(dateTimeOffset.Offset, after.Date.Offset);
+            Assert.Equal(dateTimeOffset.DateTime.Kind, after.Date.DateTime.Kind);
+            Assert.True(dateTimeOffset.EqualsExact(after.Date));
+        }
+
+        [Fact]
         public void HandlesTimeSpan()
         {
             var timeSpan = TimeSpan.FromSeconds(1234.5678);

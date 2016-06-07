@@ -81,6 +81,39 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void HandlesDateTimeOffset()
+        {
+            Action<DateTimeOffset> test = dto =>
+            {
+                var after = RoundTrip(new WithDateTimeOffsetProperty(dto));
+
+                Assert.Equal(dto, after.Date);
+                Assert.Equal(dto.Offset, after.Date.Offset);
+                Assert.Equal(dto.DateTime.Kind, after.Date.DateTime.Kind);
+                Assert.True(dto.EqualsExact(after.Date));
+            };
+
+            var offsets = new[]
+            {
+                TimeSpan.Zero,
+                TimeSpan.FromHours(1),
+                TimeSpan.FromHours(-1),
+                TimeSpan.FromHours(10),
+                TimeSpan.FromHours(-10),
+                TimeSpan.FromMinutes(90),
+                TimeSpan.FromMinutes(-90)
+            };
+
+            foreach (var offset in offsets)
+                test(new DateTimeOffset(new DateTime(2015, 12, 25), offset));
+
+            test(DateTimeOffset.MinValue);
+            test(DateTimeOffset.MaxValue);
+            test(DateTimeOffset.Now);
+            test(DateTimeOffset.UtcNow);
+        }
+
+        [Fact]
         public void HandlesTimeSpan()
         {
             var timeSpan = new TimeSpan(12345678);

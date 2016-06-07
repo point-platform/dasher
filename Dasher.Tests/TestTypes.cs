@@ -112,6 +112,16 @@ namespace Dasher.Tests
         public DateTime Date { get; }
     }
 
+    public sealed class WithDateTimeOffsetProperty
+    {
+        public WithDateTimeOffsetProperty(DateTimeOffset date)
+        {
+            Date = date;
+        }
+
+        public DateTimeOffset Date { get; }
+    }
+
     public sealed class WithTimeSpanProperty
     {
         public WithTimeSpanProperty(TimeSpan time)

@@ -47,6 +47,7 @@ namespace Dasher
                 new MsgPackTypeProvider(),
                 new DecimalProvider(),
                 new DateTimeProvider(),
+                new DateTimeOffsetProvider(),
                 new TimeSpanProvider(),
                 new IntPtrProvider(),
                 new GuidProvider(),
