@@ -283,7 +283,7 @@ namespace Dasher.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Missing required field \"score\".", ex.Message);
+            Assert.Equal("Missing required field \"score\" for type \"UserScore\".", ex.Message);
         }
 
         [Fact]

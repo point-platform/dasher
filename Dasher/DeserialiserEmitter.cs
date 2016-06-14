@@ -329,9 +329,10 @@ namespace Dasher
             {
                 // If we got here then one or more values is missing.
                 ilg.MarkLabel(lblValuesMissing);
-                ilg.Emit(OpCodes.Ldstr, "Missing required field \"{0}\".");
+                ilg.Emit(OpCodes.Ldstr, "Missing required field \"{0}\" for type \"{1}\".");
                 ilg.Emit(OpCodes.Ldloc, paramName);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)}));
+                ilg.Emit(OpCodes.Ldstr, type.Name);
+                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
                 throwException();
             }
             ilg.MarkLabel(lblValuesOk);
