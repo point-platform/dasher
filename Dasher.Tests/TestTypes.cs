@@ -22,7 +22,6 @@
 //
 #endregion
 
-using System;
 using System.Collections.Generic;
 
 // ReSharper disable ClassNeverInstantiated.Global
@@ -56,16 +55,6 @@ namespace Dasher.Tests
         public int Score { get; }
     }
 
-    public sealed class StructWrapper
-    {
-        public UserScoreStruct Struct { get; }
-
-        public StructWrapper(UserScoreStruct @struct)
-        {
-            Struct = @struct;
-        }
-    }
-
     public sealed class UserScoreWithDefaultScore
     {
         public UserScoreWithDefaultScore(string name, int score = 100)
@@ -78,104 +67,32 @@ namespace Dasher.Tests
         public int Score { get; }
     }
 
-    public sealed class UserScoreWrapper
+    public sealed class WeightedUserScore
     {
         public double Weight { get; }
         public UserScore UserScore { get; }
 
-        public UserScoreWrapper(double weight, UserScore userScore)
+        public WeightedUserScore(double weight, UserScore userScore)
         {
             Weight = weight;
             UserScore = userScore;
         }
     }
 
-    public sealed class UserScoreDecimal
+    public sealed class ValueWrapper<T>
     {
-        public UserScoreDecimal(string name, decimal score)
+        public T Value { get; }
+
+        public ValueWrapper(T value)
         {
-            Name = name;
-            Score = score;
+            Value = value;
         }
-
-        public string Name { get; }
-        public decimal Score { get; }
-    }
-
-    public sealed class WithDateTimeProperty
-    {
-        public WithDateTimeProperty(DateTime date)
-        {
-            Date = date;
-        }
-
-        public DateTime Date { get; }
-    }
-
-    public sealed class WithDateTimeOffsetProperty
-    {
-        public WithDateTimeOffsetProperty(DateTimeOffset date)
-        {
-            Date = date;
-        }
-
-        public DateTimeOffset Date { get; }
-    }
-
-    public sealed class WithTimeSpanProperty
-    {
-        public WithTimeSpanProperty(TimeSpan time)
-        {
-            Time = time;
-        }
-
-        public TimeSpan Time { get; }
-    }
-
-    public sealed class WithIntPtrProperty
-    {
-        public WithIntPtrProperty(IntPtr intPtr)
-        {
-            IntPtr = intPtr;
-        }
-
-        public IntPtr IntPtr { get; }
-    }
-
-    public sealed class WithVersionProperty
-    {
-        public WithVersionProperty(Version version)
-        {
-            Version = version;
-        }
-
-        public Version Version { get; }
-    }
-
-    public sealed class WithGuidProperty
-    {
-        public WithGuidProperty(Guid guid)
-        {
-            Guid = guid;
-        }
-
-        public Guid Guid { get; }
     }
 
     public enum TestEnum
     {
         Foo = 1,
         Bar = 2
-    }
-
-    public sealed class WithEnumProperty
-    {
-        public WithEnumProperty(TestEnum testEnum)
-        {
-            TestEnum = testEnum;
-        }
-
-        public TestEnum TestEnum { get; }
     }
 
     public sealed class TestDefaultParams
@@ -258,18 +175,6 @@ namespace Dasher.Tests
         }
     }
 
-    public sealed class UserScoreList
-    {
-        public UserScoreList(string name, IReadOnlyList<int> scores)
-        {
-            Name = name;
-            Scores = scores;
-        }
-
-        public string Name { get; }
-        public IReadOnlyList<int> Scores { get; }
-    }
-
     public sealed class ListOfList
     {
         public IReadOnlyList<IReadOnlyList<int>> Jagged { get; }
@@ -277,32 +182,6 @@ namespace Dasher.Tests
         public ListOfList(IReadOnlyList<IReadOnlyList<int>> jagged)
         {
             Jagged = jagged;
-        }
-    }
-
-    public sealed class WithBinary
-    {
-        public byte[] Bytes { get; }
-
-        public WithBinary(byte[] bytes)
-        {
-            Bytes = bytes;
-        }
-    }
-
-    public sealed class WithNullableProperties
-    {
-        public int? Int { get; }
-        public double? Double { get; }
-        public DateTime? DateTime { get; }
-        public decimal? Decimal { get; }
-
-        public WithNullableProperties(int? @int, double? @double, DateTime? dateTime, decimal? @decimal)
-        {
-            Int = @int;
-            Double = @double;
-            DateTime = dateTime;
-            Decimal = @decimal;
         }
     }
 
@@ -330,16 +209,6 @@ namespace Dasher.Tests
         }
     }
 
-    public sealed class GenericWrapper<T>
-    {
-        public T Content { get; }
-
-        public GenericWrapper(T content)
-        {
-            Content = content;
-        }
-    }
-
     public sealed class NullableWithDefaultValue
     {
         public NullableWithDefaultValue(bool? b = true)
@@ -348,35 +217,5 @@ namespace Dasher.Tests
         }
 
         public bool? B { get; }
-    }
-
-    public sealed class TupleWrapper<T1, T2>
-    {
-        public TupleWrapper(Tuple<T1, T2> item)
-        {
-            Item = item;
-        }
-
-        public Tuple<T1, T2> Item { get; }
-    }
-
-    public sealed class TupleWrapper<T1, T2, T3>
-    {
-        public TupleWrapper(Tuple<T1, T2, T3> item)
-        {
-            Item = item;
-        }
-
-        public Tuple<T1, T2, T3> Item { get; }
-    }
-
-    public sealed class DictionaryWrapper<TKey, TValue>
-    {
-        public DictionaryWrapper(IReadOnlyDictionary<TKey, TValue> item)
-        {
-            Item = item;
-        }
-
-        public IReadOnlyDictionary<TKey, TValue> Item { get; }
     }
 }

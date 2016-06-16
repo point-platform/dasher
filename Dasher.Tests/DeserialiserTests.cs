@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using MsgPack;
 using Xunit;
@@ -34,7 +35,7 @@ namespace Dasher.Tests
     public sealed class DeserialiserTests
     {
         [Fact]
-        public void ExactMatch()
+        public void MultiplePropertiesExactMatch()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(2)
                 .Pack("Name").Pack("Bob")
@@ -44,140 +45,6 @@ namespace Dasher.Tests
 
             Assert.Equal("Bob", after.Name);
             Assert.Equal(123, after.Score);
-        }
-
-        [Fact]
-        public void HandlesDecimal()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(2)
-                .Pack("Name").Pack("Bob")
-                .Pack("Score").Pack("123.4567"));
-
-            var after = new Deserialiser<UserScoreDecimal>().Deserialise(bytes);
-
-            Assert.Equal("Bob", after.Name);
-            Assert.Equal(123.4567m, after.Score);
-        }
-
-        [Fact]
-        public void HandlesDateTime()
-        {
-            var dateTime = new DateTime(2015, 12, 25);
-
-            var bytes = PackBytes(packer =>
-            {
-                packer.PackMapHeader(1)
-                    .Pack("Date").Pack(dateTime.ToBinary());
-            });
-
-            var after = new Deserialiser<WithDateTimeProperty>().Deserialise(bytes);
-
-            Assert.Equal(dateTime, after.Date);
-        }
-
-        [Fact]
-        public void HandlesDateTimeOffset()
-        {
-            var dateTimeOffset = new DateTimeOffset(2015, 12, 25, 0, 0, 0, TimeSpan.FromMinutes(90));
-
-            var bytes = PackBytes(packer =>
-            {
-                packer.PackMapHeader(1)
-                    .Pack("Date").PackArrayHeader(2)
-                        .Pack(dateTimeOffset.DateTime.ToBinary())
-                        .Pack((short)dateTimeOffset.Offset.TotalMinutes);
-            });
-
-            var after = new Deserialiser<WithDateTimeOffsetProperty>().Deserialise(bytes);
-
-            Assert.Equal(dateTimeOffset, after.Date);
-            Assert.Equal(dateTimeOffset.Offset, after.Date.Offset);
-            Assert.Equal(dateTimeOffset.DateTime.Kind, after.Date.DateTime.Kind);
-            Assert.True(dateTimeOffset.EqualsExact(after.Date));
-        }
-
-        [Fact]
-        public void HandlesTimeSpan()
-        {
-            var timeSpan = TimeSpan.FromSeconds(1234.5678);
-
-            var bytes = PackBytes(packer =>
-            {
-                packer.PackMapHeader(1)
-                    .Pack("Time").Pack(timeSpan.Ticks);
-            });
-
-            var after = new Deserialiser<WithTimeSpanProperty>().Deserialise(bytes);
-
-            Assert.Equal(timeSpan, after.Time);
-        }
-
-        [Fact]
-        public void HandlesIntPtr()
-        {
-            var intPtr = new IntPtr(12345678);
-
-            var bytes = PackBytes(packer =>
-            {
-                packer.PackMapHeader(1)
-                    .Pack("IntPtr").Pack(intPtr.ToInt64());
-            });
-
-            var after = new Deserialiser<WithIntPtrProperty>().Deserialise(bytes);
-
-            Assert.Equal(intPtr, after.IntPtr);
-        }
-
-        [Fact]
-        public void HandlesVersion()
-        {
-            var version = new Version("1.2.3");
-
-            var bytes = PackBytes(packer =>
-            {
-                packer.PackMapHeader(1)
-                    .Pack("Version").Pack(version.ToString());
-            });
-
-            var after = new Deserialiser<WithVersionProperty>().Deserialise(bytes);
-
-            Assert.Equal(version, after.Version);
-        }
-
-        [Fact]
-        public void HandlesGuid()
-        {
-            var guid = new Guid();
-
-            var bytes = PackBytes(packer =>
-            {
-                packer.PackMapHeader(1)
-                    .Pack("Guid").Pack(guid.ToString());
-            });
-
-            var after = new Deserialiser<WithGuidProperty>().Deserialise(bytes);
-
-            Assert.Equal(guid, after.Guid);
-        }
-
-        [Fact]
-        public void HandlesNullableValueTypes()
-        {
-            var bytes = PackBytes(packer =>
-            {
-                packer.PackMapHeader(4)
-                    .Pack("Int").PackNull()
-                    .Pack("Double").PackNull()
-                    .Pack("DateTime").PackNull()
-                    .Pack("Decimal").PackNull();
-            });
-
-            var after = new Deserialiser<WithNullableProperties>().Deserialise(bytes);
-
-            Assert.Null(after.Int);
-            Assert.Null(after.Double);
-            Assert.Null(after.DateTime);
-            Assert.Null(after.Decimal);
         }
 
         [Fact]
@@ -343,51 +210,40 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void HandlesEnumPropertiesCorrectly()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("TestEnum").Pack("Bar"));
-
-            var after = new Deserialiser<WithEnumProperty>().Deserialise(bytes);
-
-            Assert.Equal(TestEnum.Bar, after.TestEnum);
-        }
-
-        [Fact]
         public void DeserialisesEnumMembersCaseInsensitively()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("TestEnum").Pack("BAR"));
+                .Pack(nameof(ValueWrapper<TestEnum>.Value)).Pack("BAR"));
 
-            var after = new Deserialiser<WithEnumProperty>().Deserialise(bytes);
+            var after = new Deserialiser<ValueWrapper<TestEnum>>().Deserialise(bytes);
 
-            Assert.Equal(TestEnum.Bar, after.TestEnum);
+            Assert.Equal(TestEnum.Bar, after.Value);
         }
 
         [Fact]
         public void ThrowsWhenEnumNotEncodedAsString()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("TestEnum").Pack(123));
+                .Pack(nameof(ValueWrapper<TestEnum>.Value)).Pack(123));
 
             var ex = Assert.Throws<DeserialisationException>(
-                () => new Deserialiser<WithEnumProperty>().Deserialise(bytes));
+                () => new Deserialiser<ValueWrapper<TestEnum>>().Deserialise(bytes));
 
-            Assert.Equal(typeof(WithEnumProperty), ex.TargetType);
-            Assert.Equal($"Unable to read string value for enum property testEnum of type {typeof(TestEnum)}", ex.Message);
+            Assert.Equal(typeof(ValueWrapper<TestEnum>), ex.TargetType);
+            Assert.Equal($"Unable to read string value for enum property \"value\" of type \"{typeof(TestEnum)}\"", ex.Message);
         }
 
         [Fact]
         public void ThrowsWhenEnumStringNotValidMember()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("TestEnum").Pack("Rubbish"));
+                .Pack(nameof(ValueWrapper<TestEnum>.Value)).Pack("Rubbish"));
 
             var ex = Assert.Throws<DeserialisationException>(
-                () => new Deserialiser<WithEnumProperty>().Deserialise(bytes));
+                () => new Deserialiser<ValueWrapper<TestEnum>>().Deserialise(bytes));
 
-            Assert.Equal(typeof(WithEnumProperty), ex.TargetType);
-            Assert.Equal($"Unable to parse value \"Rubbish\" as a member of enum type {typeof(TestEnum)}", ex.Message);
+            Assert.Equal(typeof(ValueWrapper<TestEnum>), ex.TargetType);
+            Assert.Equal($"Unable to parse value \"Rubbish\" as a member of enum type \"{typeof(TestEnum)}\"", ex.Message);
         }
 
         [Fact]
@@ -453,24 +309,11 @@ namespace Dasher.Tests
                     .Pack("Name").Pack("Bob")
                     .Pack("Score").Pack(123));
 
-            var after = new Deserialiser<UserScoreWrapper>().Deserialise(bytes);
+            var after = new Deserialiser<WeightedUserScore>().Deserialise(bytes);
 
             Assert.Equal(0.5d, after.Weight);
             Assert.Equal("Bob", after.UserScore.Name);
             Assert.Equal(123, after.UserScore.Score);
-        }
-
-        [Fact]
-        public void HandlesReadOnlyListProperty()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(2)
-                .Pack("Name").Pack("Bob")
-                .Pack("Scores").PackArrayHeader(3).Pack(1).Pack(2).Pack(3));
-
-            var after = new Deserialiser<UserScoreList>().Deserialise(bytes);
-
-            Assert.Equal("Bob", after.Name);
-            Assert.Equal(new[] {1, 2, 3}, after.Scores);
         }
 
         [Fact]
@@ -486,17 +329,6 @@ namespace Dasher.Tests
             Assert.Equal(2, after.Jagged.Count);
             Assert.Equal(new[] {1, 2, 3}, after.Jagged[0]);
             Assert.Equal(new[] {4, 5, 6}, after.Jagged[1]);
-        }
-
-        [Fact]
-        public void HandlesBinary()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("Bytes").PackBinary(new byte[] {1,2,3,4}));
-
-            var after = new Deserialiser<WithBinary>().Deserialise(bytes);
-
-            Assert.Equal(new byte[] {1, 2, 3, 4}, after.Bytes);
         }
 
         [Fact]
@@ -596,17 +428,6 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void HandlesGenericType()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("Content").Pack("Bob"));
-
-            var after = new Deserialiser<GenericWrapper<string>>().Deserialise(bytes);
-
-            Assert.Equal("Bob", after.Content);
-        }
-
-        [Fact]
         public void HandlesNullableWithDefault()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(0));
@@ -617,36 +438,13 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void HandlesTuple2()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Item").PackArrayHeader(2).Pack(1).Pack("Hello"));
-
-            var after = new Deserialiser<TupleWrapper<int, string>>().Deserialise(bytes);
-
-            Assert.Equal(1, after.Item.Item1);
-            Assert.Equal("Hello", after.Item.Item2);
-        }
-
-        [Fact]
-        public void HandlesTuple3()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Item").PackArrayHeader(3).Pack(1).Pack("Hello").Pack(true));
-
-            var after = new Deserialiser<TupleWrapper<int, string, bool?>>().Deserialise(bytes);
-
-            Assert.Equal(1, after.Item.Item1);
-            Assert.Equal("Hello", after.Item.Item2);
-            Assert.True(after.Item.Item3);
-        }
-
-        [Fact]
         public void TupleThrowsIfTooFewItems()
         {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Item").PackArrayHeader(2).Pack(1).Pack("Hello"));
+            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack(nameof(ValueWrapper<Tuple<int, string, bool?>>.Value)).PackArrayHeader(2).Pack(1).Pack("Hello"));
 
             var ex = Assert.Throws(
                 typeof(DeserialisationException),
-                () => new Deserialiser<TupleWrapper<int, string, bool?>>().Deserialise(bytes));
+                () => new Deserialiser<ValueWrapper<Tuple<int, string, bool?>>>().Deserialise(bytes));
 
             Assert.Equal($"Received array must have length 3 for type {typeof(Tuple<int, string, bool?>).FullName}", ex.Message);
         }
@@ -654,11 +452,11 @@ namespace Dasher.Tests
         [Fact]
         public void TupleThrowsIfTooManyItems()
         {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Item").PackArrayHeader(3).Pack(1).Pack("Hello").Pack("Extra!!"));
+            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack(nameof(ValueWrapper<Tuple<int, string>>.Value)).PackArrayHeader(3).Pack(1).Pack("Hello").Pack("Extra!!"));
 
             var ex = Assert.Throws(
                 typeof(DeserialisationException),
-                () => new Deserialiser<TupleWrapper<int, string>>().Deserialise(bytes));
+                () => new Deserialiser<ValueWrapper<Tuple<int, string>>>().Deserialise(bytes));
 
             Assert.Equal($"Received array must have length 2 for type {typeof(Tuple<int, string>).FullName}", ex.Message);
         }
@@ -666,50 +464,32 @@ namespace Dasher.Tests
         [Fact]
         public void TupleThrowsIfNotArray()
         {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Item").Pack("Not an array"));
+            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack(nameof(ValueWrapper<Tuple<int, string>>.Value)).Pack("Not an array"));
 
             var ex = Assert.Throws(
                 typeof(DeserialisationException),
-                () => new Deserialiser<TupleWrapper<int, string>>().Deserialise(bytes));
+                () => new Deserialiser<ValueWrapper<Tuple<int, string>>>().Deserialise(bytes));
 
             Assert.Equal("Expecting tuple data to be encoded as array", ex.Message);
         }
 
         [Fact]
-        public void HandlesDictionary()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("Item")
-                .PackMapHeader(2)
-                    .Pack(1).Pack("Hello")
-                    .Pack(2).Pack("World"));
-
-            var after = new Deserialiser<DictionaryWrapper<int, string>>().Deserialise(bytes);
-
-            Assert.Equal(2, after.Item.Count);
-            Assert.Equal("Hello", after.Item[1]);
-            Assert.Equal("World", after.Item[2]);
-        }
-
-        [Fact]
         public void ThrowsWhenDecimalNotEncodedAsString()
         {
-            var bytes = PackBytes(packer => packer.PackMapHeader(2)
-                .Pack("Name").Pack("Bob")
-                .Pack("Score").Pack(1234));
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack(nameof(ValueWrapper<decimal>.Value)).Pack(1234));
 
-            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<UserScoreDecimal>().Deserialise(bytes));
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<decimal>>().Deserialise(bytes));
             Assert.Equal("Unable to deserialise decimal value", ex.Message);
         }
 
         [Fact]
         public void ThrowsWhenDecimalEncodedAsUnparseableString()
         {
-            var bytes = PackBytes(packer => packer.PackMapHeader(2)
-                .Pack("Name").Pack("Bob")
-                .Pack("Score").Pack("NOTADECIMAL"));
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack(nameof(ValueWrapper<decimal>.Value)).Pack("NOTADECIMAL"));
 
-            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<UserScoreDecimal>().Deserialise(bytes));
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<decimal>>().Deserialise(bytes));
             Assert.Equal("Unable to deserialise decimal value", ex.Message);
         }
 
@@ -717,9 +497,9 @@ namespace Dasher.Tests
         public void ThrowsWhenGuidNotEncodedAsString()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("Guid").Pack(1234));
+                .Pack(nameof(ValueWrapper<Guid>.Value)).Pack(1234));
 
-            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<WithGuidProperty>().Deserialise(bytes));
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<Guid>>().Deserialise(bytes));
             Assert.Equal("Unable to deserialise GUID value", ex.Message);
         }
 
@@ -727,9 +507,9 @@ namespace Dasher.Tests
         public void ThrowsWhenGuidEncodedAsUnparseableString()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("Guid").Pack("NOTAGUID"));
+                .Pack(nameof(ValueWrapper<Guid>.Value)).Pack("NOTAGUID"));
 
-            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<WithGuidProperty>().Deserialise(bytes));
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<Guid>>().Deserialise(bytes));
             Assert.Equal("Unable to deserialise GUID value", ex.Message);
         }
 
@@ -737,13 +517,13 @@ namespace Dasher.Tests
         public void DictionaryDataWithDuplicateKeyThrows()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("Item")
+                .Pack(nameof(ValueWrapper<IReadOnlyDictionary<int, string>>.Value))
                 .PackMapHeader(2)
                     .Pack(1).Pack("Hello")
                     .Pack(1).Pack("Duplicate!"));
 
             var ex = Assert.Throws<ArgumentException>(
-                () => new Deserialiser<DictionaryWrapper<int, string>>().Deserialise(bytes));
+                () => new Deserialiser<ValueWrapper<IReadOnlyDictionary<int, string>>>().Deserialise(bytes));
 
             Assert.Equal("An item with the same key has already been added.", ex.Message);
         }
@@ -752,15 +532,15 @@ namespace Dasher.Tests
         public void HandlesClassWrappingCustomStruct()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("Struct")
+                .Pack(nameof(ValueWrapper<UserScoreStruct>.Value))
                 .PackMapHeader(2)
                     .Pack("Name").Pack("Foo")
                     .Pack("Score").Pack(123));
 
-            var after = new Deserialiser<StructWrapper>().Deserialise(bytes);
+            var after = new Deserialiser<ValueWrapper<UserScoreStruct>>().Deserialise(bytes);
 
-            Assert.Equal("Foo", after.Struct.Name);
-            Assert.Equal(123, after.Struct.Score);
+            Assert.Equal("Foo", after.Value.Name);
+            Assert.Equal(123, after.Value.Score);
         }
 
         #region Helper

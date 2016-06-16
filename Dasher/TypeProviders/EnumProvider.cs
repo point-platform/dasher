@@ -55,7 +55,7 @@ namespace Dasher.TypeProviders
             var lbl1 = ilg.DefineLabel();
             ilg.Emit(OpCodes.Brtrue, lbl1);
             {
-                ilg.Emit(OpCodes.Ldstr, "Unable to read string value for enum property {0} of type {1}");
+                ilg.Emit(OpCodes.Ldstr, "Unable to read string value for enum property \"{0}\" of type \"{1}\"");
                 ilg.Emit(OpCodes.Ldstr, name);
                 ilg.LoadType(value.LocalType);
                 ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
@@ -73,7 +73,7 @@ namespace Dasher.TypeProviders
             var lbl2 = ilg.DefineLabel();
             ilg.Emit(OpCodes.Brtrue, lbl2);
             {
-                ilg.Emit(OpCodes.Ldstr, "Unable to parse value \"{0}\" as a member of enum type {1}");
+                ilg.Emit(OpCodes.Ldstr, "Unable to parse value \"{0}\" as a member of enum type \"{1}\"");
                 ilg.Emit(OpCodes.Ldloc, s);
                 ilg.LoadType(value.LocalType);
                 ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
