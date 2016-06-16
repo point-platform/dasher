@@ -149,7 +149,7 @@ namespace Dasher.Tests
         [Fact]
         public void HandlesGuid()
         {
-            var guid = new Guid();
+            var guid = Guid.NewGuid();
 
             var after = RoundTrip(new WithGuidProperty(guid));
 
