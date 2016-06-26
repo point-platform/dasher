@@ -106,7 +106,7 @@ namespace Dasher.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Encountered unexpected field \"SUPRISE\".", ex.Message);
+            Assert.Equal("Encountered unexpected field \"SUPRISE\" for type \"UserScore\".", ex.Message);
         }
 
         [Fact]
@@ -181,7 +181,7 @@ namespace Dasher.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Encountered duplicate field \"Score\".", ex.Message);
+            Assert.Equal("Encountered duplicate field \"Score\" for type \"UserScore\".", ex.Message);
         }
 
         [Fact]

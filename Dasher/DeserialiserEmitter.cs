@@ -240,9 +240,10 @@ namespace Dasher
                         var notSeenLabel = ilg.DefineLabel();
                         ilg.Emit(OpCodes.Brfalse, notSeenLabel);
                         {
-                            ilg.Emit(OpCodes.Ldstr, "Encountered duplicate field \"{0}\".");
+                            ilg.Emit(OpCodes.Ldstr, "Encountered duplicate field \"{0}\" for type \"{1}\".");
                             ilg.Emit(OpCodes.Ldloc, key);
-                            ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)}));
+                            ilg.Emit(OpCodes.Ldstr, type.Name);
+                            ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
                             throwException();
                         }
 
@@ -267,9 +268,10 @@ namespace Dasher
                 // If we got here then the property was not recognised. Either throw or ignore, depending upon configuration.
                 if (unexpectedFieldBehaviour == UnexpectedFieldBehaviour.Throw)
                 {
-                    ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\".");
+                    ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\" for type \"{1}\".");
                     ilg.Emit(OpCodes.Ldloc, key);
-                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)}));
+                    ilg.Emit(OpCodes.Ldstr, type.Name);
+                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
                     throwException();
                 }
                 else
