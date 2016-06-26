@@ -156,7 +156,7 @@ namespace Dasher.Tests
         public void SupportsGuid()
         {
             var guid = Guid.NewGuid();
-            Test(guid, packer => packer.Pack(guid.ToString()));
+            Test(guid, packer => packer.Pack(guid.ToByteArray()));
         }
 
         [Fact]

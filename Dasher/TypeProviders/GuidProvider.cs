@@ -36,24 +36,18 @@ namespace Dasher.TypeProviders
             // write the string form of the value
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Call, typeof(Guid).GetMethod(nameof(Guid.ToString), new Type[0]));
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
+            ilg.Emit(OpCodes.Call, typeof(Guid).GetMethod(nameof(Guid.ToByteArray), new Type[0]));
+            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(byte[])}));
         }
 
         public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // Read value as a string
-            var s = ilg.DeclareLocal(typeof(string));
+            var bytes = ilg.DeclareLocal(typeof(byte[]));
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
-            ilg.Emit(OpCodes.Ldloca, s);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
-
-            ilg.Emit(OpCodes.Ldloc, s);
-            ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Call, typeof(Guid).GetMethod(nameof(Guid.TryParse), new[] {typeof(string), typeof(Guid).MakeByRefType()}));
-
-            ilg.Emit(OpCodes.And);
+            ilg.Emit(OpCodes.Ldloca, bytes);
+            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadBinary), new[] {typeof(byte[]).MakeByRefType()}));
 
             // If the unpacker method failed (returned false), throw
             var lbl = ilg.DefineLabel();
@@ -65,6 +59,10 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl);
+
+            ilg.Emit(OpCodes.Ldloc, bytes);
+            ilg.Emit(OpCodes.Newobj, typeof(Guid).GetConstructor(new[] {typeof(byte[])}));
+            ilg.Emit(OpCodes.Stloc, value);
         }
     }
 }
