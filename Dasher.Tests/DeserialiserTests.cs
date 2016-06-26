@@ -106,7 +106,7 @@ namespace Dasher.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Encountered unexpected field \"SUPRISE\" for type \"UserScore\".", ex.Message);
+            Assert.Equal("Encountered unexpected field \"SUPRISE\" of MsgPack format \"FixStr\" for CLR type \"UserScore\".", ex.Message);
         }
 
         [Fact]

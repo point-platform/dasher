@@ -268,10 +268,20 @@ namespace Dasher
                 // If we got here then the property was not recognised. Either throw or ignore, depending upon configuration.
                 if (unexpectedFieldBehaviour == UnexpectedFieldBehaviour.Throw)
                 {
-                    ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\" for type \"{1}\".");
+                    var format = ilg.DeclareLocal(typeof(Format));
+                    ilg.Emit(OpCodes.Ldloc, unpacker);
+                    ilg.Emit(OpCodes.Ldloca, format);
+                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryPeekFormat)));
+                    // Drop the return value: if false, 'format' will be 'Unknown' which is fine.
+                    ilg.Emit(OpCodes.Pop);
+
+                    ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\" of MsgPack format \"{1}\" for CLR type \"{2}\".");
                     ilg.Emit(OpCodes.Ldloc, key);
+                    ilg.Emit(OpCodes.Ldloc, format);
+                    ilg.Emit(OpCodes.Box, typeof(Format));
+                    ilg.Emit(OpCodes.Call, typeof(Format).GetMethod(nameof(Format.ToString), new Type[0]));
                     ilg.Emit(OpCodes.Ldstr, type.Name);
-                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
+                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object), typeof(object)}));
                     throwException();
                 }
                 else
