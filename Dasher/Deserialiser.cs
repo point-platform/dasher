@@ -38,11 +38,26 @@ namespace Dasher
             _func = _context.GetOrCreateDeserialiser(typeof(T), unexpectedFieldBehaviour);
         }
 
-        public T Deserialise(byte[] bytes) => Deserialise(new Unpacker(new MemoryStream(bytes)));
+        public T Deserialise(byte[] bytes)
+        {
+            if (bytes == null)
+                throw new ArgumentNullException(nameof(bytes));
+            return Deserialise(new Unpacker(new MemoryStream(bytes)));
+        }
 
-        public T Deserialise(Stream stream) => Deserialise(new Unpacker(stream));
+        public T Deserialise(Stream stream)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+            return Deserialise(new Unpacker(stream));
+        }
 
-        public T Deserialise(Unpacker unpacker) => (T)_func(unpacker, _context);
+        public T Deserialise(Unpacker unpacker)
+        {
+            if (unpacker == null)
+                throw new ArgumentNullException(nameof(unpacker));
+            return (T)_func(unpacker, _context);
+        }
     }
 
     public sealed class Deserialiser
@@ -56,10 +71,25 @@ namespace Dasher
             _func = _context.GetOrCreateDeserialiser(type, unexpectedFieldBehaviour);
         }
 
-        public object Deserialise(byte[] bytes) => Deserialise(new Unpacker(new MemoryStream(bytes)));
+        public object Deserialise(byte[] bytes)
+        {
+            if (bytes == null)
+                throw new ArgumentNullException(nameof(bytes));
+            return Deserialise(new Unpacker(new MemoryStream(bytes)));
+        }
 
-        public object Deserialise(Stream stream) => Deserialise(new Unpacker(stream));
+        public object Deserialise(Stream stream)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+            return Deserialise(new Unpacker(stream));
+        }
 
-        public object Deserialise(Unpacker unpacker) => _func(unpacker, _context);
+        public object Deserialise(Unpacker unpacker)
+        {
+            if (unpacker == null)
+                throw new ArgumentNullException(nameof(unpacker));
+            return _func(unpacker, _context);
+        }
     }
 }

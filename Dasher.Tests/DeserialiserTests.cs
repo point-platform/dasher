@@ -543,6 +543,42 @@ namespace Dasher.Tests
             Assert.Equal(123, after.Value.Score);
         }
 
+        [Fact]
+        public void ThrowsIfNullByteArray()
+        {
+            var ex = Assert.Throws<ArgumentNullException>(() => new Deserialiser<UserScore>().Deserialise((byte[])null));
+
+            Assert.Equal("bytes", ex.ParamName);
+
+            ex = Assert.Throws<ArgumentNullException>(() => new Deserialiser(typeof(UserScore)).Deserialise((byte[])null));
+
+            Assert.Equal("bytes", ex.ParamName);
+        }
+
+        [Fact]
+        public void ThrowsIfNullStream()
+        {
+            var ex = Assert.Throws<ArgumentNullException>(() => new Deserialiser<UserScore>().Deserialise((Stream)null));
+
+            Assert.Equal("stream", ex.ParamName);
+
+            ex = Assert.Throws<ArgumentNullException>(() => new Deserialiser(typeof(UserScore)).Deserialise((Stream)null));
+
+            Assert.Equal("stream", ex.ParamName);
+        }
+
+        [Fact]
+        public void ThrowsIfNullUnpacker()
+        {
+            var ex = Assert.Throws<ArgumentNullException>(() => new Deserialiser<UserScore>().Deserialise((Unpacker)null));
+
+            Assert.Equal("unpacker", ex.ParamName);
+
+            ex = Assert.Throws<ArgumentNullException>(() => new Deserialiser(typeof(UserScore)).Deserialise((Unpacker)null));
+
+            Assert.Equal("unpacker", ex.ParamName);
+        }
+
         #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)
