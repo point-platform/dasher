@@ -40,12 +40,16 @@ namespace Dasher
 
         public void Serialise(Stream stream, T value)
         {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
             using (var packer = new UnsafePacker(stream))
                 Serialise(packer, value);
         }
 
         public void Serialise(UnsafePacker packer, T value)
         {
+            if (packer == null)
+                throw new ArgumentNullException(nameof(packer));
             _action(packer, _context, value);
         }
 
@@ -71,12 +75,16 @@ namespace Dasher
 
         public void Serialise(Stream stream, object value)
         {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
             using (var packer = new UnsafePacker(stream))
                 Serialise(packer, value);
         }
 
         public void Serialise(UnsafePacker packer, object value)
         {
+            if (packer == null)
+                throw new ArgumentNullException(nameof(packer));
             _action(packer, _context, value);
         }
 

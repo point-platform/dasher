@@ -22,6 +22,7 @@
 //
 #endregion
 
+using System;
 using System.IO;
 using Xunit;
 
@@ -97,6 +98,30 @@ namespace Dasher.Tests
 
             Assert.Equal("Foo", after.Value.Name);
             Assert.Equal(123, after.Value.Score);
+        }
+
+        [Fact]
+        public void ThrowsIfNullStream()
+        {
+            var ex = Assert.Throws<ArgumentNullException>(() => new Serialiser<UserScore>().Serialise((Stream)null, new UserScore("Doug", 100)));
+
+            Assert.Equal("stream", ex.ParamName);
+
+            ex = Assert.Throws<ArgumentNullException>(() => new Serialiser(typeof(UserScore)).Serialise((Stream)null, new UserScore("Doug", 100)));
+
+            Assert.Equal("stream", ex.ParamName);
+        }
+
+        [Fact]
+        public void ThrowsIfNullPacker()
+        {
+            var ex = Assert.Throws<ArgumentNullException>(() => new Serialiser<UserScore>().Serialise((UnsafePacker)null, new UserScore("Doug", 100)));
+
+            Assert.Equal("packer", ex.ParamName);
+
+            ex = Assert.Throws<ArgumentNullException>(() => new Serialiser(typeof(UserScore)).Serialise((UnsafePacker)null, new UserScore("Doug", 100)));
+
+            Assert.Equal("packer", ex.ParamName);
         }
 
         #region Helper
