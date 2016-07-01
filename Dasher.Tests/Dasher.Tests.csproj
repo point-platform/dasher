@@ -65,6 +65,7 @@
     <Compile Include="TestTypes.cs" />
     <Compile Include="TestUtils.cs" />
     <Compile Include="TypeSupportTests.cs" />
+    <Compile Include="UnionTests.cs" />
     <Compile Include="UnpackerTests.cs" />
     <Compile Include="DeserialiserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
