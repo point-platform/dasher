@@ -35,7 +35,6 @@ namespace Dasher.TypeProviders
 
         public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
-
             // treat as complex object and recur
             var props = value.LocalType
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
