@@ -111,9 +111,9 @@ new Deserialiser<Reindeer>().Deserialise(...);
 
 ## Handling missing fields
 
-In the previous example we considered the case where the serialiser provided an extra field. Now we consider the deserialiser requires one that the serialiser has not provided.
+In the previous example we considered the case where the serialiser provided a field that was not expected by the deserialiser. Now we consider the opposite case, where the deserialiser requires a field that the serialiser has not provided.
 
-This may be because the deserialiser added the field, or because the serialiser removed it. In practice, both situations are the same.
+This may be because the deserialiser added the field, or because the serialiser removed it. In practice, both situations can be treated in the same way.
 
 ### Missing a required field
 
