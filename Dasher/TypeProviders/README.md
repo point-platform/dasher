@@ -7,14 +7,19 @@ Type providers generate code capable of serialising and deserialising types at r
 Users may add their own type providers to the `DasherContext`. The following type providers are included in Dasher:
 
 * `ComplexTypeProvider`
+* `DateTimeOffsetProvider`
 * `DateTimeProvider`
 * `DecimalProvider`
 * `EnumProvider`
 * `GuidProvider`
 * `IntPtrProvider`
+* `MsgPackTypeProvider`
 * `NullableValueProvider`
-* `TimeSpanProvider`
+* `ReadOnlyDictionaryProvider`
 * `ReadOnlyListProvider`
+* `TimeSpanProvider`
+* `TupleProvider`
+* `UnionProvider`
 * `VersionProvider`
 
 Type providers may work together to serialise/deserialisa a given type. For example, `IReadOnlyList<decimal?>` uses three type providers: one for `IReadOnlyList<T>`, one for `Nullable<T>` and one for `System.Decimal`.
