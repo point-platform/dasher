@@ -44,7 +44,7 @@ public sealed class Holiday
 
 # Supported types
 
-Both serialiser and deserialiser support the core built-in types of `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `double`, `decimal`, `string`, as well as `DateTime`, `DateTimeOffset`, `TimeSpan`, `Guid`, `IntPtr`, `Version`, `Nullable<T>`, `IReadOnlyList<T>`, `IReadOnlyDictionary<TKey, TValue>`, `Tuple<...>` and enum types.
+Both serialiser and deserialiser support the core built-in types of `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `double`, `decimal`, `string`, as well as `DateTime`, `DateTimeOffset`, `TimeSpan`, `Guid`, `IntPtr`, `Version`, `Nullable<T>`, `IReadOnlyList<T>`, `IReadOnlyDictionary<TKey, TValue>`, `Tuple<...>` and enum types. Additionally, a `Union<...>` type exists which allows a given field to take on one of a fixed number of known types.
 
 Types may contain fields of further complex types, which are nested.
 
@@ -176,6 +176,60 @@ No value is provided for `HasRedNose` in the message, however the constructor ar
 ```csharp
 // return new Reindeer("Prancer", 3, false)
 new Deserialiser<Reindeer>(UnexpectedFieldBehaviour.Ignore).Deserialise(...);
+```
+
+---
+
+# Union Types
+
+Dasher is strict about the types it deals with. This allows great control over message schema versions, but sometime you don't know exactly which type you will need. Union types allow flexibility, but in a controlled fashion.
+
+Dasher provides a `Union<T1,T2,...>` type. This allows a given field's type to be one of a set of known types.
+
+Let's look at some examples. Firstly, construction of a union instance:
+
+```csharp
+// implicit conversion
+Union<int, string> union1 = 1;
+Union<int, string> union2 = "Hello";
+
+// alternatively, explicit construction
+var union1 = Union<int, string>.Create(1);
+var union2 = Union<int, string>.Create("Hello");
+```
+
+There are a few ways to consume unions:
+
+```csharp
+// consuming a union
+union1.Type   // int
+union1.Value  // 1 (boxed as object)
+
+// perform an action based on type
+union1.Match(
+  i => Console.WriteLine($"Union holds an int: {i}"),
+  s => Console.WriteLine($"Union holds a string: {s}"));
+
+// mapping based on type
+var num = union1.Match(
+  i => i * 2,
+  s => s.Length);
+```
+
+The `Match` methods offer great performance as they won't box value types and don't involve any lookup based on type (beyond a single vtable lookup).
+
+A class could have a property of type `Union<int, string>` and be successfully serialised and deserialised by Dasher. That property can contain either of these types.
+
+This allows a controlled form of polymorphism (with base type requirement), and allows for heterogeneous lists/dictionaries. For example:
+
+```csharp
+IReadOnlyList<Union<AddItemRequest, RemoveItemRequest>> Requests { get; }
+```
+
+Unions are fully composable, so the above to could be inverted if you knew all items in the list would have the same type:
+
+```csharp
+Union<IReadOnlyList<AddItemRequest>, IReadOnlyList<RemoveItemRequest>> Requests { get; }
 ```
 
 ---
