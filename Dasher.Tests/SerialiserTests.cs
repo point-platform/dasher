@@ -31,48 +31,10 @@ namespace Dasher.Tests
     public sealed class SerialiserTests
     {
         [Fact]
-        public void SerialisesClass()
-        {
-            var after = RoundTrip(new UserScore("Bob", 123));
-
-            Assert.Equal("Bob", after.Name);
-            Assert.Equal(123, after.Score);
-        }
-
-        [Fact]
-        public void SerialisesStruct()
-        {
-            var after = RoundTrip(new UserScoreStruct("Bob", 123));
-
-            Assert.Equal("Bob", after.Name);
-            Assert.Equal(123, after.Score);
-        }
-
-        [Fact]
         public void DisallowsPrimitiveTypes()
         {
             var exception = Assert.Throws<SerialisationException>(() => new Serialiser<int>());
             Assert.Equal("Cannot serialise primitive types. The root type must contain properties and values to support future versioning.", exception.Message);
-        }
-
-        [Fact]
-        public void HandlesComplex()
-        {
-            var after = RoundTrip(new WeightedUserScore(1.0, new UserScore("Bob", 123)));
-
-            Assert.Equal(1.0, after.Weight);
-            Assert.Equal("Bob", after.UserScore.Name);
-            Assert.Equal(123, after.UserScore.Score);
-        }
-
-        [Fact]
-        public void HandlesListOfList()
-        {
-            var after = RoundTrip(new ListOfList(new [] {new [] {1, 2, 3}, new [] {4, 5, 6}}));
-
-            Assert.Equal(2, after.Jagged.Count);
-            Assert.Equal(new[] {1, 2, 3}, after.Jagged[0]);
-            Assert.Equal(new[] {4, 5, 6}, after.Jagged[1]);
         }
 
         [Fact]
@@ -89,15 +51,6 @@ namespace Dasher.Tests
             var serialiser = new Serialiser<RecurringTree>();
             serialiser.Serialise(new RecurringTree(1, new [] {new RecurringTree(2, null), new RecurringTree(3, null) }));
             serialiser.Serialise(new RecurringTree(1, new RecurringTree[] { null, null }));
-        }
-
-        [Fact]
-        public void HandlesClassWrappingCustomStruct()
-        {
-            var after = RoundTrip(new ValueWrapper<UserScoreStruct>(new UserScoreStruct("Foo", 123)));
-
-            Assert.Equal("Foo", after.Value.Name);
-            Assert.Equal(123, after.Value.Score);
         }
 
         [Fact]
@@ -123,20 +76,5 @@ namespace Dasher.Tests
 
             Assert.Equal("packer", ex.ParamName);
         }
-
-        #region Helper
-
-        private static T RoundTrip<T>(T before)
-        {
-            var stream = new MemoryStream();
-
-            new Serialiser<T>().Serialise(stream, before);
-
-            stream.Position = 0;
-
-            return new Deserialiser<T>().Deserialise(stream.ToArray());
-        }
-
-        #endregion
     }
 }
