@@ -51,7 +51,7 @@ for (var level = 2; level <= 16; level++)
             public Type<#=i#>(T<#=i#> value) { _value = value; }
             public override T Match<T>(<#=funcMatchArgs#>) => func<#=i#>(_value);
             public override void Match(<#=actionMatchArgs#>) => action<#=i#>(_value);
-            public override bool Equals(object o) => Equals(o, _value);
+            public override bool Equals(object o) => o is Type<#=i#> ? Equals(((Type<#=i#>)o)._value, _value) : Equals(o, _value);
             public override int GetHashCode() => _value?.GetHashCode() ?? 0;
             public override string ToString() => _value?.ToString();
         }

@@ -64,6 +64,14 @@ namespace Dasher.Tests
         {
             Assert.Equal(1, (Union<int, double>)1);
             Assert.Equal(1.0, (Union<int, double>)1.0);
+
+            Assert.Equal(
+                Union<int, double>.Create(1),
+                Union<int, double>.Create(1));
+
+            Assert.Equal(
+                Union<int, string>.Create(null),
+                Union<int, string>.Create(null));
         }
 
         [Fact]
@@ -100,6 +108,10 @@ namespace Dasher.Tests
 
             Assert.Null(str.Value);
             Assert.Null(ver.Value);
+
+            Assert.Equal(
+                Union<int, string>.Create(null),
+                Union<int, string>.Create(null));
         }
 
         [Fact]
