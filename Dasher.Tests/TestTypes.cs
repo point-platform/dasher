@@ -218,4 +218,8 @@ namespace Dasher.Tests
 
         public bool? B { get; }
     }
+
+    public sealed class NoProperties
+    {
+    }
 }

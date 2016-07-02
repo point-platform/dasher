@@ -41,6 +41,9 @@ namespace Dasher.TypeProviders
                 .Where(p => p.CanRead)
                 .ToList();
 
+            if (props.Count == 0)
+                throw new SerialisationException($"Unable to serialise type \"{value.LocalType}\". It has no dedicated type provider, and has no properties for serialisation as a complex type.", value.LocalType);
+
             // write map header
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldc_I4, props.Count);

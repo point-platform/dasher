@@ -38,6 +38,20 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void DisallowsObject()
+        {
+            var exception = Assert.Throws<SerialisationException>(() => new Serialiser<object>());
+            Assert.Equal("Unable to serialise type \"System.Object\". It has no dedicated type provider, and has no properties for serialisation as a complex type.", exception.Message);
+        }
+
+        [Fact]
+        public void DisallowsTypeWithNoProperties()
+        {
+            var exception = Assert.Throws<SerialisationException>(() => new Serialiser<NoProperties>());
+            Assert.Equal("Unable to serialise type \"Dasher.Tests.NoProperties\". It has no dedicated type provider, and has no properties for serialisation as a complex type.", exception.Message);
+        }
+
+        [Fact]
         public void HandlesRecurringType()
         {
             var serialiser = new Serialiser<Recurring>();
