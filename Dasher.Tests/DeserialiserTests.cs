@@ -579,6 +579,81 @@ namespace Dasher.Tests
             Assert.Equal("unpacker", ex.ParamName);
         }
 
+        [Fact]
+        public void HandlesUnion1()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack(nameof(ValueWrapper<Union<int, string>>.Value))
+                .PackArrayHeader(2)
+                    .Pack("Int32")
+                    .Pack(123));
+
+            var after = new Deserialiser<ValueWrapper<Union<int, string>>>().Deserialise(bytes);
+
+            Assert.Equal(typeof(int), after.Value.Type);
+            Assert.Equal(123, after.Value.Value);
+        }
+
+        [Fact]
+        public void HandlesUnion2()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack(nameof(ValueWrapper<Union<int, string>>.Value))
+                .PackArrayHeader(2)
+                    .Pack("String")
+                    .Pack("Hello"));
+
+            var after = new Deserialiser<ValueWrapper<Union<int, string>>>().Deserialise(bytes);
+
+            Assert.Equal("Hello", after.Value);
+            Assert.Equal(typeof(string), after.Value.Type);
+            Assert.Equal("Hello", after.Value.Value);
+        }
+
+        [Fact]
+        public void ThrowsIfUnionHasWrongNumberOfArrayElements()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack(nameof(ValueWrapper<Union<int, string>>.Value))
+                .PackArrayHeader(3)
+                    .Pack("String")
+                    .Pack("Hello")
+                    .Pack("World"));
+
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<Union<int, string>>>().Deserialise(bytes));
+
+            Assert.Equal(@"Union array should have 2 elements (not 3) for property ""value"" of type ""Dasher.Union`2[System.Int32,System.String]""",
+                ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsIfReceivedTypeNotInUnion()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack(nameof(ValueWrapper<Union<int, double>>.Value))
+                .PackArrayHeader(3)
+                    .Pack("String")
+                    .Pack("Hello"));
+
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<Union<int, string>>>().Deserialise(bytes));
+
+            Assert.Equal(@"Union array should have 2 elements (not 3) for property ""value"" of type ""Dasher.Union`2[System.Int32,System.String]""",
+                ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsIfReceivedDataNotAnArray()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack(nameof(ValueWrapper<Union<int, double>>.Value))
+                .Pack("String"));
+
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<Union<int, string>>>().Deserialise(bytes));
+
+            Assert.Equal(@"Union values must be encoded as an array for property ""value"" of type ""Dasher.Union`2[System.Int32,System.String]""",
+                ex.Message);
+        }
+
         #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)

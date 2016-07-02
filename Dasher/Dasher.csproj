@@ -60,6 +60,7 @@
     <Compile Include="TypeProviders\ReadOnlyListProvider.cs" />
     <Compile Include="TypeProviders\TimeSpanProvider.cs" />
     <Compile Include="TypeProviders\TupleProvider.cs" />
+    <Compile Include="TypeProviders\UnionProvider.cs" />
     <Compile Include="TypeProviders\VersionProvider.cs" />
     <Compile Include="UnexpectedFieldBehaviour.cs" />
     <Compile Include="MsgPack\Unpacker.cs" />

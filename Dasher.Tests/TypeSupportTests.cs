@@ -209,6 +209,14 @@ namespace Dasher.Tests
             Test(Tuple.Create(1, "Hello", true), packer => packer.PackArrayHeader(3).Pack(1).Pack("Hello").Pack(true));
         }
 
+        [Fact]
+        public void SupportsUnion()
+        {
+            Test(Union<int, double>.Create(123), packer => packer.PackArrayHeader(2).Pack("Int32").Pack(123));
+            Test(Union<int, double>.Create(123.0), packer => packer.PackArrayHeader(2).Pack("Double").Pack(123.0));
+            Test(Union<int, string>.Create(null), packer => packer.PackArrayHeader(2).Pack("String").PackNull());
+        }
+
         #region Helper
 
         private static T Test<T>(T value, Action<MsgPack.Packer> packAction)

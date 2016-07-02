@@ -56,7 +56,8 @@ namespace Dasher
                 new ReadOnlyListProvider(),
                 new ReadOnlyDictionaryProvider(),
                 new NullableValueProvider(),
-                new TupleProvider()
+                new TupleProvider(),
+                new UnionProvider()
             };
 
             if (typeProviders == null)
