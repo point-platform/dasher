@@ -43,7 +43,7 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void HandlesListOfList()
+        public void ListOfList()
         {
             var after = RoundTrip(new ListOfList(new[] { new[] { 1, 2, 3 }, new[] { 4, 5, 6 } }));
 
