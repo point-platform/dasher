@@ -34,7 +34,7 @@ namespace Dasher.TypeProviders
 
         public static bool IsNullableValueType(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
 
-        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var type = value.LocalType;
             var valueType = type.GetGenericArguments().Single();
@@ -67,7 +67,7 @@ namespace Dasher.TypeProviders
             ilg.MarkLabel(lblExit);
         }
 
-        public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var nullableType = value.LocalType;
             var valueType = nullableType.GetGenericArguments().Single();

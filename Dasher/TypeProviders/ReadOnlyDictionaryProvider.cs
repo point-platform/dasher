@@ -10,7 +10,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>);
 
-        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var dicType = value.LocalType;
             var readOnlyCollectionType = dicType.GetInterfaces().Single(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IReadOnlyCollection<>));
@@ -89,7 +89,7 @@ namespace Dasher.TypeProviders
             ilg.EndExceptionBlock();
         }
 
-        public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var rodicType = value.LocalType;
             var dicType = typeof(Dictionary<,>).MakeGenericType(rodicType.GenericTypeArguments);

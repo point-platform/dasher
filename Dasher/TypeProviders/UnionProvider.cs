@@ -17,7 +17,7 @@ namespace Dasher.TypeProviders
                type.GetGenericTypeDefinition().Namespace == nameof(Dasher) &&
                type.GetGenericTypeDefinition().Name.StartsWith($"{nameof(Union<int, int>)}`");
 
-        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write header
             ilg.Emit(OpCodes.Ldloc, packer);
@@ -77,7 +77,7 @@ namespace Dasher.TypeProviders
             ilg.MarkLabel(doneLabel);
         }
 
-        public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // read the array length
             var count = ilg.DeclareLocal(typeof(int));

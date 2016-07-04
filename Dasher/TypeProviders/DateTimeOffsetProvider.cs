@@ -10,7 +10,7 @@ namespace Dasher.TypeProviders
 
         public bool CanProvide(Type type) => type == typeof(DateTimeOffset);
 
-        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // We need to write both the date and the offset
             // - dto.DateTime always has unspecified kind (so we can just use Ticks rather than ToBinary and ignore internal flags)
@@ -43,7 +43,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(short) }));
         }
 
-        public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // Ensure we have an array of two values
             var arrayLength = ilg.DeclareLocal(typeof(int));

@@ -9,7 +9,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.IsConstructedGenericType && type.FullName.StartsWith("System.Tuple`");
 
-        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var tupleType = value.LocalType;
             var tupleSize = tupleType.GenericTypeArguments.Length;
@@ -35,7 +35,7 @@ namespace Dasher.TypeProviders
             }
         }
 
-        public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var tupleType = value.LocalType;
             var tupleSize = tupleType.GenericTypeArguments.Length;

@@ -128,7 +128,7 @@ namespace Dasher
                     ilg.MarkLabel(nonNull);
                 }
 
-                provider.Serialise(ilg, value, packer, contextLocal, this);
+                provider.EmitSerialiseCode(ilg, value, packer, contextLocal, this);
 
                 ilg.MarkLabel(end);
             }
@@ -158,7 +158,7 @@ namespace Dasher
                 ilg.MarkLabel(nonNullLabel);
             }
 
-            provider.Deserialise(ilg, name, targetType, valueLocal, unpacker, contextLocal, this, unexpectedFieldBehaviour);
+            provider.EmitDeserialiseCode(ilg, name, targetType, valueLocal, unpacker, contextLocal, this, unexpectedFieldBehaviour);
 
             ilg.MarkLabel(end);
             return true;

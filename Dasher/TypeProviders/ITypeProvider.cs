@@ -31,14 +31,14 @@ namespace Dasher.TypeProviders
     {
         bool CanProvide(Type type);
 
-        void Serialise(
+        void EmitSerialiseCode(
             ILGenerator ilg,
             LocalBuilder value,
             LocalBuilder packer,
             LocalBuilder contextLocal,
             DasherContext context);
 
-        void Deserialise(
+        void EmitDeserialiseCode(
             ILGenerator ilg,
             string name,
             Type targetType,

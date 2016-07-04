@@ -33,7 +33,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1;
 
-        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // treat as complex object and recur
             var props = value.LocalType
@@ -69,7 +69,7 @@ namespace Dasher.TypeProviders
             }
         }
 
-        public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             ilg.Emit(OpCodes.Ldloc, contextLocal);
             ilg.LoadType(value.LocalType);

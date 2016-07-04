@@ -50,7 +50,7 @@ namespace Dasher.TypeProviders
 
         public bool CanProvide(Type type) => _unpackerTryReadMethodByType.ContainsKey(type);
 
-        public void Serialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var packerMethod = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {value.LocalType});
 
@@ -62,7 +62,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, packerMethod);
         }
 
-        public void Deserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             MethodInfo unpackerMethod;
             if (!_unpackerTryReadMethodByType.TryGetValue(value.LocalType, out unpackerMethod))
