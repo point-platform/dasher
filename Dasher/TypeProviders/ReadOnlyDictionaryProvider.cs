@@ -60,7 +60,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Stloc, keyValue);
 
             // pack key
-            if (!context.TrySerialise(ilg, keyValue, packer, contextLocal))
+            if (!context.TryEmitSerialiseCode(ilg, keyValue, packer, contextLocal))
                 throw new Exception($"Cannot serialise IReadOnlyDictionary<> key type {keyType}.");
 
             // read value
@@ -69,7 +69,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Stloc, valueValue);
 
             // pack value
-            if (!context.TrySerialise(ilg, valueValue, packer, contextLocal))
+            if (!context.TryEmitSerialiseCode(ilg, valueValue, packer, contextLocal))
                 throw new Exception($"Cannot serialise IReadOnlyDictionary<> value type {valueValue}.");
 
             // progress enumerator & loop test
@@ -136,11 +136,11 @@ namespace Dasher.TypeProviders
             // loop body
 
             // read key
-            if (!context.TryDeserialise(ilg, name, targetType, keyValue, unpacker, contextLocal, unexpectedFieldBehaviour))
+            if (!context.TryEmitDeserialiseCode(ilg, name, targetType, keyValue, unpacker, contextLocal, unexpectedFieldBehaviour))
                 throw new Exception($"Unable to deserialise values of type {keyType} from MsgPack data.");
 
             // read value
-            if (!context.TryDeserialise(ilg, name, targetType, valueValue, unpacker, contextLocal, unexpectedFieldBehaviour))
+            if (!context.TryEmitDeserialiseCode(ilg, name, targetType, valueValue, unpacker, contextLocal, unexpectedFieldBehaviour))
                 throw new Exception($"Unable to deserialise values of type {valueValue} from MsgPack data.");
 
             ilg.Emit(OpCodes.Ldloc, dic);

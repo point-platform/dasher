@@ -256,7 +256,7 @@ namespace Dasher
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
-                    if (!context.TryDeserialise(ilg, parameters[parameterIndex].Name, type, valueLocals[parameterIndex], unpacker, contextLocal, unexpectedFieldBehaviour))
+                    if (!context.TryEmitDeserialiseCode(ilg, parameters[parameterIndex].Name, type, valueLocals[parameterIndex], unpacker, contextLocal, unexpectedFieldBehaviour))
                         throw new Exception($"Unable to deserialise values of type {valueLocals[parameterIndex].LocalType} from MsgPack data.");
 
                     ilg.Emit(OpCodes.Br, lblEndIfChain);

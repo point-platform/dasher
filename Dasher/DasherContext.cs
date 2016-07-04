@@ -93,7 +93,7 @@ namespace Dasher
             return found != null;
         }
 
-        internal bool TrySerialise(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, bool isRoot = false)
+        internal bool TryEmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, bool isRoot = false)
         {
             ITypeProvider provider;
             if (!TryGetTypeProvider(value.LocalType, out provider))
@@ -135,7 +135,7 @@ namespace Dasher
             return true;
         }
 
-        internal bool TryDeserialise(ILGenerator ilg, string name, Type targetType, LocalBuilder valueLocal, LocalBuilder unpacker, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        internal bool TryEmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder valueLocal, LocalBuilder unpacker, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             ITypeProvider provider;
             if (!TryGetTypeProvider(valueLocal.LocalType, out provider))
