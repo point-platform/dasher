@@ -37,11 +37,11 @@ namespace Dasher
             #region Verify and prepare for target type
 
             if (type.IsPrimitive)
-                throw new DeserialisationException("Cannot deserialise primitive types. The root type must contain properties and values to support future versioning.", type);
+                throw new DeserialisationException($"Cannot deserialise primitive type \"{type.Name}\". The root type must contain properties and values to support future versioning.", type);
 
             var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (ctors.Length != 1)
-                throw new DeserialisationException("Type must have a single public constructor.", type);
+                throw new DeserialisationException($"Type \"{type.Name}\" must have a single public constructor.", type);
             var ctor = ctors[0];
 
             var parameters = ctor.GetParameters();

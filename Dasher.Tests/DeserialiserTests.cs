@@ -51,7 +51,7 @@ namespace Dasher.Tests
         public void DisallowsPrimitiveTypes()
         {
             var exception = Assert.Throws<DeserialisationException>(() => new Deserialiser<int>());
-            Assert.Equal("Cannot deserialise primitive types. The root type must contain properties and values to support future versioning.", exception.Message);
+            Assert.Equal("Cannot deserialise primitive type \"Int32\". The root type must contain properties and values to support future versioning.", exception.Message);
         }
 
         [Fact]
@@ -289,7 +289,7 @@ namespace Dasher.Tests
         {
             var ex = Assert.Throws<DeserialisationException>(
                 () => new Deserialiser<MultipleConstructors>());
-            Assert.Equal("Type must have a single public constructor.", ex.Message);
+            Assert.Equal($"Type \"{nameof(MultipleConstructors)}\" must have a single public constructor.", ex.Message);
         }
 
         [Fact]
@@ -297,7 +297,7 @@ namespace Dasher.Tests
         {
             var ex = Assert.Throws<DeserialisationException>(
                 () => new Deserialiser<NoPublicConstructors>());
-            Assert.Equal("Type must have a single public constructor.", ex.Message);
+            Assert.Equal($"Type \"{nameof(NoPublicConstructors)}\" must have a single public constructor.", ex.Message);
         }
 
         [Fact]
