@@ -82,7 +82,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryPeekFormat)));
                 ilg.Emit(OpCodes.Pop);
 
-                ilg.Emit(OpCodes.Ldstr, "Unexpected type for \"{0}\". Expected {1}, got {2}.");
+                ilg.Emit(OpCodes.Ldstr, "Unexpected MsgPack format for \"{0}\". Expected {1}, got {2}.");
                 ilg.Emit(OpCodes.Ldstr, name);
                 ilg.Emit(OpCodes.Ldstr, value.LocalType.Name);
                 ilg.Emit(OpCodes.Ldloc, format);

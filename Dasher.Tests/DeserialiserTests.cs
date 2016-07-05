@@ -152,7 +152,7 @@ namespace Dasher.Tests
                 () => deserialiser.Deserialise(bytes));
 
             Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Unexpected type for \"score\". Expected Int32, got Float64.", ex.Message);
+            Assert.Equal("Unexpected MsgPack format for \"score\". Expected Int32, got Float64.", ex.Message);
         }
 
         [Fact]
