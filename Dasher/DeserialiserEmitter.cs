@@ -66,8 +66,8 @@ namespace Dasher
 
             ilg.Emit(OpCodes.Ldloc, valueLocal);
 
-            if (valueLocal.LocalType.IsValueType)
-                ilg.Emit(OpCodes.Box, valueLocal.LocalType);
+            if (type.IsValueType)
+                ilg.Emit(OpCodes.Box, type);
 
             // Return the newly constructed object!
             ilg.Emit(OpCodes.Ret);
