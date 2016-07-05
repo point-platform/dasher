@@ -23,7 +23,6 @@
 #endregion
 
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Dasher.TypeProviders;
@@ -34,22 +33,15 @@ namespace Dasher
     {
         public static Func<Unpacker, DasherContext, object> Build(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour, DasherContext context)
         {
-            #region Verify and prepare for target type
+            // Verify and prepare for target type
 
             if (type.IsPrimitive)
                 throw new DeserialisationException($"Cannot deserialise primitive type \"{type.Name}\". The root type must contain properties and values to support future versioning.", type);
 
-            var ctors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
-            if (ctors.Length != 1)
+            if (type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance).Length != 1)
                 throw new DeserialisationException($"Type \"{type.Name}\" must have a single public constructor.", type);
-            var ctor = ctors[0];
 
-            var parameters = ctor.GetParameters();
-
-            #endregion
-
-            #region Initialise code gen
-
+            // Initialise code gen
             var method = new DynamicMethod(
                 $"Generated{type.Name}Deserialiser",
                 returnType: typeof(object),
@@ -58,17 +50,7 @@ namespace Dasher
 
             var ilg = method.GetILGenerator();
 
-            #endregion
-
-            Action throwException = () =>
-            {
-                ilg.LoadType(type);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
-                ilg.Emit(OpCodes.Throw);
-            };
-
-            #region Convert args to locals, so we can pass them around
-
+            // Convert args to locals, so we can pass them around
             var unpacker = ilg.DeclareLocal(typeof(Unpacker));
             ilg.Emit(OpCodes.Ldarg_0);
             ilg.Emit(OpCodes.Stloc, unpacker);
@@ -77,289 +59,15 @@ namespace Dasher
             ilg.Emit(OpCodes.Ldarg_1);
             ilg.Emit(OpCodes.Stloc, contextLocal);
 
-            #endregion
+            var valueLocal = ilg.DeclareLocal(type);
 
-            #region Read map length
+            if (!TryEmitDeserialiseCode(ilg, "<root>", type, valueLocal, unpacker, context, contextLocal, unexpectedFieldBehaviour, isRoot: true))
+                throw new Exception($"Cannot serialise type {type}.");
 
-            var mapSize = ilg.DeclareLocal(typeof(int));
-            {
-                // MsgPack messages may be single values, arrays, maps, or any arbitrary
-                // combination of these types. Our convention is to require messages to
-                // be encoded as maps where the key is the property name.
-                //
-                // MsgPack maps begin with a header indicating the number of pairs
-                // within the map. We read this here.
-                ilg.Emit(OpCodes.Ldloc, unpacker);
-                ilg.Emit(OpCodes.Ldloca, mapSize);
-                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadMapLength)));
+            ilg.Emit(OpCodes.Ldloc, valueLocal);
 
-                // If false was returned, then the next MsgPack value is not a map
-                var lblHaveMapSize = ilg.DefineLabel();
-                ilg.Emit(OpCodes.Brtrue, lblHaveMapSize);
-                {
-                    // Check if it's a null
-                    ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
-                    var lblNotNull = ilg.DefineLabel();
-                    ilg.Emit(OpCodes.Brfalse, lblNotNull);
-                    {
-                        // value is null
-                        ilg.Emit(OpCodes.Ldnull);
-                        ilg.Emit(OpCodes.Ret);
-                    }
-                    ilg.MarkLabel(lblNotNull);
-                    ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetProperty(nameof(Unpacker.HasStreamEnded)).GetMethod);
-                    var lblNotEmpty = ilg.DefineLabel();
-                    ilg.Emit(OpCodes.Brfalse, lblNotEmpty);
-                    ilg.Emit(OpCodes.Ldstr, "Data stream empty");
-                    throwException();
-                    ilg.MarkLabel(lblNotEmpty);
-                    ilg.Emit(OpCodes.Ldstr, "Message must be encoded as a MsgPack map");
-                    throwException();
-                }
-                ilg.MarkLabel(lblHaveMapSize);
-            }
-
-            #endregion
-
-            #region Initialise locals for constructor args
-
-            var valueLocals = new LocalBuilder[parameters.Length];
-            var valueSetLocals = new LocalBuilder[parameters.Length];
-
-            for (var i = 0; i < parameters.Length; i++)
-            {
-                var parameter = parameters[i];
-
-                valueLocals[i] = ilg.DeclareLocal(parameter.ParameterType);
-                valueSetLocals[i] = ilg.DeclareLocal(typeof(int));
-
-                if (parameter.HasDefaultValue)
-                {
-                    // set default values on params
-                    if (NullableValueProvider.IsNullableValueType(parameter.ParameterType))
-                    {
-                        ilg.Emit(OpCodes.Ldloca, valueLocals[i]);
-                        if (parameter.DefaultValue == null)
-                        {
-                            ilg.Emit(OpCodes.Initobj, parameter.ParameterType);
-                        }
-                        else
-                        {
-                            ilg.LoadConstant(parameter.DefaultValue);
-                            ilg.Emit(OpCodes.Call, parameter.ParameterType.GetConstructor(new[] { parameter.ParameterType.GetGenericArguments().Single() }));
-                        }
-                    }
-                    else
-                    {
-                        ilg.LoadConstant(parameter.DefaultValue);
-                        ilg.Emit(OpCodes.Stloc, valueLocals[i]);
-                    }
-                    // set 'valueSet' to true
-                    // note we use the second LSb to indicate a default value
-                    ilg.Emit(OpCodes.Ldc_I4_2);
-                    ilg.Emit(OpCodes.Stloc, valueSetLocals[i]);
-                }
-                else
-                {
-                    // set 'valueSet' to false
-                    ilg.Emit(OpCodes.Ldc_I4_0);
-                    ilg.Emit(OpCodes.Stloc, valueSetLocals[i]);
-                }
-            }
-
-            #endregion
-
-            // For each key/value pair in the map...
-            {
-                // Create a loop counter, initialised to zero
-                var loopIndex = ilg.DeclareLocal(typeof(long));
-                ilg.Emit(OpCodes.Ldc_I4_0);
-                ilg.Emit(OpCodes.Conv_I8);
-                ilg.Emit(OpCodes.Stloc, loopIndex);
-
-                // Create labels to jump to within the loop
-                var lblLoopTest = ilg.DefineLabel();   // Comparing counter to map size
-                var lblLoopExit = ilg.DefineLabel();   // The first instruction after the loop
-                var lblLoopStart = ilg.DefineLabel();  // The first instruction within the loop
-
-                // Run the test first
-                ilg.Emit(OpCodes.Br, lblLoopTest);
-
-                // Mark the first instruction within the loop
-                ilg.MarkLabel(lblLoopStart);
-
-                // Although MsgPack allows map keys to be of any arbitrary type, our convention
-                // is to require keys to be strings. We read the key here.
-                var key = ilg.DeclareLocal(typeof(string));
-                {
-                    ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Ldloca, key);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
-
-                    // If false was returned, the data stream ended
-                    var ifLabel = ilg.DefineLabel();
-                    ilg.Emit(OpCodes.Brtrue, ifLabel);
-                    {
-                        ilg.Emit(OpCodes.Ldstr, "Data stream ended.");
-                        throwException();
-                    }
-                    ilg.MarkLabel(ifLabel);
-                }
-
-                // Build a chain of if/elseif/elseif... blocks for each of the expected fields.
-                // It could be slightly more efficient here to generate a O(log(N)) tree-based lookup,
-                // but that would take quite some engineering. Let's see if there's a significant perf
-                // hit here or not first.
-                var lblEndIfChain = ilg.DefineLabel();
-                Label? nextLabel = null;
-                for (var parameterIndex = 0; parameterIndex < parameters.Length; parameterIndex++)
-                {
-                    // Mark the beginning of the next block, as used if the previous block's condition failed
-                    if (nextLabel != null)
-                        ilg.MarkLabel(nextLabel.Value);
-                    nextLabel = ilg.DefineLabel();
-
-                    // Compare map's key with this parameter's name in a case insensitive way
-                    ilg.Emit(OpCodes.Ldloc, key);
-                    ilg.Emit(OpCodes.Ldstr, parameters[parameterIndex].Name);
-                    ilg.Emit(OpCodes.Ldc_I4_5);
-                    ilg.Emit(OpCodes.Callvirt, typeof(string).GetMethod("Equals", new[] {typeof(string), typeof(StringComparison)}));
-
-                    // If the key doesn't match this property, go to the next block
-                    ilg.Emit(OpCodes.Brfalse, nextLabel.Value);
-
-                    // Verify we haven't already seen a value for this parameter
-                    {
-                        // Mask out the LSb and see if it is set. If so, we've seen this property
-                        // already in this message, which is invalid.
-                        ilg.Emit(OpCodes.Ldloc, valueSetLocals[parameterIndex]);
-                        ilg.Emit(OpCodes.Ldc_I4_1);
-                        ilg.Emit(OpCodes.And);
-                        var notSeenLabel = ilg.DefineLabel();
-                        ilg.Emit(OpCodes.Brfalse, notSeenLabel);
-                        {
-                            ilg.Emit(OpCodes.Ldstr, "Encountered duplicate field \"{0}\" for type \"{1}\".");
-                            ilg.Emit(OpCodes.Ldloc, key);
-                            ilg.Emit(OpCodes.Ldstr, type.Name);
-                            ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
-                            throwException();
-                        }
-
-                        ilg.MarkLabel(notSeenLabel);
-
-                        // Record the fact that we've seen this property
-                        ilg.Emit(OpCodes.Ldloc, valueSetLocals[parameterIndex]);
-                        ilg.Emit(OpCodes.Ldc_I4_1);
-                        ilg.Emit(OpCodes.Or);
-                        ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
-                    }
-
-                    if (!TryEmitDeserialiseCode(ilg, parameters[parameterIndex].Name, type, valueLocals[parameterIndex], unpacker, context, contextLocal, unexpectedFieldBehaviour))
-                        throw new Exception($"Unable to deserialise values of type {valueLocals[parameterIndex].LocalType} from MsgPack data.");
-
-                    ilg.Emit(OpCodes.Br, lblEndIfChain);
-                }
-
-                if (nextLabel != null)
-                    ilg.MarkLabel(nextLabel.Value);
-
-                // If we got here then the property was not recognised. Either throw or ignore, depending upon configuration.
-                if (unexpectedFieldBehaviour == UnexpectedFieldBehaviour.Throw)
-                {
-                    var format = ilg.DeclareLocal(typeof(Format));
-                    ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Ldloca, format);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryPeekFormat)));
-                    // Drop the return value: if false, 'format' will be 'Unknown' which is fine.
-                    ilg.Emit(OpCodes.Pop);
-
-                    ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\" of MsgPack format \"{1}\" for CLR type \"{2}\".");
-                    ilg.Emit(OpCodes.Ldloc, key);
-                    ilg.Emit(OpCodes.Ldloc, format);
-                    ilg.Emit(OpCodes.Box, typeof(Format));
-                    ilg.Emit(OpCodes.Call, typeof(Format).GetMethod(nameof(Format.ToString), new Type[0]));
-                    ilg.Emit(OpCodes.Ldstr, type.Name);
-                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object), typeof(object)}));
-                    throwException();
-                }
-                else
-                {
-                    // skip unexpected value
-                    ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.SkipValue)));
-                }
-
-                ilg.MarkLabel(lblEndIfChain);
-
-                // Increment the loop index
-                ilg.Emit(OpCodes.Ldloc, loopIndex);
-                ilg.Emit(OpCodes.Ldc_I4_1);
-                ilg.Emit(OpCodes.Conv_I8);
-                ilg.Emit(OpCodes.Add);
-                ilg.Emit(OpCodes.Stloc, loopIndex);
-
-                // Loop condition
-                ilg.MarkLabel(lblLoopTest);
-                ilg.Emit(OpCodes.Ldloc, loopIndex);
-                ilg.Emit(OpCodes.Ldloc, mapSize);
-                ilg.Emit(OpCodes.Conv_I8, mapSize);
-                // If the loop is done, jump to the first instruction after the loop
-                ilg.Emit(OpCodes.Beq, lblLoopExit);
-
-                // Jump back to the start of the loop
-                ilg.Emit(OpCodes.Br, lblLoopStart);
-
-                // Mark the end of the loop
-                ilg.MarkLabel(lblLoopExit);
-            }
-
-            #region Verify all required values either specified or have a default value
-
-            var lblValuesMissing = ilg.DefineLabel();
-            var lblValuesOk = ilg.DefineLabel();
-
-            var paramName = ilg.DeclareLocal(typeof(string));
-            for (var i = 0; i < valueSetLocals.Length; i++)
-            {
-                // Store the name of the parameter we are inspecting
-                // for use in the exception later.
-                ilg.Emit(OpCodes.Ldstr, parameters[i].Name);
-                ilg.Emit(OpCodes.Stloc, paramName);
-
-                // If any value is zero then neither a default nor specified value
-                // exists for that parameter, and we cannot continue.
-                ilg.Emit(OpCodes.Ldloc, valueSetLocals[i]);
-                ilg.Emit(OpCodes.Ldc_I4_0);
-                ilg.Emit(OpCodes.Beq, lblValuesMissing);
-            }
-
-            // If we got here, all value exist and we're good to continue.
-            // Jump to the next section.
-            ilg.Emit(OpCodes.Br, lblValuesOk);
-            {
-                // If we got here then one or more values is missing.
-                ilg.MarkLabel(lblValuesMissing);
-                ilg.Emit(OpCodes.Ldstr, "Missing required field \"{0}\" for type \"{1}\".");
-                ilg.Emit(OpCodes.Ldloc, paramName);
-                ilg.Emit(OpCodes.Ldstr, type.Name);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
-                throwException();
-            }
-            ilg.MarkLabel(lblValuesOk);
-
-            #endregion
-
-            // Push all values onto the execution stack
-            foreach (var valueLocal in valueLocals)
-                ilg.Emit(OpCodes.Ldloc, valueLocal);
-
-            // Call the target type's constructor
-            ilg.Emit(OpCodes.Newobj, ctor);
-
-            if (type.IsValueType)
-                ilg.Emit(OpCodes.Box, type);
+            if (valueLocal.LocalType.IsValueType)
+                ilg.Emit(OpCodes.Box, valueLocal.LocalType);
 
             // Return the newly constructed object!
             ilg.Emit(OpCodes.Ret);
@@ -368,32 +76,47 @@ namespace Dasher
             return (Func<Unpacker, DasherContext, object>)method.CreateDelegate(typeof(Func<Unpacker, DasherContext, object>));
         }
 
-        public static bool TryEmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder valueLocal, LocalBuilder unpacker, DasherContext context, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public static bool TryEmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, DasherContext context, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour, bool isRoot = false)
         {
             ITypeProvider provider;
-            if (!context.TryGetTypeProvider(valueLocal.LocalType, out provider))
+            if (!context.TryGetTypeProvider(value.LocalType, out provider))
                 return false;
 
-            var end = ilg.DefineLabel();
-
-            if (!valueLocal.LocalType.IsValueType)
+            if (!isRoot && provider is ComplexTypeProvider)
             {
-                // check for null
-                var nonNullLabel = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Ldloc, contextLocal);
+                ilg.LoadType(value.LocalType);
+                ilg.Emit(OpCodes.Ldc_I4, (int)unexpectedFieldBehaviour);
+                ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateDeserialiseFunc), BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Type), typeof(UnexpectedFieldBehaviour) }, null));
                 ilg.Emit(OpCodes.Ldloc, unpacker);
-                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
-                ilg.Emit(OpCodes.Brfalse, nonNullLabel);
-                {
-                    ilg.Emit(OpCodes.Ldnull);
-                    ilg.Emit(OpCodes.Stloc, valueLocal);
-                    ilg.Emit(OpCodes.Br, end);
-                }
-                ilg.MarkLabel(nonNullLabel);
+                ilg.Emit(OpCodes.Ldloc, contextLocal);
+                ilg.Emit(OpCodes.Call, typeof(Func<Unpacker, DasherContext, object>).GetMethod(nameof(Func<Unpacker, DasherContext, object>.Invoke), new[] { typeof(Unpacker), typeof(DasherContext) }));
+                ilg.Emit(value.LocalType.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, value.LocalType);
+                ilg.Emit(OpCodes.Stloc, value);
             }
+            else
+            {
+                var end = ilg.DefineLabel();
 
-            provider.EmitDeserialiseCode(ilg, name, targetType, valueLocal, unpacker, contextLocal, context, unexpectedFieldBehaviour);
+                if (!value.LocalType.IsValueType)
+                {
+                    // check for null
+                    var nonNullLabel = ilg.DefineLabel();
+                    ilg.Emit(OpCodes.Ldloc, unpacker);
+                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
+                    ilg.Emit(OpCodes.Brfalse, nonNullLabel);
+                    {
+                        ilg.Emit(OpCodes.Ldnull);
+                        ilg.Emit(OpCodes.Stloc, value);
+                        ilg.Emit(OpCodes.Br, end);
+                    }
+                    ilg.MarkLabel(nonNullLabel);
+                }
 
-            ilg.MarkLabel(end);
+                provider.EmitDeserialiseCode(ilg, name, targetType, value, unpacker, contextLocal, context, unexpectedFieldBehaviour);
+
+                ilg.MarkLabel(end);
+            }
             return true;
         }
     }
