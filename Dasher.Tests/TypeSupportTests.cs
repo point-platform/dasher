@@ -36,50 +36,50 @@ namespace Dasher.Tests
     public sealed class TypeSupportTests
     {
         [Fact]
-        public void SupportsInt()
+        public void SupportsNestedInt()
         {
-            Test(12345678, packer => packer.Pack(12345678));
+            TestNested(12345678, packer => packer.Pack(12345678));
         }
 
         [Fact]
-        public void SupportsNullableInt()
+        public void SupportsNestedNullableInt()
         {
-            Test((int?)12345678, packer => packer.Pack(12345678));
-            Test((int?)null, packer => packer.PackNull());
+            TestNested((int?)12345678, packer => packer.Pack(12345678));
+            TestNested((int?)null, packer => packer.PackNull());
         }
 
         [Fact]
-        public void SupportsDouble()
+        public void SupportsNestedDouble()
         {
-            Test(2.3d, packer => packer.Pack(2.3d));
+            TestNested(2.3d, packer => packer.Pack(2.3d));
         }
 
         [Fact]
-        public void SupportsNullableDouble()
+        public void SupportsNestedNullableDouble()
         {
-            Test((double?)2.3d, packer => packer.Pack(2.3d));
-            Test((double?)null, packer => packer.PackNull());
+            TestNested((double?)2.3d, packer => packer.Pack(2.3d));
+            TestNested((double?)null, packer => packer.PackNull());
         }
 
         [Fact]
-        public void SupportsDecimal()
+        public void SupportsNestedDecimal()
         {
-            Test(123.4567m, packer => packer.Pack("123.4567"));
+            TestNested(123.4567m, packer => packer.Pack("123.4567"));
         }
 
         [Fact]
-        public void SupportsNullableDecimal()
+        public void SupportsNestedNullableDecimal()
         {
-            Test((decimal?)123.4567m, packer => packer.Pack("123.4567"));
-            Test((decimal?)null, packer => packer.PackNull());
+            TestNested((decimal?)123.4567m, packer => packer.Pack("123.4567"));
+            TestNested((decimal?)null, packer => packer.PackNull());
         }
 
         [Fact]
-        public void SupportsDateTime()
+        public void SupportsNestedDateTime()
         {
             Action<DateTime> test = dateTime =>
             {
-                var after = Test(dateTime, packer => packer.Pack(dateTime.ToBinary()));
+                var after = TestNested(dateTime, packer => packer.Pack(dateTime.ToBinary()));
 
                 Assert.Equal(dateTime, after);
                 Assert.Equal(dateTime.Kind, after.Kind);
@@ -96,11 +96,11 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void SupportsDateTimeOffset()
+        public void SupportsNestedDateTimeOffset()
         {
             Action<DateTimeOffset> test = dto =>
             {
-                var after = Test(dto, packer => packer.PackArrayHeader(2)
+                var after = TestNested(dto, packer => packer.PackArrayHeader(2)
                     .Pack(dto.DateTime.ToBinary())
                     .Pack((short)dto.Offset.TotalMinutes));
 
@@ -131,59 +131,59 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void SupportsTimeSpan()
+        public void SupportsNestedTimeSpan()
         {
             var timeSpan = TimeSpan.FromSeconds(1234.5678);
-            Test(timeSpan, packer => packer.Pack(timeSpan.Ticks));
+            TestNested(timeSpan, packer => packer.Pack(timeSpan.Ticks));
         }
 
         [Fact]
-        public void SupportsIntPtr()
+        public void SupportsNestedIntPtr()
         {
             var intPtr = new IntPtr(12345678);
-            Test(intPtr, packer => packer.Pack(intPtr.ToInt64()));
+            TestNested(intPtr, packer => packer.Pack(intPtr.ToInt64()));
         }
 
         [Fact]
-        public void SupportsVersion()
+        public void SupportsNestedVersion()
         {
             var version = new Version("1.2.3");
-            Test(version, packer => packer.Pack(version.ToString()));
-            Test((Version)null, packer => packer.PackNull());
+            TestNested(version, packer => packer.Pack(version.ToString()));
+            TestNested((Version)null, packer => packer.PackNull());
         }
 
         [Fact]
-        public void SupportsGuid()
+        public void SupportsNestedGuid()
         {
             var guid = Guid.NewGuid();
-            Test(guid, packer => packer.Pack(guid.ToByteArray()));
+            TestNested(guid, packer => packer.Pack(guid.ToByteArray()));
         }
 
         [Fact]
-        public void SupportsEnum()
+        public void SupportsNestedEnum()
         {
-            Test(TestEnum.Bar, packer => packer.Pack("Bar"));
+            TestNested(TestEnum.Bar, packer => packer.Pack("Bar"));
         }
 
         [Fact]
-        public void SupportsReadOnlyList()
+        public void SupportsNestedReadOnlyList()
         {
-            Test<IReadOnlyList<int>>(new[] {1, 2, 3}, packer => packer.PackArrayHeader(3).Pack(1).Pack(2).Pack(3));
-            Test<IReadOnlyList<int>>(null, packer => packer.PackNull());
+            TestNested<IReadOnlyList<int>>(new[] {1, 2, 3}, packer => packer.PackArrayHeader(3).Pack(1).Pack(2).Pack(3));
+            TestNested<IReadOnlyList<int>>(null, packer => packer.PackNull());
         }
 
         [Fact]
-        public void SupportsReadOnlyDictionary()
+        public void SupportsNestedReadOnlyDictionary()
         {
-            Test<IReadOnlyDictionary<int, string>>(
+            TestNested<IReadOnlyDictionary<int, string>>(
                 new Dictionary<int, string> {{1, "Hello"}, {2, "World"}},
                 packer => packer.PackMapHeader(2)
                     .Pack(1).Pack("Hello")
                     .Pack(2).Pack("World"));
 
-            Test<IReadOnlyDictionary<int, string>>(null, packer => packer.PackNull());
+            TestNested<IReadOnlyDictionary<int, string>>(null, packer => packer.PackNull());
 
-            Test<IReadOnlyDictionary<int, bool?>>(
+            TestNested<IReadOnlyDictionary<int, bool?>>(
                 new Dictionary<int, bool?> { { 1, true }, { 2, false }, {3, null} },
                 packer => packer.PackMapHeader(3)
                     .Pack(1).Pack(true)
@@ -192,34 +192,34 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void SupportsByteArray()
+        public void SupportsNestedByteArray()
         {
-            Test(new byte[] {1, 2, 3, 4}, packer => packer.PackBinary(new byte[] {1, 2, 3, 4}));
+            TestNested(new byte[] {1, 2, 3, 4}, packer => packer.PackBinary(new byte[] {1, 2, 3, 4}));
         }
 
         [Fact]
-        public void SupportsTuple2()
+        public void SupportsNestedTuple2()
         {
-            Test(Tuple.Create(1, "Hello"), packer => packer.PackArrayHeader(2).Pack(1).Pack("Hello"));
+            TestNested(Tuple.Create(1, "Hello"), packer => packer.PackArrayHeader(2).Pack(1).Pack("Hello"));
         }
 
         [Fact]
-        public void SupportsTuple3()
+        public void SupportsNestedTuple3()
         {
-            Test(Tuple.Create(1, "Hello", true), packer => packer.PackArrayHeader(3).Pack(1).Pack("Hello").Pack(true));
+            TestNested(Tuple.Create(1, "Hello", true), packer => packer.PackArrayHeader(3).Pack(1).Pack("Hello").Pack(true));
         }
 
         [Fact]
-        public void SupportsUnion()
+        public void SupportsNestedUnion()
         {
-            Test(Union<int, double>.Create(123), packer => packer.PackArrayHeader(2).Pack("Int32").Pack(123));
-            Test(Union<int, double>.Create(123.0), packer => packer.PackArrayHeader(2).Pack("Double").Pack(123.0));
-            Test(Union<int, string>.Create(null), packer => packer.PackArrayHeader(2).Pack("String").PackNull());
+            TestNested(Union<int, double>.Create(123), packer => packer.PackArrayHeader(2).Pack("Int32").Pack(123));
+            TestNested(Union<int, double>.Create(123.0), packer => packer.PackArrayHeader(2).Pack("Double").Pack(123.0));
+            TestNested(Union<int, string>.Create(null), packer => packer.PackArrayHeader(2).Pack("String").PackNull());
         }
 
         #region Helper
 
-        private static T Test<T>(T value, Action<MsgPack.Packer> packAction)
+        private static T TestNested<T>(T value, Action<MsgPack.Packer> packAction)
         {
             byte[] expectedBytes;
             using (var stream = new MemoryStream())
