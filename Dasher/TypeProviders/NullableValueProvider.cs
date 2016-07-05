@@ -53,7 +53,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, type.GetProperty(nameof(Nullable<int>.Value)).GetMethod);
             ilg.Emit(OpCodes.Stloc, nonNullValue);
 
-            if (!context.TryEmitSerialiseCode(ilg, nonNullValue, packer, contextLocal))
+            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, nonNullValue, packer, context, contextLocal))
                 throw new Exception($"Cannot serialise underlying type of Nullable<{valueType}>");
 
             ilg.Emit(OpCodes.Br, lblExit);
@@ -83,7 +83,7 @@ namespace Dasher.TypeProviders
             // non-null
             var nonNullValue = ilg.DeclareLocal(valueType);
 
-            if (!context.TryEmitDeserialiseCode(ilg, name, targetType, nonNullValue, unpacker, contextLocal, unexpectedFieldBehaviour))
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(context, ilg, name, targetType, nonNullValue, unpacker, contextLocal, unexpectedFieldBehaviour))
                 throw new Exception($"Unable to deserialise values of type Nullable<{valueType}> from MsgPack data.");
 
             ilg.Emit(OpCodes.Ldloca, value);

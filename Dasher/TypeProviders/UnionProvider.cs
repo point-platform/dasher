@@ -59,7 +59,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Stloc, valueObj);
 
                 // write value
-                if (!context.TryEmitSerialiseCode(ilg, valueObj, packer, contextLocal))
+                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, valueObj, packer, context, contextLocal))
                     throw new Exception($"Unable to serialise type {type}");
 
                 ilg.Emit(OpCodes.Br, doneLabel);
@@ -153,7 +153,7 @@ namespace Dasher.TypeProviders
                 // we have a match
                 // read the value
                 var readValue = ilg.DeclareLocal(type);
-                if (!context.TryEmitDeserialiseCode(ilg, name, targetType, readValue, unpacker, contextLocal, unexpectedFieldBehaviour))
+                if (!DeserialiserEmitter.TryEmitDeserialiseCode(context, ilg, name, targetType, readValue, unpacker, contextLocal, unexpectedFieldBehaviour))
                     throw new Exception($"Unable to deserialise values of type {type} from MsgPack data.");
 
                 // create the union

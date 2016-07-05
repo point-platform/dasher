@@ -256,7 +256,7 @@ namespace Dasher
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
-                    if (!context.TryEmitDeserialiseCode(ilg, parameters[parameterIndex].Name, type, valueLocals[parameterIndex], unpacker, contextLocal, unexpectedFieldBehaviour))
+                    if (!TryEmitDeserialiseCode(context, ilg, parameters[parameterIndex].Name, type, valueLocals[parameterIndex], unpacker, contextLocal, unexpectedFieldBehaviour))
                         throw new Exception($"Unable to deserialise values of type {valueLocals[parameterIndex].LocalType} from MsgPack data.");
 
                     ilg.Emit(OpCodes.Br, lblEndIfChain);
@@ -366,6 +366,35 @@ namespace Dasher
 
             // Return a delegate that performs the above operations
             return (Func<Unpacker, DasherContext, object>)method.CreateDelegate(typeof(Func<Unpacker, DasherContext, object>));
+        }
+
+        public static bool TryEmitDeserialiseCode(DasherContext context, ILGenerator ilg, string name, Type targetType, LocalBuilder valueLocal, LocalBuilder unpacker, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        {
+            ITypeProvider provider;
+            if (!context.TryGetTypeProvider(valueLocal.LocalType, out provider))
+                return false;
+
+            var end = ilg.DefineLabel();
+
+            if (!valueLocal.LocalType.IsValueType)
+            {
+                // check for null
+                var nonNullLabel = ilg.DefineLabel();
+                ilg.Emit(OpCodes.Ldloc, unpacker);
+                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
+                ilg.Emit(OpCodes.Brfalse, nonNullLabel);
+                {
+                    ilg.Emit(OpCodes.Ldnull);
+                    ilg.Emit(OpCodes.Stloc, valueLocal);
+                    ilg.Emit(OpCodes.Br, end);
+                }
+                ilg.MarkLabel(nonNullLabel);
+            }
+
+            provider.EmitDeserialiseCode(ilg, name, targetType, valueLocal, unpacker, contextLocal, context, unexpectedFieldBehaviour);
+
+            ilg.MarkLabel(end);
+            return true;
         }
     }
 }

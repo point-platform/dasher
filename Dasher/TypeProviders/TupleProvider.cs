@@ -29,7 +29,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Call, tupleType.GetProperty($"Item{i}").GetMethod);
                 var local = ilg.DeclareLocal(type);
                 ilg.Emit(OpCodes.Stloc, local);
-                if (!context.TryEmitSerialiseCode(ilg, local, packer, contextLocal))
+                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, local, packer, context, contextLocal))
                     throw new Exception($"Unable to serialise tuple item of type {type}");
                 i++;
             }
@@ -78,7 +78,7 @@ namespace Dasher.TypeProviders
             {
                 var local = ilg.DeclareLocal(type);
                 locals.Add(local);
-                if (!context.TryEmitDeserialiseCode(ilg, $"Item{i}", targetType, local, unpacker, contextLocal, unexpectedFieldBehaviour))
+                if (!DeserialiserEmitter.TryEmitDeserialiseCode(context, ilg, $"Item{i}", targetType, local, unpacker, contextLocal, unexpectedFieldBehaviour))
                     throw new DeserialisationException($"Unable to create deserialiser for tuple item of type {type}", targetType);
                 i++;
             }

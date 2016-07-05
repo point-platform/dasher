@@ -26,8 +26,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
 using Dasher.TypeProviders;
 
 namespace Dasher
@@ -74,7 +72,7 @@ namespace Dasher
                 Tuple.Create(type, unexpectedFieldBehaviour),
                 _ => DeserialiserEmitter.Build(type, unexpectedFieldBehaviour, this));
 
-        private bool TryGetTypeProvider(Type type, out ITypeProvider provider)
+        internal bool TryGetTypeProvider(Type type, out ITypeProvider provider)
         {
             ITypeProvider found = null;
             foreach (var p in _typeProviders)
@@ -91,77 +89,6 @@ namespace Dasher
 
             provider = found;
             return found != null;
-        }
-
-        internal bool TryEmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, bool isRoot = false)
-        {
-            ITypeProvider provider;
-            if (!TryGetTypeProvider(value.LocalType, out provider))
-                return false;
-
-            if (!isRoot && provider is ComplexTypeProvider)
-            {
-                // prevent endless code generation for recursive types by delegating to a method call
-                ilg.Emit(OpCodes.Ldloc, contextLocal);
-                ilg.LoadType(value.LocalType);
-                ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(GetOrCreateSerialiser), BindingFlags.NonPublic | BindingFlags.Instance, null, new[] {typeof(Type)}, null));
-
-                ilg.Emit(OpCodes.Ldloc, packer);
-                ilg.Emit(OpCodes.Ldloc, contextLocal);
-                ilg.Emit(OpCodes.Ldloc, value);
-                if (value.LocalType.IsValueType)
-                    ilg.Emit(OpCodes.Box, value.LocalType);
-                ilg.Emit(OpCodes.Call, typeof(Action<UnsafePacker, DasherContext, object>).GetMethod(nameof(Func<UnsafePacker, DasherContext, object>.Invoke), new[] {typeof(UnsafePacker), typeof(DasherContext), typeof(object)}));
-            }
-            else
-            {
-                var end = ilg.DefineLabel();
-
-                if (!value.LocalType.IsValueType)
-                {
-                    var nonNull = ilg.DefineLabel();
-                    ilg.Emit(OpCodes.Ldloc, value);
-                    ilg.Emit(OpCodes.Brtrue, nonNull);
-                    ilg.Emit(OpCodes.Ldloc, packer);
-                    ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackNull)));
-                    ilg.Emit(OpCodes.Br, end);
-                    ilg.MarkLabel(nonNull);
-                }
-
-                provider.EmitSerialiseCode(ilg, value, packer, contextLocal, this);
-
-                ilg.MarkLabel(end);
-            }
-            return true;
-        }
-
-        internal bool TryEmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder valueLocal, LocalBuilder unpacker, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
-        {
-            ITypeProvider provider;
-            if (!TryGetTypeProvider(valueLocal.LocalType, out provider))
-                return false;
-
-            var end = ilg.DefineLabel();
-
-            if (!valueLocal.LocalType.IsValueType)
-            {
-                // check for null
-                var nonNullLabel = ilg.DefineLabel();
-                ilg.Emit(OpCodes.Ldloc, unpacker);
-                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
-                ilg.Emit(OpCodes.Brfalse, nonNullLabel);
-                {
-                    ilg.Emit(OpCodes.Ldnull);
-                    ilg.Emit(OpCodes.Stloc, valueLocal);
-                    ilg.Emit(OpCodes.Br, end);
-                }
-                ilg.MarkLabel(nonNullLabel);
-            }
-
-            provider.EmitDeserialiseCode(ilg, name, targetType, valueLocal, unpacker, contextLocal, this, unexpectedFieldBehaviour);
-
-            ilg.MarkLabel(end);
-            return true;
         }
     }
 }

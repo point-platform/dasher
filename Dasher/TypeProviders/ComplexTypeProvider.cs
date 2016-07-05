@@ -64,7 +64,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Call, prop.GetMethod);
                 ilg.Emit(OpCodes.Stloc, propValue);
 
-                if (!context.TryEmitSerialiseCode(ilg, propValue, packer, contextLocal))
+                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, propValue, packer, context, contextLocal))
                     throw new Exception($"Unable to serialise type {prop.PropertyType}");
             }
         }

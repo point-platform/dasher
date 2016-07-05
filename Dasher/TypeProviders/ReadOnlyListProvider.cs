@@ -68,7 +68,7 @@ namespace Dasher.TypeProviders
             var elementValue = ilg.DeclareLocal(elementType);
             ilg.Emit(OpCodes.Stloc, elementValue);
 
-            if (!context.TryEmitSerialiseCode(ilg, elementValue, packer, contextLocal))
+            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, elementValue, packer, context, contextLocal))
                 throw new Exception($"Cannot serialise IReadOnlyList<> element type {value.LocalType}.");
 
             // loop counter increment
@@ -128,7 +128,7 @@ namespace Dasher.TypeProviders
             // loop body
             var element = ilg.DeclareLocal(elementType);
 
-            if (!context.TryEmitDeserialiseCode(ilg, name, targetType, element, unpacker, contextLocal, unexpectedFieldBehaviour))
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(context, ilg, name, targetType, element, unpacker, contextLocal, unexpectedFieldBehaviour))
                 throw new Exception($"Unable to deserialise values of type {elementType} from MsgPack data.");
 
             ilg.Emit(OpCodes.Ldloc, array);
