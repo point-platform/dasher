@@ -55,19 +55,6 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void DeserialiseToStruct()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(2)
-                .Pack("Name").Pack("Bob")
-                .Pack("Score").Pack(123));
-
-            var after = new Deserialiser<UserScoreStruct>().Deserialise(bytes);
-
-            Assert.Equal("Bob", after.Name);
-            Assert.Equal(123, after.Score);
-        }
-
-        [Fact]
         public void ReorderedFields()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(2)
@@ -301,37 +288,6 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void HandlesNestedComplexTypes()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(2)
-                .Pack("Weight").Pack(0.5d)
-                .Pack("UserScore").PackMapHeader(2)
-                    .Pack("Name").Pack("Bob")
-                    .Pack("Score").Pack(123));
-
-            var after = new Deserialiser<WeightedUserScore>().Deserialise(bytes);
-
-            Assert.Equal(0.5d, after.Weight);
-            Assert.Equal("Bob", after.UserScore.Name);
-            Assert.Equal(123, after.UserScore.Score);
-        }
-
-        [Fact]
-        public void HandlesListOfListProperty()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack("Jagged").PackArrayHeader(2)
-                    .PackArrayHeader(3).Pack(1).Pack(2).Pack(3)
-                    .PackArrayHeader(3).Pack(4).Pack(5).Pack(6));
-
-            var after = new Deserialiser<ListOfList>().Deserialise(bytes);
-
-            Assert.Equal(2, after.Jagged.Count);
-            Assert.Equal(new[] {1, 2, 3}, after.Jagged[0]);
-            Assert.Equal(new[] {4, 5, 6}, after.Jagged[1]);
-        }
-
-        [Fact]
         public void HandlesNullRootObject()
         {
             var stream = new MemoryStream();
@@ -529,21 +485,6 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void HandlesClassWrappingCustomStruct()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack(nameof(ValueWrapper<UserScoreStruct>.Value))
-                .PackMapHeader(2)
-                    .Pack("Name").Pack("Foo")
-                    .Pack("Score").Pack(123));
-
-            var after = new Deserialiser<ValueWrapper<UserScoreStruct>>().Deserialise(bytes);
-
-            Assert.Equal("Foo", after.Value.Name);
-            Assert.Equal(123, after.Value.Score);
-        }
-
-        [Fact]
         public void ThrowsIfNullByteArray()
         {
             var ex = Assert.Throws<ArgumentNullException>(() => new Deserialiser<UserScore>().Deserialise((byte[])null));
@@ -577,37 +518,6 @@ namespace Dasher.Tests
             ex = Assert.Throws<ArgumentNullException>(() => new Deserialiser(typeof(UserScore)).Deserialise((Unpacker)null));
 
             Assert.Equal("unpacker", ex.ParamName);
-        }
-
-        [Fact]
-        public void HandlesUnion1()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack(nameof(ValueWrapper<Union<int, string>>.Value))
-                .PackArrayHeader(2)
-                    .Pack("Int32")
-                    .Pack(123));
-
-            var after = new Deserialiser<ValueWrapper<Union<int, string>>>().Deserialise(bytes);
-
-            Assert.Equal(typeof(int), after.Value.Type);
-            Assert.Equal(123, after.Value.Value);
-        }
-
-        [Fact]
-        public void HandlesUnion2()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack(nameof(ValueWrapper<Union<int, string>>.Value))
-                .PackArrayHeader(2)
-                    .Pack("String")
-                    .Pack("Hello"));
-
-            var after = new Deserialiser<ValueWrapper<Union<int, string>>>().Deserialise(bytes);
-
-            Assert.Equal("Hello", after.Value);
-            Assert.Equal(typeof(string), after.Value.Type);
-            Assert.Equal("Hello", after.Value.Value);
         }
 
         [Fact]

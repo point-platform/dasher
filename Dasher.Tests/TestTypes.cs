@@ -41,6 +41,22 @@ namespace Dasher.Tests
 
         public string Name { get; }
         public int Score { get; }
+
+        #region Equals/GetHashCode
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+            if (ReferenceEquals(this, obj))
+                return true;
+            var other = obj as UserScore;
+            return other != null && string.Equals(Name, other.Name) && Score == other.Score;
+        }
+
+        public override int GetHashCode() => unchecked(((Name?.GetHashCode() ?? 0)*397) ^ Score);
+
+        #endregion
     }
 
     public struct UserScoreStruct
@@ -53,6 +69,22 @@ namespace Dasher.Tests
 
         public string Name { get; }
         public int Score { get; }
+
+        #region Equals/GetHashCode
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+            if (!(obj is UserScoreStruct))
+                return false;
+            var other = (UserScoreStruct)obj;
+            return string.Equals(Name, other.Name) && Score == other.Score;
+        }
+
+        public override int GetHashCode() => unchecked((Name?.GetHashCode() ?? 0)*397 ^ Score);
+
+        #endregion
     }
 
     public sealed class UserScoreWithDefaultScore
@@ -65,18 +97,6 @@ namespace Dasher.Tests
 
         public string Name { get; }
         public int Score { get; }
-    }
-
-    public sealed class WeightedUserScore
-    {
-        public double Weight { get; }
-        public UserScore UserScore { get; }
-
-        public WeightedUserScore(double weight, UserScore userScore)
-        {
-            Weight = weight;
-            UserScore = userScore;
-        }
     }
 
     public sealed class ValueWrapper<T>
@@ -172,16 +192,6 @@ namespace Dasher.Tests
         internal NoPublicConstructors(int number)
         {
             Number = number;
-        }
-    }
-
-    public sealed class ListOfList
-    {
-        public IReadOnlyList<IReadOnlyList<int>> Jagged { get; }
-
-        public ListOfList(IReadOnlyList<IReadOnlyList<int>> jagged)
-        {
-            Jagged = jagged;
         }
     }
 

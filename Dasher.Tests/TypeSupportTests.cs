@@ -173,6 +173,23 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void SupportsNestedReadOnlyListOfReadOnlyList()
+        {
+            TestNested<IReadOnlyList<IReadOnlyList<int>>>(
+                new[] { new[] { 1, 2, 3 }, new[] { 4, 5, 6 } },
+                packer => packer.PackArrayHeader(2)
+                    .PackArrayHeader(3).Pack(1).Pack(2).Pack(3)
+                    .PackArrayHeader(3).Pack(4).Pack(5).Pack(6),
+                actual =>
+                {
+                    Assert.Equal(2, actual.Count);
+                    Assert.Equal(new[] { 1, 2, 3 }, actual[0]);
+                    Assert.Equal(new[] { 4, 5, 6 }, actual[1]);
+                });
+            TestNested<IReadOnlyList<IReadOnlyList<int>>>(null, packer => packer.PackNull());
+        }
+
+        [Fact]
         public void SupportsNestedReadOnlyDictionary()
         {
             TestNested<IReadOnlyDictionary<int, string>>(
@@ -214,33 +231,96 @@ namespace Dasher.Tests
         {
             TestNested(Union<int, double>.Create(123), packer => packer.PackArrayHeader(2).Pack("Int32").Pack(123));
             TestNested(Union<int, double>.Create(123.0), packer => packer.PackArrayHeader(2).Pack("Double").Pack(123.0));
+            TestNested(Union<int, string>.Create("Hello"), packer => packer.PackArrayHeader(2).Pack("String").Pack("Hello"));
             TestNested(Union<int, string>.Create(null), packer => packer.PackArrayHeader(2).Pack("String").PackNull());
         }
 
-        #region Helper
+        [Fact]
+        public void SupportsNestedStruct()
+        {
+            TestNested(new UserScoreStruct("Foo", 123), packer => packer.PackMapHeader(2).Pack("Name").Pack("Foo").Pack("Score").Pack(123));
+        }
 
-        private static T TestNested<T>(T value, Action<MsgPack.Packer> packAction)
+        [Fact]
+        public void SupportsNestedClass()
+        {
+            TestNested(new UserScore("Foo", 123), packer => packer.PackMapHeader(2).Pack("Name").Pack("Foo").Pack("Score").Pack(123));
+        }
+
+
+        [Fact]
+        public void SupportsTopLevelClass()
+        {
+            TestTopLevel(new UserScore("Foo", 123), packer => packer.PackMapHeader(2).Pack("Name").Pack("Foo").Pack("Score").Pack(123));
+            TestTopLevel<UserScore>(null, packer => packer.PackNull());
+        }
+
+        [Fact]
+        public void SupportsTopLevelStruct()
+        {
+            TestTopLevel(new UserScoreStruct("Foo", 123), packer => packer.PackMapHeader(2).Pack("Name").Pack("Foo").Pack("Score").Pack(123));
+        }
+
+/*
+        [Fact]
+        public void SupportsTopLevelUnion()
+        {
+            // Top level unions are allowed, so long as each type within the union meets the requirements of a top-level type
+
+            var after = RoundTrip(Union<UserScore, UserScoreStruct>.Create(new UserScore("Bob", 123)));
+
+            after.Match(
+                c => { Assert.Equal("Bob", c.Name); },
+                s => { throw new Exception("Wrong type after round trip"); });
+        }
+*/
+
+
+        #region Helpers
+
+        private static T TestTopLevel<T>(T value, Action<MsgPack.Packer> packAction, Action<T> customEvaluator = null)
         {
             byte[] expectedBytes;
             using (var stream = new MemoryStream())
             using (var packer = MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None))
             {
-                packer.PackMapHeader(1).Pack(nameof(ValueWrapper<T>.Value));
                 packAction(packer);
                 stream.Position = 0;
                 expectedBytes = stream.ToArray();
             }
 
-            var deserialisedValue = new Deserialiser<ValueWrapper<T>>().Deserialise(expectedBytes).Value;
+            var deserialisedValue = new Deserialiser<T>().Deserialise(expectedBytes);
 
-            Assert.Equal(value, deserialisedValue);
+            if (customEvaluator != null)
+                customEvaluator(value);
+            else
+                Assert.Equal(value, deserialisedValue);
 
-            var serialisedBytes = new Serialiser<ValueWrapper<T>>().Serialise(new ValueWrapper<T>(value));
+            var serialisedBytes = new Serialiser<T>().Serialise(value);
 
             Assert.Equal(expectedBytes.Length, serialisedBytes.Length);
             Assert.Equal(expectedBytes, serialisedBytes);
 
             return deserialisedValue;
+        }
+
+        private static T TestNested<T>(T value, Action<MsgPack.Packer> packAction, Action<T> customEvaluator = null)
+        {
+            return TestTopLevel(
+                new ValueWrapper<T>(value),
+                packer =>
+                {
+                    packer.PackMapHeader(1).Pack(nameof(ValueWrapper<T>.Value));
+                    packAction(packer);
+                },
+                actual =>
+                {
+                    if (customEvaluator != null)
+                        customEvaluator(actual.Value);
+                    else
+                        Assert.Equal(value, actual.Value);
+                })
+                .Value;
         }
 
         #endregion
