@@ -37,8 +37,8 @@ namespace Dasher.TypeProviders
             // write the string form of the value
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Call, typeof(decimal).GetMethod(nameof(decimal.ToString), new Type[0]));
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
+            ilg.Emit(OpCodes.Call, Methods.Decimal_ToString);
+            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_String);
 
             return true;
         }
@@ -50,11 +50,11 @@ namespace Dasher.TypeProviders
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloca, s);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadString);
 
             ilg.Emit(OpCodes.Ldloc, s);
             ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Call, typeof(decimal).GetMethod(nameof(decimal.TryParse), new[] {typeof(string), typeof(decimal).MakeByRefType()}));
+            ilg.Emit(OpCodes.Call, Methods.Decimal_TryParse);
 
             ilg.Emit(OpCodes.And);
 
@@ -64,7 +64,7 @@ namespace Dasher.TypeProviders
             {
                 ilg.Emit(OpCodes.Ldstr, "Unable to deserialise decimal value");
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl);

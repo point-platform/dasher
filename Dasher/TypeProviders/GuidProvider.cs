@@ -37,8 +37,8 @@ namespace Dasher.TypeProviders
             // write the string form of the value
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Call, typeof(Guid).GetMethod(nameof(Guid.ToByteArray), new Type[0]));
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(byte[])}));
+            ilg.Emit(OpCodes.Call, Methods.Guid_ToByteArray);
+            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_ByteArray);
 
             return true;
         }
@@ -50,7 +50,7 @@ namespace Dasher.TypeProviders
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloca, bytes);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadBinary), new[] {typeof(byte[]).MakeByRefType()}));
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadBinary);
 
             // If the unpacker method failed (returned false), throw
             var lbl = ilg.DefineLabel();
@@ -58,13 +58,13 @@ namespace Dasher.TypeProviders
             {
                 ilg.Emit(OpCodes.Ldstr, "Unable to deserialise GUID value");
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl);
 
             ilg.Emit(OpCodes.Ldloc, bytes);
-            ilg.Emit(OpCodes.Newobj, typeof(Guid).GetConstructor(new[] {typeof(byte[])}));
+            ilg.Emit(OpCodes.Newobj, Methods.Guid_Constructor_ByteArray);
             ilg.Emit(OpCodes.Stloc, value);
 
             return true;

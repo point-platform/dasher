@@ -37,8 +37,8 @@ namespace Dasher.TypeProviders
             // write the string form
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloc, value);
-            ilg.Emit(OpCodes.Call, typeof(Version).GetMethod(nameof(Version.ToString), new Type[0]));
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
+            ilg.Emit(OpCodes.Call, Methods.Version_ToString);
+            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_String);
 
             return true;
         }
@@ -50,7 +50,7 @@ namespace Dasher.TypeProviders
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloca, s);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadString);
 
             // If the unpacker method failed (returned false), throw
             var lbl = ilg.DefineLabel();
@@ -58,7 +58,7 @@ namespace Dasher.TypeProviders
             {
                 ilg.Emit(OpCodes.Ldstr, $"Expecting string value for Version property {name}");
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl);

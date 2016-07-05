@@ -78,7 +78,7 @@ namespace Dasher.TypeProviders
             // write map header
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldc_I4, props.Count);
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackMapHeader)));
+            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackMapHeader);
 
             var success = true;
 
@@ -90,7 +90,7 @@ namespace Dasher.TypeProviders
                 // write property name
                 ilg.Emit(OpCodes.Ldloc, packer);
                 ilg.Emit(OpCodes.Ldstr, prop.Name);
-                ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
+                ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_String);
 
                 // get property value
                 ilg.Emit(value.LocalType.IsValueType ? OpCodes.Ldloca : OpCodes.Ldloc, value);
@@ -116,7 +116,7 @@ namespace Dasher.TypeProviders
             Action throwException = () =>
             {
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             };
 
@@ -132,7 +132,7 @@ namespace Dasher.TypeProviders
                 // within the map. We read this here.
                 ilg.Emit(OpCodes.Ldloc, unpacker);
                 ilg.Emit(OpCodes.Ldloca, mapSize);
-                ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadMapLength)));
+                ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadMapLength);
 
                 // If false was returned, then the next MsgPack value is not a map
                 var lblHaveMapSize = ilg.DefineLabel();
@@ -140,7 +140,7 @@ namespace Dasher.TypeProviders
                 {
                     // Check if it's a null
                     ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
+                    ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadNull);
                     var lblNotNull = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Brfalse, lblNotNull);
                     {
@@ -150,7 +150,7 @@ namespace Dasher.TypeProviders
                     }
                     ilg.MarkLabel(lblNotNull);
                     ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetProperty(nameof(Unpacker.HasStreamEnded)).GetMethod);
+                    ilg.Emit(OpCodes.Call, Methods.Unpacker_HasStreamEnded_Get);
                     var lblNotEmpty = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Brfalse, lblNotEmpty);
                     ilg.Emit(OpCodes.Ldstr, "Data stream empty");
@@ -243,7 +243,7 @@ namespace Dasher.TypeProviders
                 {
                     ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Ldloca, key);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
+                    ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadString);
 
                     // If false was returned, the data stream ended
                     var ifLabel = ilg.DefineLabel();
@@ -274,7 +274,7 @@ namespace Dasher.TypeProviders
                     ilg.Emit(OpCodes.Ldloc, key);
                     ilg.Emit(OpCodes.Ldstr, parameters[parameterIndex].Name);
                     ilg.Emit(OpCodes.Ldc_I4_5); // StringComparison.OrdinalIgnoreCase
-                    ilg.Emit(OpCodes.Callvirt, typeof(string).GetMethod("Equals", new[] { typeof(string), typeof(StringComparison) }));
+                    ilg.Emit(OpCodes.Callvirt, Methods.String_Equals_String_StringComparison);
 
                     // If the key doesn't match this property, go to the next block
                     ilg.Emit(OpCodes.Brfalse, nextLabel.Value);
@@ -292,7 +292,7 @@ namespace Dasher.TypeProviders
                             ilg.Emit(OpCodes.Ldstr, "Encountered duplicate field \"{0}\" for type \"{1}\".");
                             ilg.Emit(OpCodes.Ldloc, key);
                             ilg.Emit(OpCodes.Ldstr, targetType.Name);
-                            ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
+                            ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object);
                             throwException();
                         }
 
@@ -322,7 +322,7 @@ namespace Dasher.TypeProviders
                     var format = ilg.DeclareLocal(typeof(Format));
                     ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Ldloca, format);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryPeekFormat)));
+                    ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekFormat);
                     // Drop the return value: if false, 'format' will be 'Unknown' which is fine.
                     ilg.Emit(OpCodes.Pop);
 
@@ -330,16 +330,16 @@ namespace Dasher.TypeProviders
                     ilg.Emit(OpCodes.Ldloc, key);
                     ilg.Emit(OpCodes.Ldloc, format);
                     ilg.Emit(OpCodes.Box, typeof(Format));
-                    ilg.Emit(OpCodes.Call, typeof(Format).GetMethod(nameof(Format.ToString), new Type[0]));
+                    ilg.Emit(OpCodes.Call, Methods.Format_ToString);
                     ilg.Emit(OpCodes.Ldstr, targetType.Name);
-                    ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object), typeof(object)}));
+                    ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object_Object);
                     throwException();
                 }
                 else
                 {
                     // skip unexpected value
                     ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.SkipValue)));
+                    ilg.Emit(OpCodes.Call, Methods.Unpacker_SkipValue);
                 }
 
                 #endregion
@@ -397,7 +397,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Ldstr, "Missing required field \"{0}\" for type \"{1}\".");
                 ilg.Emit(OpCodes.Ldloc, paramName);
                 ilg.Emit(OpCodes.Ldstr, targetType.Name);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] { typeof(string), typeof(object), typeof(object) }));
+                ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object);
                 throwException();
             }
             ilg.MarkLabel(lblValuesOk);

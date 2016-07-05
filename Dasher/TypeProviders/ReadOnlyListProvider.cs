@@ -48,7 +48,7 @@ namespace Dasher.TypeProviders
             // write array header
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloc, count);
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackArrayHeader)));
+            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackArrayHeader);
 
             // begin loop
             var loopStart = ilg.DefineLabel();
@@ -98,7 +98,7 @@ namespace Dasher.TypeProviders
             var count = ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloca, count);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadArrayLength)));
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadArrayLength);
 
             // verify read correctly
             var lbl1 = ilg.DefineLabel();
@@ -106,7 +106,7 @@ namespace Dasher.TypeProviders
             {
                 ilg.Emit(OpCodes.Ldstr, "Expecting collection data to be encoded as array");
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl1);

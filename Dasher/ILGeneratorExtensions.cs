@@ -75,7 +75,7 @@ namespace Dasher
                     ilg.Emit(OpCodes.Ldc_I4, bits[i]); // value
                     ilg.Emit(OpCodes.Stelem_I4);
                 }
-                ilg.Emit(OpCodes.Newobj, typeof(decimal).GetConstructor(new[] {typeof(int[])}));
+                ilg.Emit(OpCodes.Newobj, Methods.Decimal_Ctor_IntArray);
             }
             else if (value.GetType().IsEnum)
             {

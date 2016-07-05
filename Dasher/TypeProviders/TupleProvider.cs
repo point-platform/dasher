@@ -43,7 +43,7 @@ namespace Dasher.TypeProviders
             // write the array header
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldc_I4, tupleSize);
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackArrayHeader), new[] {typeof(uint)}));
+            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackArrayHeader);
 
             var success = true;
 
@@ -77,7 +77,7 @@ namespace Dasher.TypeProviders
             var count = ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloca, count);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadArrayLength)));
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadArrayLength);
 
             // verify read correctly
             var lblReadArrayOk = ilg.DefineLabel();
@@ -85,7 +85,7 @@ namespace Dasher.TypeProviders
             {
                 ilg.Emit(OpCodes.Ldstr, "Expecting tuple data to be encoded as array");
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] { typeof(string), typeof(Type) }));
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lblReadArrayOk);
@@ -98,7 +98,7 @@ namespace Dasher.TypeProviders
             {
                 ilg.Emit(OpCodes.Ldstr, $"Received array must have length {tupleSize} for type {tupleType.FullName}");
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lblSizeOk);

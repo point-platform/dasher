@@ -24,8 +24,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Dasher.TypeProviders
@@ -40,8 +38,8 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Constrained, value.LocalType);
-            ilg.Emit(OpCodes.Callvirt, typeof(object).GetMethod(nameof(ToString), new Type[0]));
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
+            ilg.Emit(OpCodes.Callvirt, Methods.Object_ToString);
+            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_String);
 
             return true;
         }
@@ -53,7 +51,7 @@ namespace Dasher.TypeProviders
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloca, s);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()}));
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadString);
 
             var lbl1 = ilg.DefineLabel();
             ilg.Emit(OpCodes.Brtrue, lbl1);
@@ -61,9 +59,9 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Ldstr, "Unable to read string value for enum property \"{0}\" of type \"{1}\"");
                 ilg.Emit(OpCodes.Ldstr, name);
                 ilg.LoadType(value.LocalType);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
+                ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object);
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl1);
@@ -71,7 +69,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, s);
             ilg.Emit(OpCodes.Ldc_I4_1);
             ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Call, typeof(Enum).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(m => m.Name == "TryParse" && m.GetParameters().Length == 3).MakeGenericMethod(value.LocalType));
+            ilg.Emit(OpCodes.Call, Methods.Enum_TryParse_OpenGeneric.MakeGenericMethod(value.LocalType));
 
             var lbl2 = ilg.DefineLabel();
             ilg.Emit(OpCodes.Brtrue, lbl2);
@@ -79,9 +77,9 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Ldstr, "Unable to parse value \"{0}\" as a member of enum type \"{1}\"");
                 ilg.Emit(OpCodes.Ldloc, s);
                 ilg.LoadType(value.LocalType);
-                ilg.Emit(OpCodes.Call, typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)}));
+                ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object);
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl2);

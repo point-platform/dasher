@@ -26,7 +26,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Reflection.Emit;
 using Dasher.TypeProviders;
 
@@ -95,10 +94,10 @@ namespace Dasher
                 ilg.Emit(OpCodes.Ldloc, contextLocal);
                 ilg.LoadType(value.LocalType);
                 ilg.Emit(OpCodes.Ldc_I4, (int)unexpectedFieldBehaviour);
-                ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateDeserialiseFunc), BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Type), typeof(UnexpectedFieldBehaviour) }, null));
+                ilg.Emit(OpCodes.Call, Methods.DasherContext_GetOrCreateDeserialiseFunc);
                 ilg.Emit(OpCodes.Ldloc, unpacker);
                 ilg.Emit(OpCodes.Ldloc, contextLocal);
-                ilg.Emit(OpCodes.Call, typeof(Func<Unpacker, DasherContext, object>).GetMethod(nameof(Func<Unpacker, DasherContext, object>.Invoke), new[] { typeof(Unpacker), typeof(DasherContext) }));
+                ilg.Emit(OpCodes.Call, Methods.DasherDeserialiseFunc_Invoke);
                 ilg.Emit(value.LocalType.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, value.LocalType);
                 ilg.Emit(OpCodes.Stloc, value);
             }
@@ -111,7 +110,7 @@ namespace Dasher
                     // check for null
                     var nonNullLabel = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
+                    ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadNull);
                     ilg.Emit(OpCodes.Brfalse, nonNullLabel);
                     {
                         ilg.Emit(OpCodes.Ldnull);

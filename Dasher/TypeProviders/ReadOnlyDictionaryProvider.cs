@@ -23,7 +23,6 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
@@ -52,7 +51,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Callvirt, readOnlyCollectionType.GetProperty(nameof(IReadOnlyCollection<int>.Count)).GetMethod);
 
             // write map header
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackMapHeader)));
+            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackMapHeader);
 
             var enumerator = ilg.DeclareLocal(enumeratorType);
             ilg.Emit(OpCodes.Ldloc, value);
@@ -105,7 +104,7 @@ namespace Dasher.TypeProviders
             // progress enumerator & loop test
             ilg.MarkLabel(loopTest);
             ilg.Emit(OpCodes.Ldloc, enumerator);
-            ilg.Emit(OpCodes.Callvirt, typeof(IEnumerator).GetMethod(nameof(IEnumerator.MoveNext)));
+            ilg.Emit(OpCodes.Callvirt, Methods.IEnumerator_MoveNext);
             ilg.Emit(OpCodes.Brtrue, loopStart);
 
             // finally
@@ -113,7 +112,7 @@ namespace Dasher.TypeProviders
 
             // dispose
             ilg.Emit(OpCodes.Ldloc, enumerator);
-            ilg.Emit(OpCodes.Callvirt, typeof(IDisposable).GetMethod(nameof(IDisposable.Dispose)));
+            ilg.Emit(OpCodes.Callvirt, Methods.IDisposable_Dispose);
 
             // end try/finally
             ilg.EndExceptionBlock();
@@ -132,7 +131,7 @@ namespace Dasher.TypeProviders
             var count = ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloca, count);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadMapLength)));
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadMapLength);
 
             // verify read correctly
             var lbl1 = ilg.DefineLabel();
@@ -140,7 +139,7 @@ namespace Dasher.TypeProviders
             {
                 ilg.Emit(OpCodes.Ldstr, "Expecting collection data to be encoded a map");
                 ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)}));
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl1);

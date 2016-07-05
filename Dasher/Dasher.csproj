@@ -54,6 +54,7 @@
     <Compile Include="MsgPack\MsgPackConstants.cs" />
     <Compile Include="MsgPack\FormatFamily.cs" />
     <Compile Include="MsgPack\Packer.cs" />
+    <Compile Include="Methods.cs" />
     <Compile Include="TypeProviders\MsgPackTypeProvider.cs" />
     <Compile Include="TypeProviders\NullableValueProvider.cs" />
     <Compile Include="TypeProviders\ReadOnlyDictionaryProvider.cs" />

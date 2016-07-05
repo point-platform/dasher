@@ -63,7 +63,7 @@ namespace Dasher.TypeProviders
 
             // value is null
             ilg.Emit(OpCodes.Ldloc, packer);
-            ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackNull)));
+            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackNull);
 
             ilg.MarkLabel(lblExit);
 
@@ -79,7 +79,7 @@ namespace Dasher.TypeProviders
             var lblExit = ilg.DefineLabel();
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
-            ilg.Emit(OpCodes.Call, typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull)));
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadNull);
 
             ilg.Emit(OpCodes.Brtrue, lblNull);
 
