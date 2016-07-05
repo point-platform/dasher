@@ -74,7 +74,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, contextLocal);
             ilg.LoadType(value.LocalType);
             ilg.Emit(OpCodes.Ldc_I4, (int)unexpectedFieldBehaviour);
-            ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateDeserialiser), BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof(Type), typeof(UnexpectedFieldBehaviour)}, null));
+            ilg.Emit(OpCodes.Call, typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateDeserialiseFunc), BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof(Type), typeof(UnexpectedFieldBehaviour)}, null));
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloc, contextLocal);
             ilg.Emit(OpCodes.Call, typeof(Func<Unpacker, DasherContext, object>).GetMethod(nameof(Func<Unpacker, DasherContext, object>.Invoke), new[] {typeof(Unpacker), typeof(DasherContext)}));

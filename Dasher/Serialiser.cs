@@ -35,7 +35,7 @@ namespace Dasher
         public Serialiser(DasherContext context = null)
         {
             _context = context ?? new DasherContext();
-            _action = _context.GetOrCreateSerialiser(typeof(T));
+            _action = _context.GetOrCreateSerialiseAction(typeof(T));
         }
 
         public void Serialise(Stream stream, T value)
@@ -70,7 +70,7 @@ namespace Dasher
         public Serialiser(Type type, DasherContext context = null)
         {
             _context = context ?? new DasherContext();
-            _action = _context.GetOrCreateSerialiser(type);
+            _action = _context.GetOrCreateSerialiseAction(type);
         }
 
         public void Serialise(Stream stream, object value)

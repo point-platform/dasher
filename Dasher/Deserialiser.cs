@@ -35,7 +35,7 @@ namespace Dasher
         public Deserialiser(UnexpectedFieldBehaviour unexpectedFieldBehaviour = UnexpectedFieldBehaviour.Throw, DasherContext context = null)
         {
             _context = context ?? new DasherContext();
-            _func = _context.GetOrCreateDeserialiser(typeof(T), unexpectedFieldBehaviour);
+            _func = _context.GetOrCreateDeserialiseFunc(typeof(T), unexpectedFieldBehaviour);
         }
 
         public T Deserialise(byte[] bytes)
@@ -68,7 +68,7 @@ namespace Dasher
         public Deserialiser(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour = UnexpectedFieldBehaviour.Throw, DasherContext context = null)
         {
             _context = context ?? new DasherContext();
-            _func = _context.GetOrCreateDeserialiser(type, unexpectedFieldBehaviour);
+            _func = _context.GetOrCreateDeserialiseFunc(type, unexpectedFieldBehaviour);
         }
 
         public object Deserialise(byte[] bytes)

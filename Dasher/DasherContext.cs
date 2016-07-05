@@ -51,8 +51,8 @@ namespace Dasher
             new UnionProvider()
         };
 
-        private readonly ConcurrentDictionary<Type, Action<UnsafePacker, DasherContext, object>> _serialiserByType = new ConcurrentDictionary<Type, Action<UnsafePacker, DasherContext, object>>();
-        private readonly ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>> _deserialiserByType = new ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>>();
+        private readonly ConcurrentDictionary<Type, Action<UnsafePacker, DasherContext, object>> _serialiseActionByType = new ConcurrentDictionary<Type, Action<UnsafePacker, DasherContext, object>>();
+        private readonly ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>> _deserialiseFuncByType = new ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>>();
         private readonly IReadOnlyList<ITypeProvider> _typeProviders;
 
         public DasherContext(IEnumerable<ITypeProvider> typeProviders = null)
@@ -60,11 +60,11 @@ namespace Dasher
             _typeProviders = typeProviders?.Concat(_defaultTypeProviders).ToList() ?? _defaultTypeProviders;
         }
 
-        internal Action<UnsafePacker, DasherContext, object> GetOrCreateSerialiser(Type type)
-            => _serialiserByType.GetOrAdd(type, _ => SerialiserEmitter.Build(type, this));
+        internal Action<UnsafePacker, DasherContext, object> GetOrCreateSerialiseAction(Type type)
+            => _serialiseActionByType.GetOrAdd(type, _ => SerialiserEmitter.Build(type, this));
 
-        internal Func<Unpacker, DasherContext, object> GetOrCreateDeserialiser(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
-            => _deserialiserByType.GetOrAdd(
+        internal Func<Unpacker, DasherContext, object> GetOrCreateDeserialiseFunc(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+            => _deserialiseFuncByType.GetOrAdd(
                 Tuple.Create(type, unexpectedFieldBehaviour),
                 _ => DeserialiserEmitter.Build(type, unexpectedFieldBehaviour, this));
 
