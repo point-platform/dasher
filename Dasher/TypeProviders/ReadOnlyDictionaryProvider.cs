@@ -160,11 +160,11 @@ namespace Dasher.TypeProviders
             // loop body
 
             // read key
-            if (!DeserialiserEmitter.TryEmitDeserialiseCode(context, ilg, name, targetType, keyValue, unpacker, contextLocal, unexpectedFieldBehaviour))
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, name, targetType, keyValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
                 throw new Exception($"Unable to deserialise values of type {keyType} from MsgPack data.");
 
             // read value
-            if (!DeserialiserEmitter.TryEmitDeserialiseCode(context, ilg, name, targetType, valueValue, unpacker, contextLocal, unexpectedFieldBehaviour))
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, name, targetType, valueValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
                 throw new Exception($"Unable to deserialise values of type {valueValue} from MsgPack data.");
 
             ilg.Emit(OpCodes.Ldloc, dic);

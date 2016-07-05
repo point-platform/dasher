@@ -177,7 +177,7 @@ namespace Dasher.TypeProviders
                 // we have a match
                 // read the value
                 var readValue = ilg.DeclareLocal(type);
-                if (!DeserialiserEmitter.TryEmitDeserialiseCode(context, ilg, name, targetType, readValue, unpacker, contextLocal, unexpectedFieldBehaviour))
+                if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, name, targetType, readValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
                     throw new Exception($"Unable to deserialise values of type {type} from MsgPack data.");
 
                 // create the union

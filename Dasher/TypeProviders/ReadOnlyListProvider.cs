@@ -128,7 +128,7 @@ namespace Dasher.TypeProviders
             // loop body
             var element = ilg.DeclareLocal(elementType);
 
-            if (!DeserialiserEmitter.TryEmitDeserialiseCode(context, ilg, name, targetType, element, unpacker, contextLocal, unexpectedFieldBehaviour))
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, name, targetType, element, unpacker, context, contextLocal, unexpectedFieldBehaviour))
                 throw new Exception($"Unable to deserialise values of type {elementType} from MsgPack data.");
 
             ilg.Emit(OpCodes.Ldloc, array);

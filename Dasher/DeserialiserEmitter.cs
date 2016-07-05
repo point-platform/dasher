@@ -256,7 +256,7 @@ namespace Dasher
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
-                    if (!TryEmitDeserialiseCode(context, ilg, parameters[parameterIndex].Name, type, valueLocals[parameterIndex], unpacker, contextLocal, unexpectedFieldBehaviour))
+                    if (!TryEmitDeserialiseCode(ilg, parameters[parameterIndex].Name, type, valueLocals[parameterIndex], unpacker, context, contextLocal, unexpectedFieldBehaviour))
                         throw new Exception($"Unable to deserialise values of type {valueLocals[parameterIndex].LocalType} from MsgPack data.");
 
                     ilg.Emit(OpCodes.Br, lblEndIfChain);
@@ -368,7 +368,7 @@ namespace Dasher
             return (Func<Unpacker, DasherContext, object>)method.CreateDelegate(typeof(Func<Unpacker, DasherContext, object>));
         }
 
-        public static bool TryEmitDeserialiseCode(DasherContext context, ILGenerator ilg, string name, Type targetType, LocalBuilder valueLocal, LocalBuilder unpacker, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public static bool TryEmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder valueLocal, LocalBuilder unpacker, DasherContext context, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             ITypeProvider provider;
             if (!context.TryGetTypeProvider(valueLocal.LocalType, out provider))
