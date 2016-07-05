@@ -24,6 +24,10 @@
 
 using System;
 
+// ReSharper disable AssignNullToNotNullAttribute
+// ReSharper disable FieldCanBeMadeReadOnly.Local
+// ReSharper disable NonReadonlyMemberInGetHashCode
+
 namespace Dasher
 {
     // NOTE this file is generated
