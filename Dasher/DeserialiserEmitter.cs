@@ -23,6 +23,9 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Dasher.TypeProviders;
@@ -33,13 +36,15 @@ namespace Dasher
     {
         public static Func<Unpacker, DasherContext, object> Build(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour, DasherContext context)
         {
-            // Verify and prepare for target type
+            // Create a collection for errors, initially with zero capacity (minimal allocation)
+            var errors = new List<string>(0);
 
-            if (type.IsPrimitive)
-                throw new DeserialisationException($"Cannot deserialise primitive type \"{type.Name}\". The root type must contain properties and values to support future versioning.", type);
+            // Validate that the type is suitable as a top-level type
+            context.ValidateTopLevelType(type, errors);
 
-            if (type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance).Length != 1)
-                throw new DeserialisationException($"Type \"{type.Name}\" must have a single public constructor.", type);
+            // Throw if there were any errors
+            if (errors.Any())
+                throw new DeserialisationException(errors, type);
 
             // Initialise code gen
             var method = new DynamicMethod(
@@ -61,8 +66,11 @@ namespace Dasher
 
             var valueLocal = ilg.DeclareLocal(type);
 
-            if (!TryEmitDeserialiseCode(ilg, "<root>", type, valueLocal, unpacker, context, contextLocal, unexpectedFieldBehaviour, isRoot: true))
-                throw new Exception($"Cannot serialise type {type}.");
+            if (!TryEmitDeserialiseCode(ilg, errors, "<root>", type, valueLocal, unpacker, context, contextLocal, unexpectedFieldBehaviour, isRoot: true))
+            {
+                Debug.Assert(errors.Any());
+                throw new DeserialisationException(errors, type);
+            }
 
             ilg.Emit(OpCodes.Ldloc, valueLocal);
 
@@ -76,10 +84,10 @@ namespace Dasher
             return (Func<Unpacker, DasherContext, object>)method.CreateDelegate(typeof(Func<Unpacker, DasherContext, object>));
         }
 
-        public static bool TryEmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, DasherContext context, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour, bool isRoot = false)
+        public static bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, DasherContext context, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour, bool isRoot = false)
         {
             ITypeProvider provider;
-            if (!context.TryGetTypeProvider(value.LocalType, out provider))
+            if (!context.TryGetTypeProvider(value.LocalType, errors, out provider))
                 return false;
 
             if (!isRoot && provider is ComplexTypeProvider)
@@ -113,7 +121,8 @@ namespace Dasher
                     ilg.MarkLabel(nonNullLabel);
                 }
 
-                provider.EmitDeserialiseCode(ilg, name, targetType, value, unpacker, contextLocal, context, unexpectedFieldBehaviour);
+                if (!provider.TryEmitDeserialiseCode(ilg, errors, name, targetType, value, unpacker, contextLocal, context, unexpectedFieldBehaviour))
+                    return false;
 
                 ilg.MarkLabel(end);
             }

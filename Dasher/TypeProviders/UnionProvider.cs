@@ -36,12 +36,12 @@ namespace Dasher.TypeProviders
         //   The string name of the type, including namespace and any generic type parameters
         //   The serialised value, as per regular Dasher serialisation
 
-        public bool CanProvide(Type type) 
-            => type.IsGenericType && 
+        public bool CanProvide(Type type)
+            => type.IsGenericType &&
                type.GetGenericTypeDefinition().Namespace == nameof(Dasher) &&
                type.GetGenericTypeDefinition().Name.StartsWith($"{nameof(Union<int, int>)}`");
 
-        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write header
             ilg.Emit(OpCodes.Ldloc, packer);
@@ -60,6 +60,8 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, typeObj);
             ilg.Emit(OpCodes.Call, typeof(UnionProvider).GetMethod(nameof(GetTypeName), BindingFlags.Static | BindingFlags.Public));
             ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(string) }));
+
+            var success = true;
 
             // loop through types within the union, looking for a match
             var doneLabel = ilg.DefineLabel();
@@ -83,8 +85,11 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Stloc, valueObj);
 
                 // write value
-                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, valueObj, packer, context, contextLocal))
-                    throw new Exception($"Unable to serialise type {type}");
+                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, valueObj, packer, context, contextLocal))
+                {
+                    errors.Add($"Unable to serialise union member type {type}");
+                    success = false;
+                }
 
                 ilg.Emit(OpCodes.Br, doneLabel);
 
@@ -99,9 +104,11 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Throw);
 
             ilg.MarkLabel(doneLabel);
+
+            return success;
         }
 
-        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // read the array length
             var count = ilg.DeclareLocal(typeof(int));
@@ -160,6 +167,8 @@ namespace Dasher.TypeProviders
             }
             ilg.MarkLabel(lbl1);
 
+            var success = true;
+
             // loop through types within the union, looking for a matching type name
             var doneLabel = ilg.DefineLabel();
             var labelNextType = ilg.DefineLabel();
@@ -177,8 +186,11 @@ namespace Dasher.TypeProviders
                 // we have a match
                 // read the value
                 var readValue = ilg.DeclareLocal(type);
-                if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, name, targetType, readValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
-                    throw new Exception($"Unable to deserialise values of type {type} from MsgPack data.");
+                if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, name, targetType, readValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+                {
+                    errors.Add($"Unable to deserialise union member type {type}");
+                    success = false;
+                }
 
                 // create the union
                 ilg.Emit(OpCodes.Ldloc, readValue);
@@ -202,6 +214,8 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Throw);
 
             ilg.MarkLabel(doneLabel);
+
+            return success;
         }
 
         public static string GetTypeName(Type type)
@@ -215,7 +229,7 @@ namespace Dasher.TypeProviders
             if (arguments.Length == 2 && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
                 return $"({GetTypeName(arguments[0])}=>{GetTypeName(arguments[1])})";
 
-            var baseName = type.FullName.StartsWith("Dasher.Union`") 
+            var baseName = type.FullName.StartsWith("Dasher.Union`")
                 ? "Union"
                 : type.FullName.Substring(0, type.FullName.IndexOf('`'));
 

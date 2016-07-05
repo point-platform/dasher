@@ -23,6 +23,8 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Dasher
 {
@@ -35,6 +37,10 @@ namespace Dasher
         {
             TargetType = targetType;
         }
+
+        public DeserialisationException(IReadOnlyList<string> errors, Type targetType)
+            : this(DasherExceptionUtil.CreateMessageFromErrors("Cannot deserialise type", errors, targetType), targetType)
+        {}
     }
 
     public sealed class SerialisationException : Exception
@@ -45,6 +51,29 @@ namespace Dasher
             : base(message)
         {
             TargetType = targetType;
+        }
+
+        public SerialisationException(IReadOnlyList<string> errors, Type targetType)
+            : this(DasherExceptionUtil.CreateMessageFromErrors("Cannot serialise type", errors, targetType), targetType)
+        {}
+    }
+
+    internal static class DasherExceptionUtil
+    {
+        public static string CreateMessageFromErrors(string headline, IReadOnlyList<string> errors, Type type)
+        {
+            var message = new StringBuilder();
+            if (errors.Count == 1)
+            {
+                message.Append($"{headline} \"{type.Namespace}.{type.Name}\": {errors[0]}");
+            }
+            else
+            {
+                message.Append($"{headline} \"{type.Namespace}.{type.Name}\":");
+                foreach (var error in errors)
+                    message.AppendLine().Append($"- {error}");
+            }
+            return message.ToString();
         }
     }
 }

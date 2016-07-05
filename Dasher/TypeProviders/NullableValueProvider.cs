@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 
@@ -34,7 +35,7 @@ namespace Dasher.TypeProviders
 
         public static bool IsNullableValueType(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
 
-        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var type = value.LocalType;
             var valueType = type.GetGenericArguments().Single();
@@ -53,8 +54,8 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, type.GetProperty(nameof(Nullable<int>.Value)).GetMethod);
             ilg.Emit(OpCodes.Stloc, nonNullValue);
 
-            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, nonNullValue, packer, context, contextLocal))
-                throw new Exception($"Cannot serialise underlying type of Nullable<{valueType}>");
+            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, nonNullValue, packer, context, contextLocal))
+                return false;
 
             ilg.Emit(OpCodes.Br, lblExit);
 
@@ -65,9 +66,11 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackNull)));
 
             ilg.MarkLabel(lblExit);
+
+            return true;
         }
 
-        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var nullableType = value.LocalType;
             var valueType = nullableType.GetGenericArguments().Single();
@@ -83,8 +86,11 @@ namespace Dasher.TypeProviders
             // non-null
             var nonNullValue = ilg.DeclareLocal(valueType);
 
-            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, name, targetType, nonNullValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
-                throw new Exception($"Unable to deserialise values of type Nullable<{valueType}> from MsgPack data.");
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, name, targetType, nonNullValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+            {
+                errors.Add($"Unable to deserialise values of type Nullable<{valueType}> from MsgPack data.");
+                return false;
+            }
 
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Ldloc, nonNullValue);
@@ -98,6 +104,8 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Initobj, nullableType);
 
             ilg.MarkLabel(lblExit);
+
+            return true;
         }
     }
 }

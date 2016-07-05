@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -33,7 +34,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.IsEnum;
 
-        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write the string form of the value
             ilg.Emit(OpCodes.Ldloc, packer);
@@ -41,9 +42,11 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Constrained, value.LocalType);
             ilg.Emit(OpCodes.Callvirt, typeof(object).GetMethod(nameof(ToString), new Type[0]));
             ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
+
+            return true;
         }
 
-        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // Read value as a string
             var s = ilg.DeclareLocal(typeof(string));
@@ -82,6 +85,8 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(lbl2);
+
+            return true;
         }
     }
 }

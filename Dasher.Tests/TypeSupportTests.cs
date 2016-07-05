@@ -261,19 +261,23 @@ namespace Dasher.Tests
             TestTopLevel(new UserScoreStruct("Foo", 123), packer => packer.PackMapHeader(2).Pack("Name").Pack("Foo").Pack("Score").Pack(123));
         }
 
-/*
         [Fact]
         public void SupportsTopLevelUnion()
         {
             // Top level unions are allowed, so long as each type within the union meets the requirements of a top-level type
 
-            var after = RoundTrip(Union<UserScore, UserScoreStruct>.Create(new UserScore("Bob", 123)));
+            TestTopLevel(
+                Union<UserScore, UserScoreStruct>.Create(new UserScore("Bob", 123)),
+                packer => packer.PackArrayHeader(2).Pack("Dasher.Tests.UserScore").PackMapHeader(2).Pack("Name").Pack("Bob").Pack("Score").Pack(123));
 
-            after.Match(
-                c => { Assert.Equal("Bob", c.Name); },
-                s => { throw new Exception("Wrong type after round trip"); });
+            TestTopLevel(
+                Union<UserScore, UserScoreStruct>.Create(new UserScoreStruct("Bob", 123)),
+                packer => packer.PackArrayHeader(2).Pack("Dasher.Tests.UserScoreStruct").PackMapHeader(2).Pack("Name").Pack("Bob").Pack("Score").Pack(123));
+
+            TestTopLevel(
+                Union<UserScore, UserScoreStruct>.Create(null),
+                packer => packer.PackArrayHeader(2).Pack("Dasher.Tests.UserScore").PackNull());
         }
-*/
 
 
         #region Helpers

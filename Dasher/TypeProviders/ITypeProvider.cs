@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace Dasher.TypeProviders
@@ -31,15 +32,17 @@ namespace Dasher.TypeProviders
     {
         bool CanProvide(Type type);
 
-        void EmitSerialiseCode(
+        bool TryEmitSerialiseCode(
             ILGenerator ilg,
+            ICollection<string> errors,
             LocalBuilder value,
             LocalBuilder packer,
             LocalBuilder contextLocal,
             DasherContext context);
 
-        void EmitDeserialiseCode(
+        bool TryEmitDeserialiseCode(
             ILGenerator ilg,
+            ICollection<string> errors,
             string name,
             Type targetType,
             LocalBuilder value,

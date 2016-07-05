@@ -23,6 +23,8 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -31,9 +33,38 @@ namespace Dasher.TypeProviders
 {
     internal sealed class ComplexTypeProvider : ITypeProvider
     {
-        public bool CanProvide(Type type) => type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).Length == 1;
+        public static bool TryValidateComplexType(Type type, ICollection<string> errors)
+        {
+            var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
 
-        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+            switch (constructors.Length)
+            {
+                case 0:
+                    errors.Add("Complex type provider requires a public constructor.");
+                    return false;
+                case 1:
+                    break;
+                default:
+                    errors.Add($"Complex type provider requires a 1 public constructor, not {constructors.Length}.");
+                    return false;
+            }
+
+            if (constructors[0].GetParameters().Length == 0)
+            {
+                errors.Add("Complex type provider constructor to have at least one argument.");
+                return false;
+            }
+
+            return true;
+        }
+
+        public bool CanProvide(Type type)
+        {
+            var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+            return constructors.Length == 1 && constructors[0].GetParameters().Length != 0;
+        }
+
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // treat as complex object and recur
             var props = value.LocalType
@@ -48,6 +79,8 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldc_I4, props.Count);
             ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackMapHeader)));
+
+            var success = true;
 
             // write each property's value
             foreach (var prop in props)
@@ -64,19 +97,21 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Call, prop.GetMethod);
                 ilg.Emit(OpCodes.Stloc, propValue);
 
-                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, propValue, packer, context, contextLocal))
-                    throw new Exception($"Unable to serialise type {prop.PropertyType}");
+                success &= SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, propValue, packer, context, contextLocal);
             }
+
+            return success;
         }
 
-        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
-            var ctors = targetType.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
-            if (ctors.Length != 1)
-                throw new DeserialisationException($"Type \"{targetType.Name}\" must have a single public constructor.", targetType);
-            var ctor = ctors[0];
+            if (!TryValidateComplexType(targetType, errors))
+                return false;
 
-            var parameters = ctor.GetParameters();
+            var constructors = targetType.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
+            Debug.Assert(constructors.Length == 1, "Should have one constructor (validation should be performed before call)");
+            var constructor = constructors[0];
+            var parameters = constructor.GetParameters();
 
             Action throwException = () =>
             {
@@ -270,7 +305,7 @@ namespace Dasher.TypeProviders
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
-                    if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, parameters[parameterIndex].Name, targetType, valueLocals[parameterIndex], unpacker, context, contextLocal, unexpectedFieldBehaviour))
+                    if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, parameters[parameterIndex].Name, targetType, valueLocals[parameterIndex], unpacker, context, contextLocal, unexpectedFieldBehaviour))
                         throw new Exception($"Unable to deserialise values of type {valueLocals[parameterIndex].LocalType} from MsgPack data.");
 
                     ilg.Emit(OpCodes.Br, lblEndIfChain);
@@ -376,11 +411,13 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Ldloc, valueLocal);
 
             // Call the target type's constructor
-            ilg.Emit(OpCodes.Newobj, ctor);
+            ilg.Emit(OpCodes.Newobj, constructor);
 
             #endregion
 
             ilg.Emit(OpCodes.Stloc, value);
+
+            return true;
         }
     }
 }

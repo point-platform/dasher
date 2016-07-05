@@ -23,6 +23,9 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using Dasher.TypeProviders;
@@ -33,9 +36,17 @@ namespace Dasher
     {
         public static Action<UnsafePacker, DasherContext, object> Build(Type type, DasherContext context)
         {
-            if (type.IsPrimitive)
-                throw new SerialisationException("Cannot serialise primitive types. The root type must contain properties and values to support future versioning.", type);
+            // Create a collection for errors, initially with zero capacity (minimal allocation)
+            var errors = new List<string>(0);
 
+            // Validate that the type is suitable as a top-level type
+            context.ValidateTopLevelType(type, errors);
+
+            // Throw if there were any errors
+            if (errors.Any())
+                throw new SerialisationException(errors, type);
+
+            // Initialise code gen
             var method = new DynamicMethod(
                 $"Generated{type.Name}Serialiser",
                 returnType: null,
@@ -44,24 +55,25 @@ namespace Dasher
 
             var ilg = method.GetILGenerator();
 
-            // store packer in a local so we can pass it easily
+            // Convert args to locals, so we can pass them around
             var packer = ilg.DeclareLocal(typeof(UnsafePacker));
             ilg.Emit(OpCodes.Ldarg_0); // packer
             ilg.Emit(OpCodes.Stloc, packer);
 
-            // store context in a local so we can pass it easily
             var contextLocal = ilg.DeclareLocal(typeof(DasherContext));
             ilg.Emit(OpCodes.Ldarg_1); // context
             ilg.Emit(OpCodes.Stloc, contextLocal);
 
-            // cast value to a local of required type
             var value = ilg.DeclareLocal(type);
             ilg.Emit(OpCodes.Ldarg_2); // value
             ilg.Emit(type.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
             ilg.Emit(OpCodes.Stloc, value);
 
-            if (!TryEmitSerialiseCode(ilg, value, packer, context, contextLocal, isRoot: true))
-                throw new Exception($"Cannot serialise type {value.LocalType}.");
+            if (!TryEmitSerialiseCode(ilg, errors, value, packer, context, contextLocal, isRoot: true))
+            {
+                Debug.Assert(errors.Any());
+                throw new SerialisationException(errors, type);
+            }
 
             ilg.Emit(OpCodes.Ret);
 
@@ -69,10 +81,10 @@ namespace Dasher
             return (Action<UnsafePacker, DasherContext, object>)method.CreateDelegate(typeof(Action<UnsafePacker, DasherContext, object>));
         }
 
-        public static bool TryEmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, DasherContext context, LocalBuilder contextLocal, bool isRoot = false)
+        public static bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, DasherContext context, LocalBuilder contextLocal, bool isRoot = false)
         {
             ITypeProvider provider;
-            if (!context.TryGetTypeProvider(value.LocalType, out provider))
+            if (!context.TryGetTypeProvider(value.LocalType, errors, out provider))
                 return false;
 
             if (!isRoot && provider is ComplexTypeProvider)
@@ -104,7 +116,7 @@ namespace Dasher
                     ilg.MarkLabel(nonNull);
                 }
 
-                provider.EmitSerialiseCode(ilg, value, packer, contextLocal, context);
+                provider.TryEmitSerialiseCode(ilg, errors, value, packer, contextLocal, context);
 
                 ilg.MarkLabel(end);
             }

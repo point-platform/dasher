@@ -50,7 +50,7 @@ namespace Dasher.TypeProviders
 
         public bool CanProvide(Type type) => _unpackerTryReadMethodByType.ContainsKey(type);
 
-        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var packerMethod = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {value.LocalType});
 
@@ -60,13 +60,17 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloc, value);
             ilg.Emit(OpCodes.Call, packerMethod);
+
+            return true;
         }
 
-        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             MethodInfo unpackerMethod;
             if (!_unpackerTryReadMethodByType.TryGetValue(value.LocalType, out unpackerMethod))
-                throw new InvalidOperationException("Type not supported. Call CanProvide first.");
+            {
+                errors.Add($"Type {targetType} does not map to a native MsgPack type");
+            }
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloca, value);
@@ -93,6 +97,8 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Throw);
             }
             ilg.MarkLabel(typeGetterSuccess);
+
+            return true;
         }
     }
 }

@@ -68,15 +68,25 @@ namespace Dasher
                 Tuple.Create(type, unexpectedFieldBehaviour),
                 _ => DeserialiserEmitter.Build(type, unexpectedFieldBehaviour, this));
 
-        internal bool TryGetTypeProvider(Type type, out ITypeProvider provider)
+        internal bool TryGetTypeProvider(Type type, ICollection<string> errors, out ITypeProvider provider)
         {
             ITypeProvider found = null;
             foreach (var p in _typeProviders)
             {
                 if (!p.CanProvide(type))
                     continue;
+
+                // Disallow providers to overlap in their capabilities.
+                // This property makes them run indeptendent of execution order.
+                // If we wish to allow overlap (to override behaviour, for example) then we need
+                // to allow control over the order of registered type providers.
                 if (found != null)
-                    throw new Exception($"Multiple type providers exist for type {type}.");
+                {
+                    errors.Add($"Multiple type providers exist for type {type}.");
+                    provider = null;
+                    return false;
+                }
+
                 found = p;
             }
 
@@ -85,6 +95,15 @@ namespace Dasher
 
             provider = found;
             return found != null;
+        }
+
+        internal void ValidateTopLevelType(Type type, ICollection<string> errors)
+        {
+            if (type.IsPrimitive)
+                errors.Add("Top-level primitive types are not supported. An object with properties supports future versioning.");
+
+            if (!_typeProviders.Any(p => p.CanProvide(type)))
+                ComplexTypeProvider.TryValidateComplexType(type, errors);
         }
     }
 }

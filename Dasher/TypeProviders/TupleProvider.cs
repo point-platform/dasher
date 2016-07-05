@@ -33,7 +33,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.IsConstructedGenericType && type.FullName.StartsWith("System.Tuple`");
 
-        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var tupleType = value.LocalType;
             var tupleSize = tupleType.GenericTypeArguments.Length;
@@ -45,21 +45,28 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldc_I4, tupleSize);
             ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackArrayHeader), new[] {typeof(uint)}));
 
+            var success = true;
+
             // write each item's value
             var i = 1;
-            foreach (var type in tupleType.GenericTypeArguments)
+            foreach (var itemType in tupleType.GenericTypeArguments)
             {
                 ilg.Emit(OpCodes.Ldloc, value);
                 ilg.Emit(OpCodes.Call, tupleType.GetProperty($"Item{i}").GetMethod);
-                var local = ilg.DeclareLocal(type);
+                var local = ilg.DeclareLocal(itemType);
                 ilg.Emit(OpCodes.Stloc, local);
-                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, local, packer, context, contextLocal))
-                    throw new Exception($"Unable to serialise tuple item of type {type}");
+                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, local, packer, context, contextLocal))
+                {
+                    errors.Add($"Unable to serialise tuple item of type {itemType}");
+                    success = false;
+                }
                 i++;
             }
+
+            return success;
         }
 
-        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var tupleType = value.LocalType;
             var tupleSize = tupleType.GenericTypeArguments.Length;
@@ -96,14 +103,19 @@ namespace Dasher.TypeProviders
             }
             ilg.MarkLabel(lblSizeOk);
 
+            var success = true;
+
             var locals = new List<LocalBuilder>();
             var i = 1;
             foreach (var type in tupleType.GenericTypeArguments)
             {
                 var local = ilg.DeclareLocal(type);
                 locals.Add(local);
-                if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, $"Item{i}", targetType, local, unpacker, context, contextLocal, unexpectedFieldBehaviour))
-                    throw new DeserialisationException($"Unable to create deserialiser for tuple item of type {type}", targetType);
+                if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, $"Item{i}", targetType, local, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+                {
+                    errors.Add($"Unable to create deserialiser for tuple item type {type}");
+                    success = false;
+                }
                 i++;
             }
 
@@ -113,6 +125,8 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Newobj, tupleType.GetConstructor(tupleType.GenericTypeArguments));
 
             ilg.Emit(OpCodes.Stloc, value);
+
+            return success;
         }
     }
 }

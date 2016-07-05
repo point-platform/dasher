@@ -34,21 +34,21 @@ namespace Dasher.Tests
         public void DisallowsPrimitiveTypes()
         {
             var exception = Assert.Throws<SerialisationException>(() => new Serialiser<int>());
-            Assert.Equal("Cannot serialise primitive types. The root type must contain properties and values to support future versioning.", exception.Message);
+            Assert.Equal("Cannot serialise type \"System.Int32\": Top-level primitive types are not supported. An object with properties supports future versioning.", exception.Message);
         }
 
         [Fact]
         public void DisallowsObject()
         {
             var exception = Assert.Throws<SerialisationException>(() => new Serialiser<object>());
-            Assert.Equal("Unable to serialise type \"System.Object\". It has no dedicated type provider, and has no properties for serialisation as a complex type.", exception.Message);
+            Assert.Equal("Cannot serialise type \"System.Object\": Complex type provider constructor to have at least one argument.", exception.Message);
         }
 
         [Fact]
         public void DisallowsTypeWithNoProperties()
         {
             var exception = Assert.Throws<SerialisationException>(() => new Serialiser<NoProperties>());
-            Assert.Equal("Unable to serialise type \"Dasher.Tests.NoProperties\". It has no dedicated type provider, and has no properties for serialisation as a complex type.", exception.Message);
+            Assert.Equal("Cannot serialise type \"Dasher.Tests.NoProperties\": Complex type provider constructor to have at least one argument.", exception.Message);
         }
 
         [Fact]

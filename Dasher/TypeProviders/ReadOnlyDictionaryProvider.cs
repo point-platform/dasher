@@ -34,7 +34,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>);
 
-        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var dicType = value.LocalType;
             var readOnlyCollectionType = dicType.GetInterfaces().Single(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IReadOnlyCollection<>));
@@ -84,8 +84,11 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Stloc, keyValue);
 
             // pack key
-            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, keyValue, packer, context, contextLocal))
-                throw new Exception($"Cannot serialise IReadOnlyDictionary<> key type {keyType}.");
+            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, keyValue, packer, context, contextLocal))
+            {
+                errors.Add($"Cannot serialise IReadOnlyDictionary<> key type {keyType}.");
+                return false;
+            }
 
             // read value
             ilg.Emit(OpCodes.Ldloca, pairValue);
@@ -93,8 +96,11 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Stloc, valueValue);
 
             // pack value
-            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, valueValue, packer, context, contextLocal))
-                throw new Exception($"Cannot serialise IReadOnlyDictionary<> value type {valueValue}.");
+            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, valueValue, packer, context, contextLocal))
+            {
+                errors.Add($"Cannot serialise IReadOnlyDictionary<> value type {valueType}.");
+                return false;
+            }
 
             // progress enumerator & loop test
             ilg.MarkLabel(loopTest);
@@ -111,9 +117,11 @@ namespace Dasher.TypeProviders
 
             // end try/finally
             ilg.EndExceptionBlock();
+
+            return true;
         }
 
-        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var rodicType = value.LocalType;
             var dicType = typeof(Dictionary<,>).MakeGenericType(rodicType.GenericTypeArguments);
@@ -160,12 +168,18 @@ namespace Dasher.TypeProviders
             // loop body
 
             // read key
-            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, name, targetType, keyValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
-                throw new Exception($"Unable to deserialise values of type {keyType} from MsgPack data.");
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, name, targetType, keyValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+            {
+                errors.Add($"Unable to deserialise IReadOnlyDictionary<> key type {keyType} from MsgPack data.");
+                return false;
+            }
 
             // read value
-            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, name, targetType, valueValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
-                throw new Exception($"Unable to deserialise values of type {valueValue} from MsgPack data.");
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, name, targetType, valueValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+            {
+                errors.Add($"Unable to deserialise IReadOnlyDictionary<> value type {keyType} from MsgPack data.");
+                return false;
+            }
 
             ilg.Emit(OpCodes.Ldloc, dic);
             ilg.Emit(OpCodes.Ldloc, keyValue);
@@ -190,6 +204,8 @@ namespace Dasher.TypeProviders
 
             ilg.Emit(OpCodes.Ldloc, dic);
             ilg.Emit(OpCodes.Stloc, value);
+
+            return true;
         }
     }
 }

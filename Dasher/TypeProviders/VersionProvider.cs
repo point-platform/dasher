@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace Dasher.TypeProviders
@@ -31,16 +32,18 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type == typeof(Version);
 
-        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write the string form
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloc, value);
             ilg.Emit(OpCodes.Call, typeof(Version).GetMethod(nameof(Version.ToString), new Type[0]));
             ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)}));
+
+            return true;
         }
 
-        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // read value as string
             var s = ilg.DeclareLocal(typeof(string));
@@ -63,6 +66,8 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, s);
             ilg.Emit(OpCodes.Newobj, typeof(Version).GetConstructor(new[] {typeof(string)}));
             ilg.Emit(OpCodes.Stloc, value);
+
+            return true;
         }
     }
 }

@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -34,7 +35,7 @@ namespace Dasher.TypeProviders
 
         public bool CanProvide(Type type) => type == typeof(DateTimeOffset);
 
-        public void EmitSerialiseCode(ILGenerator ilg, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // We need to write both the date and the offset
             // - dto.DateTime always has unspecified kind (so we can just use Ticks rather than ToBinary and ignore internal flags)
@@ -65,9 +66,11 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Div);
             ilg.Emit(OpCodes.Conv_I2);
             ilg.Emit(OpCodes.Call, typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] { typeof(short) }));
+
+            return true;
         }
 
-        public void EmitDeserialiseCode(ILGenerator ilg, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // Ensure we have an array of two values
             var arrayLength = ilg.DeclareLocal(typeof(int));
@@ -148,6 +151,8 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Conv_I8);
             ilg.Emit(OpCodes.Call, typeof(TimeSpan).GetMethod(nameof(TimeSpan.FromTicks), BindingFlags.Static | BindingFlags.Public));
             ilg.Emit(OpCodes.Call, typeof(DateTimeOffset).GetConstructor(new[] {typeof(long), typeof(TimeSpan)}));
+
+            return true;
         }
     }
 }

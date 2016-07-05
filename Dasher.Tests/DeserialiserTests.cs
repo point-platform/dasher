@@ -51,7 +51,7 @@ namespace Dasher.Tests
         public void DisallowsPrimitiveTypes()
         {
             var exception = Assert.Throws<DeserialisationException>(() => new Deserialiser<int>());
-            Assert.Equal("Cannot deserialise primitive type \"Int32\". The root type must contain properties and values to support future versioning.", exception.Message);
+            Assert.Equal("Cannot deserialise type \"System.Int32\": Top-level primitive types are not supported. An object with properties supports future versioning.", exception.Message);
         }
 
         [Fact]
@@ -276,7 +276,7 @@ namespace Dasher.Tests
         {
             var ex = Assert.Throws<DeserialisationException>(
                 () => new Deserialiser<MultipleConstructors>());
-            Assert.Equal($"Type \"{nameof(MultipleConstructors)}\" must have a single public constructor.", ex.Message);
+            Assert.Equal($"Cannot deserialise type \"{typeof(MultipleConstructors).FullName}\": Complex type provider requires a 1 public constructor, not 2.", ex.Message);
         }
 
         [Fact]
@@ -284,7 +284,7 @@ namespace Dasher.Tests
         {
             var ex = Assert.Throws<DeserialisationException>(
                 () => new Deserialiser<NoPublicConstructors>());
-            Assert.Equal($"Type \"{nameof(NoPublicConstructors)}\" must have a single public constructor.", ex.Message);
+            Assert.Equal($"Cannot deserialise type \"{typeof(NoPublicConstructors).FullName}\": Complex type provider requires a public constructor.", ex.Message);
         }
 
         [Fact]
