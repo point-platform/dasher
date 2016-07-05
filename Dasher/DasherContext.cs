@@ -33,6 +33,23 @@ namespace Dasher
     public sealed class DasherContext
     {
         private static readonly ComplexTypeProvider _complexTypeProvider = new ComplexTypeProvider();
+        private static readonly IReadOnlyList<ITypeProvider> _defaultTypeProviders = new ITypeProvider[]
+        {
+            new MsgPackTypeProvider(),
+            new DecimalProvider(),
+            new DateTimeProvider(),
+            new DateTimeOffsetProvider(),
+            new TimeSpanProvider(),
+            new IntPtrProvider(),
+            new GuidProvider(),
+            new EnumProvider(),
+            new VersionProvider(),
+            new ReadOnlyListProvider(),
+            new ReadOnlyDictionaryProvider(),
+            new NullableValueProvider(),
+            new TupleProvider(),
+            new UnionProvider()
+        };
 
         private readonly ConcurrentDictionary<Type, Action<UnsafePacker, DasherContext, object>> _serialiserByType = new ConcurrentDictionary<Type, Action<UnsafePacker, DasherContext, object>>();
         private readonly ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>> _deserialiserByType = new ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>>();
@@ -40,28 +57,7 @@ namespace Dasher
 
         public DasherContext(IEnumerable<ITypeProvider> typeProviders = null)
         {
-            var defaults = new ITypeProvider[]
-            {
-                new MsgPackTypeProvider(),
-                new DecimalProvider(),
-                new DateTimeProvider(),
-                new DateTimeOffsetProvider(),
-                new TimeSpanProvider(),
-                new IntPtrProvider(),
-                new GuidProvider(),
-                new EnumProvider(),
-                new VersionProvider(),
-                new ReadOnlyListProvider(),
-                new ReadOnlyDictionaryProvider(),
-                new NullableValueProvider(),
-                new TupleProvider(),
-                new UnionProvider()
-            };
-
-            if (typeProviders == null)
-                _typeProviders = defaults;
-            else
-                _typeProviders = typeProviders.Concat(defaults).ToList();
+            _typeProviders = typeProviders?.Concat(_defaultTypeProviders).ToList() ?? _defaultTypeProviders;
         }
 
         internal Action<UnsafePacker, DasherContext, object> GetOrCreateSerialiser(Type type)
