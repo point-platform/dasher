@@ -51,7 +51,7 @@ namespace Dasher
             #region Initialise code gen
 
             var method = new DynamicMethod(
-                $"Deserialiser{type.Name}",
+                $"Generated{type.Name}Deserialiser",
                 returnType: typeof(object),
                 parameterTypes: new[] {typeof(Unpacker), typeof(DasherContext)},
                 restrictedSkipVisibility: true);

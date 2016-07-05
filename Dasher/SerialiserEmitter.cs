@@ -37,7 +37,7 @@ namespace Dasher
                 throw new SerialisationException("Cannot serialise primitive types. The root type must contain properties and values to support future versioning.", type);
 
             var method = new DynamicMethod(
-                $"Serialiser{type.Name}",
+                $"Generated{type.Name}Serialiser",
                 returnType: null,
                 parameterTypes: new[] {typeof(UnsafePacker), typeof(DasherContext), typeof(object)},
                 restrictedSkipVisibility: true);
