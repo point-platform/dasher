@@ -64,7 +64,7 @@ namespace Dasher.TypeProviders
             return constructors.Length == 1 && constructors[0].GetParameters().Length != 0;
         }
 
-        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // treat as complex object and recur
             var props = value.LocalType
@@ -97,13 +97,13 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Call, prop.GetMethod);
                 ilg.Emit(OpCodes.Stloc, propValue);
 
-                success &= SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, propValue, packer, context, contextLocal);
+                success &= SerialiserEmitter.TryEmitSerialiseCode(ilg, throwBlocks, errors, propValue, packer, context, contextLocal);
             }
 
             return success;
         }
 
-        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             if (!TryValidateComplexType(targetType, errors))
                 return false;
@@ -135,8 +135,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadMapLength);
 
                 // If false was returned, then the next MsgPack value is not a map
-                var lblHaveMapSize = ilg.DefineLabel();
-                ilg.Emit(OpCodes.Brtrue, lblHaveMapSize);
+                throwBlocks.ThrowIfFalse(() =>
                 {
                     // Check if it's a null
                     ilg.Emit(OpCodes.Ldloc, unpacker);
@@ -158,8 +157,7 @@ namespace Dasher.TypeProviders
                     ilg.MarkLabel(lblNotEmpty);
                     ilg.Emit(OpCodes.Ldstr, "Message must be encoded as a MsgPack map");
                     throwException();
-                }
-                ilg.MarkLabel(lblHaveMapSize);
+                });
             }
 
             #endregion
@@ -194,6 +192,7 @@ namespace Dasher.TypeProviders
                     }
                     else
                     {
+                        // TODO if DefaultValue == default(T), do nothing?
                         ilg.LoadConstant(parameter.DefaultValue);
                         ilg.Emit(OpCodes.Stloc, valueLocals[i]);
                     }
@@ -246,13 +245,11 @@ namespace Dasher.TypeProviders
                     ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadString);
 
                     // If false was returned, the data stream ended
-                    var ifLabel = ilg.DefineLabel();
-                    ilg.Emit(OpCodes.Brtrue, ifLabel);
+                    throwBlocks.ThrowIfFalse(() =>
                     {
                         ilg.Emit(OpCodes.Ldstr, "Data stream ended.");
                         throwException();
-                    }
-                    ilg.MarkLabel(ifLabel);
+                    });
                 }
 
                 #endregion
@@ -286,17 +283,14 @@ namespace Dasher.TypeProviders
                         ilg.Emit(OpCodes.Ldloc, valueSetLocals[parameterIndex]);
                         ilg.Emit(OpCodes.Ldc_I4_1);
                         ilg.Emit(OpCodes.And);
-                        var notSeenLabel = ilg.DefineLabel();
-                        ilg.Emit(OpCodes.Brfalse, notSeenLabel);
+                        throwBlocks.ThrowIfTrue(() =>
                         {
                             ilg.Emit(OpCodes.Ldstr, "Encountered duplicate field \"{0}\" for type \"{1}\".");
                             ilg.Emit(OpCodes.Ldloc, key);
                             ilg.Emit(OpCodes.Ldstr, targetType.Name);
                             ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object);
                             throwException();
-                        }
-
-                        ilg.MarkLabel(notSeenLabel);
+                        });
 
                         // Record the fact that we've seen this property
                         ilg.Emit(OpCodes.Ldloc, valueSetLocals[parameterIndex]);
@@ -305,7 +299,7 @@ namespace Dasher.TypeProviders
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
 
-                    if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, parameters[parameterIndex].Name, targetType, valueLocals[parameterIndex], unpacker, context, contextLocal, unexpectedFieldBehaviour))
+                    if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, throwBlocks, errors, parameters[parameterIndex].Name, targetType, valueLocals[parameterIndex], unpacker, context, contextLocal, unexpectedFieldBehaviour))
                         throw new Exception($"Unable to deserialise values of type {valueLocals[parameterIndex].LocalType} from MsgPack data.");
 
                     ilg.Emit(OpCodes.Br, lblEndIfChain);
@@ -319,21 +313,24 @@ namespace Dasher.TypeProviders
                 // If we got here then the property was not recognised. Either throw or ignore, depending upon configuration.
                 if (unexpectedFieldBehaviour == UnexpectedFieldBehaviour.Throw)
                 {
-                    var format = ilg.DeclareLocal(typeof(Format));
-                    ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Ldloca, format);
-                    ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekFormat);
-                    // Drop the return value: if false, 'format' will be 'Unknown' which is fine.
-                    ilg.Emit(OpCodes.Pop);
+                    throwBlocks.Throw(() =>
+                    {
+                        var format = ilg.DeclareLocal(typeof(Format));
+                        ilg.Emit(OpCodes.Ldloc, unpacker);
+                        ilg.Emit(OpCodes.Ldloca, format);
+                        ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekFormat);
+                        // Drop the return value: if false, 'format' will be 'Unknown' which is fine.
+                        ilg.Emit(OpCodes.Pop);
 
-                    ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\" of MsgPack format \"{1}\" for CLR type \"{2}\".");
-                    ilg.Emit(OpCodes.Ldloc, key);
-                    ilg.Emit(OpCodes.Ldloc, format);
-                    ilg.Emit(OpCodes.Box, typeof(Format));
-                    ilg.Emit(OpCodes.Call, Methods.Format_ToString);
-                    ilg.Emit(OpCodes.Ldstr, targetType.Name);
-                    ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object_Object);
-                    throwException();
+                        ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\" of MsgPack format \"{1}\" for CLR type \"{2}\".");
+                        ilg.Emit(OpCodes.Ldloc, key);
+                        ilg.Emit(OpCodes.Ldloc, format);
+                        ilg.Emit(OpCodes.Box, typeof(Format));
+                        ilg.Emit(OpCodes.Call, Methods.Format_ToString);
+                        ilg.Emit(OpCodes.Ldstr, targetType.Name);
+                        ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object_Object);
+                        throwException();
+                    });
                 }
                 else
                 {
@@ -370,9 +367,6 @@ namespace Dasher.TypeProviders
 
             #region Verify all required values either specified or have a default value
 
-            var lblValuesMissing = ilg.DefineLabel();
-            var lblValuesOk = ilg.DefineLabel();
-
             var paramName = ilg.DeclareLocal(typeof(string));
             for (var i = 0; i < valueSetLocals.Length; i++)
             {
@@ -385,22 +379,17 @@ namespace Dasher.TypeProviders
                 // exists for that parameter, and we cannot continue.
                 ilg.Emit(OpCodes.Ldloc, valueSetLocals[i]);
                 ilg.Emit(OpCodes.Ldc_I4_0);
-                ilg.Emit(OpCodes.Beq, lblValuesMissing);
+                throwBlocks.ThrowIfEqual(() =>
+                {
+                    ilg.Emit(OpCodes.Ldstr, "Missing required field \"{0}\" for type \"{1}\".");
+                    ilg.Emit(OpCodes.Ldloc, paramName);
+                    ilg.Emit(OpCodes.Ldstr, targetType.Name);
+                    ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object);
+                    throwException();
+                });
             }
 
             // If we got here, all value exist and we're good to continue.
-            // Jump to the next section.
-            ilg.Emit(OpCodes.Br, lblValuesOk);
-            {
-                // If we got here then one or more values is missing.
-                ilg.MarkLabel(lblValuesMissing);
-                ilg.Emit(OpCodes.Ldstr, "Missing required field \"{0}\" for type \"{1}\".");
-                ilg.Emit(OpCodes.Ldloc, paramName);
-                ilg.Emit(OpCodes.Ldstr, targetType.Name);
-                ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object);
-                throwException();
-            }
-            ilg.MarkLabel(lblValuesOk);
 
             #endregion
 

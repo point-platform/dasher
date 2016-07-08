@@ -34,7 +34,7 @@ namespace Dasher.TypeProviders
 
         public bool CanProvide(Type type) => type == typeof(DateTimeOffset);
 
-        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // We need to write both the date and the offset
             // - dto.DateTime always has unspecified kind (so we can just use Ticks rather than ToBinary and ignore internal flags)
@@ -69,7 +69,7 @@ namespace Dasher.TypeProviders
             return true;
         }
 
-        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // Ensure we have an array of two values
             var arrayLength = ilg.DeclareLocal(typeof(int));
@@ -79,29 +79,24 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadArrayLength);
 
             // If the unpacker method failed (returned false), throw
-            var lbl1 = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl1);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, $"Expecting array header for DateTimeOffset property {name}");
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl1);
+            });
 
             ilg.Emit(OpCodes.Ldloc, arrayLength);
             ilg.Emit(OpCodes.Ldc_I4_2);
-            ilg.Emit(OpCodes.Ceq);
 
-            var lbl2 = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl2);
+            throwBlocks.ThrowIfNotEqual(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, $"Expecting array to contain two items for DateTimeOffset property {name}");
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl2);
+            });
 
             // Read ticks
             var ticks = ilg.DeclareLocal(typeof(long));
@@ -111,15 +106,13 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadInt64);
 
             // If the unpacker method failed (returned false), throw
-            var lbl3 = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl3);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, $"Expecting Int64 value for ticks component of DateTimeOffset property {name}");
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl3);
+            });
 
             // Read offset
             var minutes = ilg.DeclareLocal(typeof(short));
@@ -129,15 +122,13 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadInt16);
 
             // If the unpacker method failed (returned false), throw
-            var lbl4 = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl4);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, $"Expecting Int16 value for offset component of DateTimeOffset property {name}");
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl4);
+            });
 
             // Compose the final DateTimeOffset
             ilg.Emit(OpCodes.Ldloca, value);

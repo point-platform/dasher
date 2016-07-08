@@ -32,7 +32,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type == typeof(DateTime);
 
-        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // Write the binary form of the value as long
             ilg.Emit(OpCodes.Ldloc, packer);
@@ -43,7 +43,7 @@ namespace Dasher.TypeProviders
             return true;
         }
 
-        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // Read value as a long
             var binary = ilg.DeclareLocal(typeof(long));
@@ -53,15 +53,13 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadInt64);
 
             // If the unpacker method failed (returned false), throw
-            var lbl = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, $"Expecting Int64 value for DateTime property {name}");
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl);
+            });
 
             ilg.Emit(OpCodes.Ldloc, binary);
             ilg.Emit(OpCodes.Call, Methods.DateTime_FromBinary);

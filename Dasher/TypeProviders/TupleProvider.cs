@@ -33,7 +33,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.IsConstructedGenericType && type.FullName.StartsWith("System.Tuple`");
 
-        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var tupleType = value.LocalType;
             var tupleSize = tupleType.GenericTypeArguments.Length;
@@ -55,7 +55,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Call, tupleType.GetProperty($"Item{i}").GetMethod);
                 var local = ilg.DeclareLocal(itemType);
                 ilg.Emit(OpCodes.Stloc, local);
-                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, local, packer, context, contextLocal))
+                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, throwBlocks, errors, local, packer, context, contextLocal))
                 {
                     errors.Add($"Unable to serialise tuple item of type {itemType}");
                     success = false;
@@ -66,7 +66,7 @@ namespace Dasher.TypeProviders
             return success;
         }
 
-        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var tupleType = value.LocalType;
             var tupleSize = tupleType.GenericTypeArguments.Length;
@@ -80,28 +80,25 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadArrayLength);
 
             // verify read correctly
-            var lblReadArrayOk = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lblReadArrayOk);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, "Expecting tuple data to be encoded as array");
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lblReadArrayOk);
+            });
 
             // Ensure the array has the expected number of items
             ilg.Emit(OpCodes.Ldloc, count);
             ilg.Emit(OpCodes.Ldc_I4, tupleSize);
-            var lblSizeOk = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Beq, lblSizeOk);
+
+            throwBlocks.ThrowIfNotEqual(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, $"Received array must have length {tupleSize} for type {tupleType.FullName}");
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lblSizeOk);
+            });
 
             var success = true;
 
@@ -111,7 +108,7 @@ namespace Dasher.TypeProviders
             {
                 var local = ilg.DeclareLocal(type);
                 locals.Add(local);
-                if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, $"Item{i}", targetType, local, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+                if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, throwBlocks, errors, $"Item{i}", targetType, local, unpacker, context, contextLocal, unexpectedFieldBehaviour))
                 {
                     errors.Add($"Unable to create deserialiser for tuple item type {type}");
                     success = false;

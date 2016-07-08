@@ -65,7 +65,9 @@ namespace Dasher
 
             var valueLocal = ilg.DeclareLocal(type);
 
-            if (!TryEmitDeserialiseCode(ilg, errors, "<root>", type, valueLocal, unpacker, context, contextLocal, unexpectedFieldBehaviour, isRoot: true))
+            var throwBlocks = new ThrowBlockGatherer(ilg);
+
+            if (!TryEmitDeserialiseCode(ilg, throwBlocks, errors, "<root>", type, valueLocal, unpacker, context, contextLocal, unexpectedFieldBehaviour, isRoot: true))
             {
                 Debug.Assert(errors.Any());
                 throw new DeserialisationException(errors, type);
@@ -79,11 +81,14 @@ namespace Dasher
             // Return the newly constructed object!
             ilg.Emit(OpCodes.Ret);
 
+            // Write all the exception handling blocks out of line
+            throwBlocks.Flush();
+
             // Return a delegate that performs the above operations
             return (Func<Unpacker, DasherContext, object>)method.CreateDelegate(typeof(Func<Unpacker, DasherContext, object>));
         }
 
-        public static bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, DasherContext context, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour, bool isRoot = false)
+        public static bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, DasherContext context, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour, bool isRoot = false)
         {
             ITypeProvider provider;
             if (!context.TryGetTypeProvider(value.LocalType, errors, out provider))
@@ -120,7 +125,7 @@ namespace Dasher
                     ilg.MarkLabel(nonNullLabel);
                 }
 
-                if (!provider.TryEmitDeserialiseCode(ilg, errors, name, targetType, value, unpacker, contextLocal, context, unexpectedFieldBehaviour))
+                if (!provider.TryEmitDeserialiseCode(ilg, throwBlocks, errors, name, targetType, value, unpacker, contextLocal, context, unexpectedFieldBehaviour))
                     return false;
 
                 ilg.MarkLabel(end);

@@ -33,7 +33,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>);
 
-        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var dicType = value.LocalType;
             var readOnlyCollectionType = dicType.GetInterfaces().Single(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IReadOnlyCollection<>));
@@ -83,7 +83,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Stloc, keyValue);
 
             // pack key
-            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, keyValue, packer, context, contextLocal))
+            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, throwBlocks, errors, keyValue, packer, context, contextLocal))
             {
                 errors.Add($"Cannot serialise IReadOnlyDictionary<> key type {keyType}.");
                 return false;
@@ -95,7 +95,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Stloc, valueValue);
 
             // pack value
-            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, valueValue, packer, context, contextLocal))
+            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, throwBlocks, errors, valueValue, packer, context, contextLocal))
             {
                 errors.Add($"Cannot serialise IReadOnlyDictionary<> value type {valueType}.");
                 return false;
@@ -120,7 +120,7 @@ namespace Dasher.TypeProviders
             return true;
         }
 
-        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var rodicType = value.LocalType;
             var dicType = typeof(Dictionary<,>).MakeGenericType(rodicType.GenericTypeArguments);
@@ -134,15 +134,13 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadMapLength);
 
             // verify read correctly
-            var lbl1 = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl1);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, "Expecting collection data to be encoded a map");
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl1);
+            });
 
             var keyValue = ilg.DeclareLocal(keyType);
             var valueValue = ilg.DeclareLocal(valueType);
@@ -167,14 +165,14 @@ namespace Dasher.TypeProviders
             // loop body
 
             // read key
-            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, name, targetType, keyValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, throwBlocks, errors, name, targetType, keyValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
             {
                 errors.Add($"Unable to deserialise IReadOnlyDictionary<> key type {keyType} from MsgPack data.");
                 return false;
             }
 
             // read value
-            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, name, targetType, valueValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, throwBlocks, errors, name, targetType, valueValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
             {
                 errors.Add($"Unable to deserialise IReadOnlyDictionary<> value type {keyType} from MsgPack data.");
                 return false;

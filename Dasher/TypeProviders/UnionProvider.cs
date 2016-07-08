@@ -40,7 +40,7 @@ namespace Dasher.TypeProviders
                type.GetGenericTypeDefinition().Namespace == nameof(Dasher) &&
                type.GetGenericTypeDefinition().Name.StartsWith($"{nameof(Union<int, int>)}`");
 
-        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write header
             ilg.Emit(OpCodes.Ldloc, packer);
@@ -84,7 +84,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Stloc, valueObj);
 
                 // write value
-                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, valueObj, packer, context, contextLocal))
+                if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, throwBlocks, errors, valueObj, packer, context, contextLocal))
                 {
                     errors.Add($"Unable to serialise union member type {type}");
                     success = false;
@@ -98,16 +98,19 @@ namespace Dasher.TypeProviders
 
             ilg.MarkLabel(labelNextType);
 
-            ilg.Emit(OpCodes.Ldstr, "No match on union type");
-            ilg.Emit(OpCodes.Newobj, Methods.Exception_Ctor_String);
-            ilg.Emit(OpCodes.Throw);
+            throwBlocks.Throw(() =>
+            {
+                ilg.Emit(OpCodes.Ldstr, "No match on union type");
+                ilg.Emit(OpCodes.Newobj, Methods.Exception_Ctor_String);
+                ilg.Emit(OpCodes.Throw);
+            });
 
             ilg.MarkLabel(doneLabel);
 
             return success;
         }
 
-        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // read the array length
             var count = ilg.DeclareLocal(typeof(int));
@@ -115,8 +118,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloca, count);
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadArrayLength);
 
-            var lbl0 = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl0);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, "Union values must be encoded as an array for property \"{0}\" of type \"{1}\"");
                 ilg.Emit(OpCodes.Ldstr, name);
@@ -125,16 +127,13 @@ namespace Dasher.TypeProviders
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl0);
+            });
 
             // ensure we have two items in the array
-            var readValueLabel = ilg.DefineLabel();
             ilg.Emit(OpCodes.Ldloc, count);
             ilg.Emit(OpCodes.Ldc_I4_2);
-            ilg.Emit(OpCodes.Beq, readValueLabel);
+            throwBlocks.ThrowIfNotEqual(() =>
             {
-                // throw due to incorrect number of items in Union array
                 ilg.Emit(OpCodes.Ldstr, "Union array should have 2 elements (not {0}) for property \"{1}\" of type \"{2}\"");
                 ilg.Emit(OpCodes.Ldloc, count);
                 ilg.Emit(OpCodes.Box, typeof(int));
@@ -144,8 +143,7 @@ namespace Dasher.TypeProviders
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(readValueLabel);
+            });
 
             // read the serialised type name
             var typeName = ilg.DeclareLocal(typeof(string));
@@ -153,8 +151,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloca, typeName);
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadString);
 
-            var lbl1 = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl1);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, "Unable to read union type name for property \"{0}\" of type \"{1}\"");
                 ilg.Emit(OpCodes.Ldstr, name);
@@ -163,8 +160,7 @@ namespace Dasher.TypeProviders
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl1);
+            });
 
             var success = true;
 
@@ -185,7 +181,7 @@ namespace Dasher.TypeProviders
                 // we have a match
                 // read the value
                 var readValue = ilg.DeclareLocal(type);
-                if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, name, targetType, readValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+                if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, throwBlocks, errors, name, targetType, readValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
                 {
                     errors.Add($"Unable to deserialise union member type {type}");
                     success = false;
@@ -205,12 +201,15 @@ namespace Dasher.TypeProviders
                 labelNextType = ilg.DefineLabel();
             }
 
+            // If we exhaust the loop, throws
             ilg.MarkLabel(labelNextType);
-
-            // TODO include received type name in error message and some more general info
-            ilg.Emit(OpCodes.Ldstr, "No match on union type");
-            ilg.Emit(OpCodes.Newobj, Methods.Exception_Ctor_String);
-            ilg.Emit(OpCodes.Throw);
+            throwBlocks.Throw(() =>
+            {
+                // TODO include received type name in error message and some more general info
+                ilg.Emit(OpCodes.Ldstr, "No match on union type");
+                ilg.Emit(OpCodes.Newobj, Methods.Exception_Ctor_String);
+                ilg.Emit(OpCodes.Throw);
+            });
 
             ilg.MarkLabel(doneLabel);
 

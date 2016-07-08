@@ -35,7 +35,7 @@ namespace Dasher.TypeProviders
 
         public static bool IsNullableValueType(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
 
-        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var type = value.LocalType;
             var valueType = type.GetGenericArguments().Single();
@@ -62,7 +62,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, type.GetProperty(nameof(Nullable<int>.Value)).GetMethod);
             ilg.Emit(OpCodes.Stloc, nonNullValue);
 
-            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, nonNullValue, packer, context, contextLocal))
+            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, throwBlocks, errors, nonNullValue, packer, context, contextLocal))
                 return false;
 
             ilg.MarkLabel(lblExit);
@@ -70,7 +70,7 @@ namespace Dasher.TypeProviders
             return true;
         }
 
-        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var nullableType = value.LocalType;
             var valueType = nullableType.GetGenericArguments().Single();
@@ -94,7 +94,7 @@ namespace Dasher.TypeProviders
             // non-null
             var nonNullValue = ilg.DeclareLocal(valueType);
 
-            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, name, targetType, nonNullValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, throwBlocks, errors, name, targetType, nonNullValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))
             {
                 errors.Add($"Unable to deserialise values of type Nullable<{valueType}> from MsgPack data.");
                 return false;

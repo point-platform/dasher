@@ -43,6 +43,7 @@
     <Compile Include="MsgPack\Format.cs" />
     <Compile Include="ILGeneratorExtensions.cs" />
     <Compile Include="SerialiserEmitter.cs" />
+    <Compile Include="ThrowBlockGatherer.cs" />
     <Compile Include="TypeProviders\ComplexTypeProvider.cs" />
     <Compile Include="TypeProviders\DateTimeOffsetProvider.cs" />
     <Compile Include="TypeProviders\DateTimeProvider.cs" />

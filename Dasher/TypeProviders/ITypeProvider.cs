@@ -34,6 +34,7 @@ namespace Dasher.TypeProviders
 
         bool TryEmitSerialiseCode(
             ILGenerator ilg,
+            ThrowBlockGatherer throwBlocks,
             ICollection<string> errors,
             LocalBuilder value,
             LocalBuilder packer,
@@ -42,6 +43,7 @@ namespace Dasher.TypeProviders
 
         bool TryEmitDeserialiseCode(
             ILGenerator ilg,
+            ThrowBlockGatherer throwBlocks,
             ICollection<string> errors,
             string name,
             Type targetType,

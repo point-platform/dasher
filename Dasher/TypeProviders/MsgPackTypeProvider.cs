@@ -50,7 +50,7 @@ namespace Dasher.TypeProviders
 
         public bool CanProvide(Type type) => _unpackerTryReadMethodByType.ContainsKey(type);
 
-        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var packerMethod = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {value.LocalType});
 
@@ -64,7 +64,7 @@ namespace Dasher.TypeProviders
             return true;
         }
 
-        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             MethodInfo unpackerMethod;
             if (!_unpackerTryReadMethodByType.TryGetValue(value.LocalType, out unpackerMethod))
@@ -78,8 +78,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, unpackerMethod);
 
             // If the unpacker method failed (returned false), throw
-            var typeGetterSuccess = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, typeGetterSuccess);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 var format = ilg.DeclareLocal(typeof(Format));
                 ilg.Emit(OpCodes.Ldarg_0);
@@ -96,8 +95,7 @@ namespace Dasher.TypeProviders
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(typeGetterSuccess);
+            });
 
             return true;
         }

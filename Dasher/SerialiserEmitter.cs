@@ -68,19 +68,25 @@ namespace Dasher
             ilg.Emit(type.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
             ilg.Emit(OpCodes.Stloc, value);
 
-            if (!TryEmitSerialiseCode(ilg, errors, value, packer, context, contextLocal, isRoot: true))
+            var throwBlocks = new ThrowBlockGatherer(ilg);
+
+            if (!TryEmitSerialiseCode(ilg, throwBlocks, errors, value, packer, context, contextLocal, isRoot: true))
             {
                 Debug.Assert(errors.Any());
                 throw new SerialisationException(errors, type);
             }
 
+            // Return the newly constructed object!
             ilg.Emit(OpCodes.Ret);
+
+            // Write all the exception handling blocks out of line
+            throwBlocks.Flush();
 
             // Return a delegate that performs the above operations
             return (Action<UnsafePacker, DasherContext, object>)method.CreateDelegate(typeof(Action<UnsafePacker, DasherContext, object>));
         }
 
-        public static bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, DasherContext context, LocalBuilder contextLocal, bool isRoot = false)
+        public static bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, DasherContext context, LocalBuilder contextLocal, bool isRoot = false)
         {
             ITypeProvider provider;
             if (!context.TryGetTypeProvider(value.LocalType, errors, out provider))
@@ -115,7 +121,7 @@ namespace Dasher
                     ilg.MarkLabel(nonNull);
                 }
 
-                provider.TryEmitSerialiseCode(ilg, errors, value, packer, contextLocal, context);
+                provider.TryEmitSerialiseCode(ilg, throwBlocks, errors, value, packer, contextLocal, context);
 
                 ilg.MarkLabel(end);
             }

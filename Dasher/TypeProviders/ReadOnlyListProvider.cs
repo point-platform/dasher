@@ -34,7 +34,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>);
 
-        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var type = value.LocalType;
             var elementType = type.GetGenericArguments().Single();
@@ -68,7 +68,7 @@ namespace Dasher.TypeProviders
             var elementValue = ilg.DeclareLocal(elementType);
             ilg.Emit(OpCodes.Stloc, elementValue);
 
-            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, elementValue, packer, context, contextLocal))
+            if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, throwBlocks, errors, elementValue, packer, context, contextLocal))
             {
                 errors.Add($"Cannot serialise IReadOnlyList<> element type {elementType}.");
                 return false;
@@ -90,7 +90,7 @@ namespace Dasher.TypeProviders
             return true;
         }
 
-        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var elementType = value.LocalType.GetGenericArguments().Single();
 
@@ -101,15 +101,13 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadArrayLength);
 
             // verify read correctly
-            var lbl1 = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl1);
+            throwBlocks.ThrowIfFalse(() =>
             {
-                ilg.Emit(OpCodes.Ldstr, "Expecting collection data to be encoded as array");
+                ilg.Emit(OpCodes.Ldstr, "Expecting collection data to be encoded as an array");
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl1);
+            });
 
             // create an array to store values
             ilg.Emit(OpCodes.Ldloc, count);
@@ -133,7 +131,7 @@ namespace Dasher.TypeProviders
             // loop body
             var element = ilg.DeclareLocal(elementType);
 
-            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, errors, name, targetType, element, unpacker, context, contextLocal, unexpectedFieldBehaviour))
+            if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, throwBlocks, errors, name, targetType, element, unpacker, context, contextLocal, unexpectedFieldBehaviour))
             {
                 errors.Add($"Unable to deserialise IReadOnlyList<> element type {elementType} from MsgPack data.");
                 return false;

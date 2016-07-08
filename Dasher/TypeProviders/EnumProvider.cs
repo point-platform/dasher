@@ -32,7 +32,7 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.IsEnum;
 
-        public bool TryEmitSerialiseCode(ILGenerator ilg, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
+        public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write the string form of the value
             ilg.Emit(OpCodes.Ldloc, packer);
@@ -44,7 +44,7 @@ namespace Dasher.TypeProviders
             return true;
         }
 
-        public bool TryEmitDeserialiseCode(ILGenerator ilg, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
+        public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             // Read value as a string
             var s = ilg.DeclareLocal(typeof(string));
@@ -53,8 +53,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloca, s);
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadString);
 
-            var lbl1 = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl1);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, "Unable to read string value for enum property \"{0}\" of type \"{1}\"");
                 ilg.Emit(OpCodes.Ldstr, name);
@@ -63,16 +62,14 @@ namespace Dasher.TypeProviders
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl1);
+            });
 
             ilg.Emit(OpCodes.Ldloc, s);
             ilg.Emit(OpCodes.Ldc_I4_1);
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Call, Methods.Enum_TryParse_OpenGeneric.MakeGenericMethod(value.LocalType));
 
-            var lbl2 = ilg.DefineLabel();
-            ilg.Emit(OpCodes.Brtrue, lbl2);
+            throwBlocks.ThrowIfFalse(() =>
             {
                 ilg.Emit(OpCodes.Ldstr, "Unable to parse value \"{0}\" as a member of enum type \"{1}\"");
                 ilg.Emit(OpCodes.Ldloc, s);
@@ -81,8 +78,7 @@ namespace Dasher.TypeProviders
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            }
-            ilg.MarkLabel(lbl2);
+            });
 
             return true;
         }
