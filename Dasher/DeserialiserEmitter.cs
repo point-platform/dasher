@@ -111,7 +111,7 @@ namespace Dasher
                     var nonNullLabel = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadNull);
-                    ilg.Emit(OpCodes.Brfalse, nonNullLabel);
+                    ilg.Emit(OpCodes.Brfalse_S, nonNullLabel);
                     {
                         ilg.Emit(OpCodes.Ldnull);
                         ilg.Emit(OpCodes.Stloc, value);

@@ -142,7 +142,7 @@ namespace Dasher.TypeProviders
                     ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadNull);
                     var lblNotNull = ilg.DefineLabel();
-                    ilg.Emit(OpCodes.Brfalse, lblNotNull);
+                    ilg.Emit(OpCodes.Brfalse_S, lblNotNull);
                     {
                         // value is null
                         ilg.Emit(OpCodes.Ldnull);
@@ -152,7 +152,7 @@ namespace Dasher.TypeProviders
                     ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Call, Methods.Unpacker_HasStreamEnded_Get);
                     var lblNotEmpty = ilg.DefineLabel();
-                    ilg.Emit(OpCodes.Brfalse, lblNotEmpty);
+                    ilg.Emit(OpCodes.Brfalse_S, lblNotEmpty);
                     ilg.Emit(OpCodes.Ldstr, "Data stream empty");
                     throwException();
                     ilg.MarkLabel(lblNotEmpty);
@@ -359,7 +359,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Ldloc, mapSize);
                 ilg.Emit(OpCodes.Conv_I8, mapSize);
                 // If the loop is done, jump to the first instruction after the loop
-                ilg.Emit(OpCodes.Beq, lblLoopExit);
+                ilg.Emit(OpCodes.Beq_S, lblLoopExit);
 
                 // Jump back to the start of the loop
                 ilg.Emit(OpCodes.Br, lblLoopStart);

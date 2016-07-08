@@ -43,10 +43,18 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Call, type.GetProperty(nameof(Nullable<int>.HasValue)).GetMethod);
 
-            var lblNull = ilg.DefineLabel();
+            var lblNonNull = ilg.DefineLabel();
             var lblExit = ilg.DefineLabel();
 
-            ilg.Emit(OpCodes.Brfalse, lblNull);
+            ilg.Emit(OpCodes.Brtrue_S, lblNonNull);
+
+            // value is null
+            ilg.Emit(OpCodes.Ldloc, packer);
+            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackNull);
+
+            ilg.Emit(OpCodes.Br, lblExit);
+
+            ilg.MarkLabel(lblNonNull);
 
             // has a value to serialise
             var nonNullValue = ilg.DeclareLocal(valueType);
@@ -56,14 +64,6 @@ namespace Dasher.TypeProviders
 
             if (!SerialiserEmitter.TryEmitSerialiseCode(ilg, errors, nonNullValue, packer, context, contextLocal))
                 return false;
-
-            ilg.Emit(OpCodes.Br, lblExit);
-
-            ilg.MarkLabel(lblNull);
-
-            // value is null
-            ilg.Emit(OpCodes.Ldloc, packer);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackNull);
 
             ilg.MarkLabel(lblExit);
 
@@ -75,13 +75,21 @@ namespace Dasher.TypeProviders
             var nullableType = value.LocalType;
             var valueType = nullableType.GetGenericArguments().Single();
 
-            var lblNull = ilg.DefineLabel();
+            var lblNonNull = ilg.DefineLabel();
             var lblExit = ilg.DefineLabel();
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadNull);
 
-            ilg.Emit(OpCodes.Brtrue, lblNull);
+            ilg.Emit(OpCodes.Brfalse_S, lblNonNull);
+
+            // null
+            ilg.Emit(OpCodes.Ldloca, value);
+            ilg.Emit(OpCodes.Initobj, nullableType);
+
+            ilg.Emit(OpCodes.Br, lblExit);
+
+            ilg.MarkLabel(lblNonNull);
 
             // non-null
             var nonNullValue = ilg.DeclareLocal(valueType);
@@ -95,13 +103,6 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Ldloc, nonNullValue);
             ilg.Emit(OpCodes.Call, nullableType.GetConstructor(new[] {valueType}));
-
-            ilg.Emit(OpCodes.Br, lblExit);
-            ilg.MarkLabel(lblNull);
-
-            // null
-            ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Initobj, nullableType);
 
             ilg.MarkLabel(lblExit);
 
