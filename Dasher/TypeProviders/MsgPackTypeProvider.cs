@@ -70,6 +70,7 @@ namespace Dasher.TypeProviders
             if (!_unpackerTryReadMethodByType.TryGetValue(value.LocalType, out unpackerMethod))
             {
                 errors.Add($"Type {targetType} does not map to a native MsgPack type");
+                return false;
             }
 
             ilg.Emit(OpCodes.Ldloc, unpacker);
