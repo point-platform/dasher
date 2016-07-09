@@ -120,48 +120,6 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Throw);
             };
 
-            #region Read map length
-
-            var mapSize = ilg.DeclareLocal(typeof(int));
-            {
-                // MsgPack messages may be single values, arrays, maps, or any arbitrary
-                // combination of these types. Our convention is to require messages to
-                // be encoded as maps where the key is the property name.
-                //
-                // MsgPack maps begin with a header indicating the number of pairs
-                // within the map. We read this here.
-                ilg.Emit(OpCodes.Ldloc, unpacker);
-                ilg.Emit(OpCodes.Ldloca, mapSize);
-                ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadMapLength);
-
-                // If false was returned, then the next MsgPack value is not a map
-                throwBlocks.ThrowIfFalse(() =>
-                {
-                    // Check if it's a null
-                    ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadNull);
-                    var lblNotNull = ilg.DefineLabel();
-                    ilg.Emit(OpCodes.Brfalse_S, lblNotNull);
-                    {
-                        // value is null
-                        ilg.Emit(OpCodes.Ldnull);
-                        ilg.Emit(OpCodes.Ret);
-                    }
-                    ilg.MarkLabel(lblNotNull);
-                    ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Call, Methods.Unpacker_HasStreamEnded_Get);
-                    var lblNotEmpty = ilg.DefineLabel();
-                    ilg.Emit(OpCodes.Brfalse_S, lblNotEmpty);
-                    ilg.Emit(OpCodes.Ldstr, "Data stream empty");
-                    throwException();
-                    ilg.MarkLabel(lblNotEmpty);
-                    ilg.Emit(OpCodes.Ldstr, "Message must be encoded as a MsgPack map");
-                    throwException();
-                });
-            }
-
-            #endregion
-
             #region Initialise locals for constructor args
 
             var valueLocals = new LocalBuilder[parameters.Length];
@@ -211,7 +169,50 @@ namespace Dasher.TypeProviders
 
             #endregion
 
-            // For each key/value pair in the map...
+            #region Read map length
+
+            var mapSize = ilg.DeclareLocal(typeof(int));
+            {
+                // MsgPack messages may be single values, arrays, maps, or any arbitrary
+                // combination of these types. Our convention is to require messages to
+                // be encoded as maps where the key is the property name.
+                //
+                // MsgPack maps begin with a header indicating the number of pairs
+                // within the map. We read this here.
+                ilg.Emit(OpCodes.Ldloc, unpacker);
+                ilg.Emit(OpCodes.Ldloca, mapSize);
+                ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadMapLength);
+
+                // If false was returned, then the next MsgPack value is not a map
+                throwBlocks.ThrowIfFalse(() =>
+                {
+                    // Check if it's a null
+                    ilg.Emit(OpCodes.Ldloc, unpacker);
+                    ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadNull);
+                    var lblNotNull = ilg.DefineLabel();
+                    ilg.Emit(OpCodes.Brfalse_S, lblNotNull);
+                    {
+                        // value is null
+                        ilg.Emit(OpCodes.Ldnull);
+                        ilg.Emit(OpCodes.Ret);
+                    }
+                    ilg.MarkLabel(lblNotNull);
+                    ilg.Emit(OpCodes.Ldloc, unpacker);
+                    ilg.Emit(OpCodes.Call, Methods.Unpacker_HasStreamEnded_Get);
+                    var lblNotEmpty = ilg.DefineLabel();
+                    ilg.Emit(OpCodes.Brfalse_S, lblNotEmpty);
+                    ilg.Emit(OpCodes.Ldstr, "Data stream empty");
+                    throwException();
+                    ilg.MarkLabel(lblNotEmpty);
+                    ilg.Emit(OpCodes.Ldstr, "Message must be encoded as a MsgPack map");
+                    throwException();
+                });
+            }
+
+            #endregion
+
+            #region Loop through each key/value pair in the map
+
             {
                 #region Initialise loop
 
@@ -229,10 +230,10 @@ namespace Dasher.TypeProviders
                 // Run the test first
                 ilg.Emit(OpCodes.Br, lblLoopTest);
 
-                #endregion
-
                 // Mark the first instruction within the loop
                 ilg.MarkLabel(lblLoopStart);
+
+                #endregion
 
                 #region Read field name
 
@@ -254,11 +255,16 @@ namespace Dasher.TypeProviders
 
                 #endregion
 
+                #region Match name to expected field, then attempt to deserialise by expected type
+
                 // Build a chain of if/elseif/elseif... blocks for each of the expected fields.
                 // It could be slightly more efficient here to generate a O(log(N)) tree-based lookup,
                 // but that would take quite some engineering. Let's see if there's a significant perf
                 // hit here or not first.
+
                 var lblEndIfChain = ilg.DefineLabel();
+
+                // TODO how much perf diff if properties sorted lexicographically, so no searching?
                 Label? nextLabel = null;
                 for (var parameterIndex = 0; parameterIndex < parameters.Length; parameterIndex++)
                 {
@@ -275,6 +281,8 @@ namespace Dasher.TypeProviders
 
                     // If the key doesn't match this property, go to the next block
                     ilg.Emit(OpCodes.Brfalse, nextLabel.Value);
+
+                    #region Test for duplicate fields
 
                     // Verify we haven't already seen a value for this parameter
                     {
@@ -298,6 +306,8 @@ namespace Dasher.TypeProviders
                         ilg.Emit(OpCodes.Or);
                         ilg.Emit(OpCodes.Stloc, valueSetLocals[parameterIndex]);
                     }
+
+                    #endregion
 
                     if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, throwBlocks, errors, parameters[parameterIndex].Name, targetType, valueLocals[parameterIndex], unpacker, context, contextLocal, unexpectedFieldBehaviour))
                         throw new Exception($"Unable to deserialise values of type {valueLocals[parameterIndex].LocalType} from MsgPack data.");
@@ -343,6 +353,10 @@ namespace Dasher.TypeProviders
 
                 ilg.MarkLabel(lblEndIfChain);
 
+                #endregion
+
+                #region Evaluate loop and branch to start unless finished
+
                 // Increment the loop index
                 ilg.Emit(OpCodes.Ldloc, loopIndex);
                 ilg.Emit(OpCodes.Ldc_I4_1);
@@ -363,7 +377,11 @@ namespace Dasher.TypeProviders
 
                 // Mark the end of the loop
                 ilg.MarkLabel(lblLoopExit);
+
+                #endregion
             }
+
+            #endregion
 
             #region Verify all required values either specified or have a default value
 
@@ -402,9 +420,9 @@ namespace Dasher.TypeProviders
             // Call the target type's constructor
             ilg.Emit(OpCodes.Newobj, constructor);
 
-            #endregion
-
             ilg.Emit(OpCodes.Stloc, value);
+
+            #endregion
 
             return true;
         }
