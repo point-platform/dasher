@@ -658,21 +658,21 @@ namespace Dasher
             if (b >= FixMapMinPrefixByte && b <= FixMapMaxPrefixByte)
             {
                 _nextByte = -1;
-                SkipValues((uint)((b ^ FixMapPrefixBits)<<1));
+                SkipValues(unchecked((uint)((b ^ FixMapPrefixBits)<<1)));
                 return;
             }
 
             if (b >= FixArrayMinPrefixByte && b <= FixArrayMaxPrefixByte)
             {
                 _nextByte = -1;
-                SkipValues((uint)(b ^ FixArrayPrefixBits));
+                SkipValues(unchecked((uint)(b ^ FixArrayPrefixBits)));
                 return;
             }
 
             if (b >= FixStrMinPrefixByte && b <= FixStrMaxPrefixByte)
             {
                 _nextByte = -1;
-                SkipBytes((uint)(b ^ FixStrPrefixBits));
+                SkipBytes(unchecked((uint)(b ^ FixStrPrefixBits)));
                 return;
             }
 
