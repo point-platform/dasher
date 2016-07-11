@@ -142,20 +142,14 @@ namespace Dasher.Tests
             var sw = Stopwatch.StartNew();
 
             for (var i = 0; i < loopCount; i++)
-            {
-                s.Position = 0;
                 dasherPack();
-            }
 
             var unsafePackTime = sw.Elapsed.TotalMilliseconds;
 
             sw.Restart();
 
             for (var i = 0; i < loopCount; i++)
-            {
-                s.Position = 0;
                 msgPackCliPack();
-            }
 
             var msgPackCliPackTime = sw.Elapsed.TotalMilliseconds;
 
