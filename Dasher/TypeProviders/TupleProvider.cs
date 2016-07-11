@@ -43,7 +43,7 @@ namespace Dasher.TypeProviders
             // write the array header
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldc_I4, tupleSize);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackArrayHeader);
+            ilg.Emit(OpCodes.Call, Methods.Packer_PackArrayHeader);
 
             var success = true;
 

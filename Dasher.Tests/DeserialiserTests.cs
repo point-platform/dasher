@@ -293,7 +293,10 @@ namespace Dasher.Tests
             var stream = new MemoryStream();
             var packer = new Packer(stream);
             packer.PackNull();
+
+            packer.Flush();
             stream.Position = 0;
+
             Assert.Null(new Deserialiser<Recurring>().Deserialise(stream));
         }
 
@@ -307,7 +310,10 @@ namespace Dasher.Tests
             packer.Pack(1);
             packer.Pack("Inner");
             packer.PackNull();
+
+            packer.Flush();
             stream.Position = 0;
+
             Assert.Null(new Deserialiser<Recurring>().Deserialise(stream).Inner);
         }
 
@@ -331,6 +337,7 @@ namespace Dasher.Tests
                 packer.PackNull();
             }
 
+            packer.Flush();
             stream.Position = 0;
 
             var after = new Deserialiser<Recurring>().Deserialise(stream);
@@ -370,6 +377,7 @@ namespace Dasher.Tests
                 }
             }
 
+            packer.Flush();
             stream.Position = 0;
 
             var after = new Deserialiser<RecurringTree>().Deserialise(stream);

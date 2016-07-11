@@ -29,7 +29,7 @@ namespace Dasher
 {
     public sealed class Serialiser<T>
     {
-        private readonly Action<UnsafePacker, DasherContext, object> _action;
+        private readonly Action<Packer, DasherContext, object> _action;
         private readonly DasherContext _context;
 
         public Serialiser(DasherContext context = null)
@@ -42,11 +42,11 @@ namespace Dasher
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
-            using (var packer = new UnsafePacker(stream))
+            using (var packer = new Packer(stream))
                 Serialise(packer, value);
         }
 
-        public void Serialise(UnsafePacker packer, T value)
+        public void Serialise(Packer packer, T value)
         {
             if (packer == null)
                 throw new ArgumentNullException(nameof(packer));
@@ -56,7 +56,7 @@ namespace Dasher
         public byte[] Serialise(T value)
         {
             var stream = new MemoryStream();
-            using (var packer = new UnsafePacker(stream))
+            using (var packer = new Packer(stream))
                 Serialise(packer, value);
             return stream.ToArray();
         }
@@ -64,7 +64,7 @@ namespace Dasher
 
     public sealed class Serialiser
     {
-        private readonly Action<UnsafePacker, DasherContext, object> _action;
+        private readonly Action<Packer, DasherContext, object> _action;
         private readonly DasherContext _context;
 
         public Serialiser(Type type, DasherContext context = null)
@@ -77,11 +77,11 @@ namespace Dasher
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
-            using (var packer = new UnsafePacker(stream))
+            using (var packer = new Packer(stream))
                 Serialise(packer, value);
         }
 
-        public void Serialise(UnsafePacker packer, object value)
+        public void Serialise(Packer packer, object value)
         {
             if (packer == null)
                 throw new ArgumentNullException(nameof(packer));
@@ -91,7 +91,7 @@ namespace Dasher
         public byte[] Serialise(object value)
         {
             var stream = new MemoryStream();
-            using (var packer = new UnsafePacker(stream))
+            using (var packer = new Packer(stream))
                 Serialise(packer, value);
             return stream.ToArray();
         }

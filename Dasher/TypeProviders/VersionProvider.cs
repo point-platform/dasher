@@ -38,7 +38,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloc, value);
             ilg.Emit(OpCodes.Call, Methods.Version_ToString);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_String);
+            ilg.Emit(OpCodes.Call, Methods.Packer_Pack_String);
 
             return true;
         }

@@ -51,7 +51,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Callvirt, readOnlyCollectionType.GetProperty(nameof(IReadOnlyCollection<int>.Count)).GetMethod);
 
             // write map header
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackMapHeader);
+            ilg.Emit(OpCodes.Call, Methods.Packer_PackMapHeader);
 
             var enumerator = ilg.DeclareLocal(enumeratorType);
             ilg.Emit(OpCodes.Ldloc, value);

@@ -648,23 +648,46 @@ namespace Dasher.Tests
             {
                 stream.Position = 0;
 
-                packer.Pack(float.NaN);
-                scenario();
+                // Pack the first sentinel
                 packer.Pack(float.NaN);
 
+                // Run the packing scenario
+                scenario();
+
+                // Flush the packer to the stream
+                packer.Flush();
+
+                // Remember the packed byte count
+                var packedByteCount = stream.Position;
+
+                // Pack the second sentinel
+                packer.Pack(float.NaN);
+
+                // Flush the packer to the stream
+                packer.Flush();
+
+                // Reset the stream position
                 stream.Position = 0;
 
-                float value;
-                Assert.True(unpacker.TryReadSingle(out value));
-                Assert.True(float.IsNaN(value));
-
-                Format format;
-                Assert.True(unpacker.TryPeekFormat(out format));
-
+                // Catch exceptions, log the current format, then rethrow
+                var format = Format.Unknown;
                 try
                 {
+                    // Read the first sentinel
+                    float value;
+                    Assert.True(unpacker.TryReadSingle(out value));
+                    Assert.True(float.IsNaN(value));
+
+                    // Peek at the value's format
+                    Assert.True(unpacker.TryPeekFormat(out format));
+
+                    // Perform the skip
                     unpacker.SkipValue();
 
+                    // Ensure same number of bytes packed and unpacked
+                    Assert.Equal(packedByteCount, stream.Position);
+
+                    // Read the second sentinel
                     Assert.True(unpacker.TryReadSingle(out value));
                     Assert.True(float.IsNaN(value));
                 }

@@ -52,7 +52,7 @@ namespace Dasher.TypeProviders
 
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
-            var packerMethod = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {value.LocalType});
+            var packerMethod = typeof(Packer).GetMethod(nameof(Packer.Pack), new[] {value.LocalType});
 
             if (packerMethod == null)
                 throw new InvalidOperationException("Type not supported. Call CanProvide first.");

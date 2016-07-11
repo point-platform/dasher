@@ -51,6 +51,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack((byte)i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -68,6 +69,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack((sbyte)i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -85,6 +87,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack((short)i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -102,6 +105,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack((ushort)i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -121,6 +125,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -142,6 +147,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -163,6 +169,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -184,6 +191,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -203,6 +211,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -222,6 +231,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -241,6 +251,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -260,6 +271,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack(i, Encoding.UTF8);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -279,6 +291,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -298,6 +311,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.Pack(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -317,6 +331,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.PackArrayHeader(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 
@@ -336,6 +351,7 @@ namespace Dasher.Tests
                 _stream.Position = 0;
 
                 _packer.PackMapHeader(i);
+                _packer.Flush();
 
                 _stream.Position = 0;
 

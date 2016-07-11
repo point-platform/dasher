@@ -48,7 +48,7 @@ namespace Dasher.Tests
 #endif
 
             var dasherSer = new Serialiser<UserScore>();
-            var dasherPacker = new UnsafePacker(Stream.Null);
+            var dasherPacker = new Packer(Stream.Null);
 
             var cliSer = MessagePackSerializer.Get<UserScore>(new SerializationContext
             {

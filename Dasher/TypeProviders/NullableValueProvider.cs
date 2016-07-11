@@ -50,7 +50,7 @@ namespace Dasher.TypeProviders
 
             // value is null
             ilg.Emit(OpCodes.Ldloc, packer);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackNull);
+            ilg.Emit(OpCodes.Call, Methods.Packer_PackNull);
 
             ilg.Emit(OpCodes.Br, lblExit);
 

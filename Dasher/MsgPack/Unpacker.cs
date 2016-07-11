@@ -30,9 +30,15 @@ using static Dasher.MsgPackConstants;
 
 namespace Dasher
 {
-    public sealed class Unpacker
+    public sealed
+#if UNSAFE
+        unsafe
+#endif
+        class Unpacker
     {
         private readonly Stream _stream;
+        private readonly byte[] _buffer = new byte[8];
+
         private int _nextByte = -1;
 
         public Unpacker(Stream stream)
@@ -331,15 +337,20 @@ namespace Dasher
 
         #endregion
 
-        public unsafe bool TryReadSingle(out float value)
+        public bool TryReadSingle(out float value)
         {
             if (TryPrepareNextByte())
             {
                 if (_nextByte == Float32PrefixByte)
                 {
                     // big-endian 32-bit IEEE 754 floating point
+#if UNSAFE
                     var bits = ReadUInt32();
                     value = *(float*)&bits;
+#else
+                    Read(4, _buffer);
+                    value = BitConverter.ToSingle(_buffer, 0);
+#endif
                     _nextByte = -1;
                     return true;
                 }
@@ -349,15 +360,20 @@ namespace Dasher
             return false;
         }
 
-        public unsafe bool TryReadDouble(out double value)
+        public bool TryReadDouble(out double value)
         {
             if (TryPrepareNextByte())
             {
                 if (_nextByte == Float64PrefixByte)
                 {
                     // big-endian 64-bit IEEE 754 floating point
+#if UNSAFE
                     var bits = ReadUInt64();
                     value = *(double*)&bits;
+#else
+                    Read(8, _buffer);
+                    value = BitConverter.ToDouble(_buffer, 0);
+#endif
                     _nextByte = -1;
                     return true;
                 }
@@ -489,7 +505,8 @@ namespace Dasher
                     if (length > int.MaxValue)
                         throw new Exception("Byte array length is too long to read");
                     _nextByte = -1;
-                    value = Read((int)length);
+                    value = new byte[(int)length];
+                    Read((int)length, value);
                     return true;
                 }
             }
@@ -741,7 +758,8 @@ namespace Dasher
             else
             {
                 // TODO do this without allocating a byte[]
-                Read(checked((int)count));
+                var length = checked((int)count);
+                Read(length, new byte[length]);
             }
         }
 
@@ -786,7 +804,8 @@ namespace Dasher
                         throw new Exception("String length is too long to read");
 
                     _nextByte = -1;
-                    var bytes = Read((int)length);
+                    var bytes = new byte[(int)length];
+                    Read((int)length, bytes);
                     value = encoding.GetString(bytes);
                     return true;
                 }
@@ -798,11 +817,8 @@ namespace Dasher
 
         #endregion
 
-        private byte[] Read(int length)
+        private void Read(int length, byte[] bytes)
         {
-            Debug.Assert(_nextByte == -1);
-
-            var bytes = new byte[length];
             var pos = 0;
             while (pos != length)
             {
@@ -811,7 +827,6 @@ namespace Dasher
                     throw new IOException("End of stream reached.");
                 pos += read;
             }
-            return bytes;
         }
 
         #region Reading values directly (for content after marker byte)
@@ -834,74 +849,121 @@ namespace Dasher
 
         private ushort ReadUInt16()
         {
-            var b1 = _stream.ReadByte();
-            var b2 = _stream.ReadByte();
-            if (b2 == -1)
-                throw new IOException("Unexpected end of stream.");
-            return (ushort)(b1 << 8 | b2);
+            Read(2, _buffer);
+#if UNSAFE
+            fixed (byte* p = _buffer)
+                return (ushort)(*p << 8 | *(p + 1));
+#else
+            return (ushort)(_buffer[0] << 8 | _buffer[1]);
+#endif
         }
 
         private uint ReadUInt32()
         {
-            var b1 = _stream.ReadByte();
-            var b2 = _stream.ReadByte();
-            var b3 = _stream.ReadByte();
-            var b4 = _stream.ReadByte();
-            if (b4 == -1)
-                throw new IOException("Unexpected end of stream.");
-            return (uint)(b1 << 24 | b2 << 16 | b3 << 8 | b4);
+            Read(4, _buffer);
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b;
+                return (uint)(*p++ << 24 |
+                              *p++ << 16 |
+                              *p++ << 8 |
+                              *p);
+            }
+#else
+            return (uint)(_buffer[0] << 24 |
+                          _buffer[1] << 16 |
+                          _buffer[2] << 8 |
+                          _buffer[3]);
+#endif
         }
 
         private ulong ReadUInt64()
         {
-            var b1 = _stream.ReadByte();
-            var b2 = _stream.ReadByte();
-            var b3 = _stream.ReadByte();
-            var b4 = _stream.ReadByte();
-            var b5 = _stream.ReadByte();
-            var b6 = _stream.ReadByte();
-            var b7 = _stream.ReadByte();
-            var b8 = _stream.ReadByte();
-            if (b8 == -1)
-                throw new IOException("Unexpected end of stream.");
-            #pragma warning disable CS0675
-            return (ulong)b1 << 56 | (ulong)b2 << 48 | (ulong)b3 << 40 | (ulong)b4 << 32 | (ulong)b5 << 24 | (ulong)b6 << 16 | (ulong)b7 << 8 | (ulong)b8;
-            #pragma warning restore CS0675
+            Read(8, _buffer);
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b;
+                return (ulong)*p++ << 56 |
+                       (ulong)*p++ << 48 |
+                       (ulong)*p++ << 40 |
+                       (ulong)*p++ << 32 |
+                       (ulong)*p++ << 24 |
+                       (ulong)*p++ << 16 |
+                       (ulong)*p++ << 8 |
+                       (ulong)*p;
+            }
+#else
+            return (ulong)_buffer[0] << 56 |
+                   (ulong)_buffer[1] << 48 |
+                   (ulong)_buffer[2] << 40 |
+                   (ulong)_buffer[3] << 32 |
+                   (ulong)_buffer[4] << 24 |
+                   (ulong)_buffer[5] << 16 |
+                   (ulong)_buffer[6] <<  8 |
+                   (ulong)_buffer[7];
+#endif
         }
 
         private short ReadInt16()
         {
-            var b1 = _stream.ReadByte();
-            var b2 = _stream.ReadByte();
-            if (b2 == -1)
-                throw new IOException("Unexpected end of stream.");
-            return (short)(b1 << 8 | b2);
+            Read(2, _buffer);
+#if UNSAFE
+            fixed (byte* p = _buffer)
+                return (short)(*p << 8 | *(p + 1));
+#else
+            return (short)(_buffer[0] << 8 | _buffer[1]);
+#endif
         }
 
         private int ReadInt32()
         {
-            var b1 = _stream.ReadByte();
-            var b2 = _stream.ReadByte();
-            var b3 = _stream.ReadByte();
-            var b4 = _stream.ReadByte();
-            if (b4 == -1)
-                throw new IOException("Unexpected end of stream.");
-            return b1 << 24 | b2 << 16 | b3 << 8 | b4;
+            Read(4, _buffer);
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b;
+                return *p++ << 24 |
+                       *p++ << 16 |
+                       *p++ << 8 |
+                       *p;
+            }
+#else
+            return _buffer[0] << 24 |
+                   _buffer[1] << 16 |
+                   _buffer[2] << 8 |
+                   _buffer[3];
+#endif
         }
 
         private long ReadInt64()
         {
-            var b1 = _stream.ReadByte();
-            var b2 = _stream.ReadByte();
-            var b3 = _stream.ReadByte();
-            var b4 = _stream.ReadByte();
-            var b5 = _stream.ReadByte();
-            var b6 = _stream.ReadByte();
-            var b7 = _stream.ReadByte();
-            var b8 = _stream.ReadByte();
-            if (b8 == -1)
-                throw new IOException("Unexpected end of stream.");
-            return (long)b1 << 56 | (long)b2 << 48 | (long)b3 << 40 | (long)b4 << 32 | (long)b5 << 24 | (long)b6 << 16 | (long)b7 << 8 | (long)b8;
+            Read(8, _buffer);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b;
+                return (long)*p++ << 56 |
+                       (long)*p++ << 48 |
+                       (long)*p++ << 40 |
+                       (long)*p++ << 32 |
+                       (long)*p++ << 24 |
+                       (long)*p++ << 16 |
+                       (long)*p++ << 8 |
+                       (long)*p;
+            }
+#else
+            return (long)_buffer[0] << 56 |
+                   (long)_buffer[1] << 48 |
+                   (long)_buffer[2] << 40 |
+                   (long)_buffer[3] << 32 |
+                   (long)_buffer[4] << 24 |
+                   (long)_buffer[5] << 16 |
+                   (long)_buffer[6] << 8 |
+                   (long)_buffer[7];
+#endif
         }
 
         #endregion

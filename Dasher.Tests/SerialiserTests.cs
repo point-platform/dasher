@@ -82,11 +82,11 @@ namespace Dasher.Tests
         [Fact]
         public void ThrowsIfNullPacker()
         {
-            var ex = Assert.Throws<ArgumentNullException>(() => new Serialiser<UserScore>().Serialise((UnsafePacker)null, new UserScore("Doug", 100)));
+            var ex = Assert.Throws<ArgumentNullException>(() => new Serialiser<UserScore>().Serialise((Packer)null, new UserScore("Doug", 100)));
 
             Assert.Equal("packer", ex.ParamName);
 
-            ex = Assert.Throws<ArgumentNullException>(() => new Serialiser(typeof(UserScore)).Serialise((UnsafePacker)null, new UserScore("Doug", 100)));
+            ex = Assert.Throws<ArgumentNullException>(() => new Serialiser(typeof(UserScore)).Serialise((Packer)null, new UserScore("Doug", 100)));
 
             Assert.Equal("packer", ex.ParamName);
         }

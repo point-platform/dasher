@@ -71,7 +71,6 @@
     <Compile Include="DeserialiserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SerialiserTests.cs" />
-    <Compile Include="UnsafePackerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

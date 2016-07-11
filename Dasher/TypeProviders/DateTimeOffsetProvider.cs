@@ -46,12 +46,12 @@ namespace Dasher.TypeProviders
 
             // Write the array header
             ilg.Emit(OpCodes.Ldc_I4_2);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackArrayHeader);
+            ilg.Emit(OpCodes.Call, Methods.Packer_PackArrayHeader);
 
             // Write ticks
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Call, Methods.DateTimeOffset_Ticks_Get);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_Int64);
+            ilg.Emit(OpCodes.Call, Methods.Packer_Pack_Int64);
 
             // Write offset minutes
             var offset = ilg.DeclareLocal(typeof(TimeSpan));
@@ -64,7 +64,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Conv_I8);
             ilg.Emit(OpCodes.Div);
             ilg.Emit(OpCodes.Conv_I2);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_Int16);
+            ilg.Emit(OpCodes.Call, Methods.Packer_Pack_Int16);
 
             return true;
         }

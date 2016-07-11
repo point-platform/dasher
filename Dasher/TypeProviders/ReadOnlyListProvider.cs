@@ -48,7 +48,7 @@ namespace Dasher.TypeProviders
             // write array header
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloc, count);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackArrayHeader);
+            ilg.Emit(OpCodes.Call, Methods.Packer_PackArrayHeader);
 
             // begin loop
             var loopStart = ilg.DefineLabel();

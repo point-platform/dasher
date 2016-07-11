@@ -39,7 +39,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Constrained, value.LocalType);
             ilg.Emit(OpCodes.Callvirt, Methods.Object_ToString);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_String);
+            ilg.Emit(OpCodes.Call, Methods.Packer_Pack_String);
 
             return true;
         }

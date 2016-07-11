@@ -45,7 +45,7 @@ namespace Dasher.TypeProviders
             // write header
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldc_I4_2);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackArrayHeader);
+            ilg.Emit(OpCodes.Call, Methods.Packer_PackArrayHeader);
 
             // TODO might be faster if we a generated class having members for use with called 'Union<>.Match'
 
@@ -58,7 +58,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloc, typeObj);
             ilg.Emit(OpCodes.Call, Methods.UnionProvider_GetTypeName);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_String);
+            ilg.Emit(OpCodes.Call, Methods.Packer_Pack_String);
 
             var success = true;
 

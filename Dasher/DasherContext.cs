@@ -51,7 +51,7 @@ namespace Dasher
             new UnionProvider()
         };
 
-        private readonly ConcurrentDictionary<Type, Action<UnsafePacker, DasherContext, object>> _serialiseActionByType = new ConcurrentDictionary<Type, Action<UnsafePacker, DasherContext, object>>();
+        private readonly ConcurrentDictionary<Type, Action<Packer, DasherContext, object>> _serialiseActionByType = new ConcurrentDictionary<Type, Action<Packer, DasherContext, object>>();
         private readonly ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>> _deserialiseFuncByType = new ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>>();
         private readonly IReadOnlyList<ITypeProvider> _typeProviders;
 
@@ -60,7 +60,7 @@ namespace Dasher
             _typeProviders = typeProviders?.Concat(_defaultTypeProviders).ToList() ?? _defaultTypeProviders;
         }
 
-        internal Action<UnsafePacker, DasherContext, object> GetOrCreateSerialiseAction(Type type)
+        internal Action<Packer, DasherContext, object> GetOrCreateSerialiseAction(Type type)
             => _serialiseActionByType.GetOrAdd(type, _ => SerialiserEmitter.Build(type, this));
 
         internal Func<Unpacker, DasherContext, object> GetOrCreateDeserialiseFunc(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour)

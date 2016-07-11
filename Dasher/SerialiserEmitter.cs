@@ -33,7 +33,7 @@ namespace Dasher
 {
     internal static class SerialiserEmitter
     {
-        public static Action<UnsafePacker, DasherContext, object> Build(Type type, DasherContext context)
+        public static Action<Packer, DasherContext, object> Build(Type type, DasherContext context)
         {
             // Create a collection for errors, initially with zero capacity (minimal allocation)
             var errors = new List<string>(0);
@@ -49,13 +49,13 @@ namespace Dasher
             var method = new DynamicMethod(
                 $"Generated{type.Name}Serialiser",
                 returnType: null,
-                parameterTypes: new[] {typeof(UnsafePacker), typeof(DasherContext), typeof(object)},
+                parameterTypes: new[] {typeof(Packer), typeof(DasherContext), typeof(object)},
                 restrictedSkipVisibility: true);
 
             var ilg = method.GetILGenerator();
 
             // Convert args to locals, so we can pass them around
-            var packer = ilg.DeclareLocal(typeof(UnsafePacker));
+            var packer = ilg.DeclareLocal(typeof(Packer));
             ilg.Emit(OpCodes.Ldarg_0); // packer
             ilg.Emit(OpCodes.Stloc, packer);
 
@@ -83,7 +83,7 @@ namespace Dasher
             throwBlocks.Flush();
 
             // Return a delegate that performs the above operations
-            return (Action<UnsafePacker, DasherContext, object>)method.CreateDelegate(typeof(Action<UnsafePacker, DasherContext, object>));
+            return (Action<Packer, DasherContext, object>)method.CreateDelegate(typeof(Action<Packer, DasherContext, object>));
         }
 
         public static bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, DasherContext context, LocalBuilder contextLocal, bool isRoot = false)
@@ -116,7 +116,7 @@ namespace Dasher
                     ilg.Emit(OpCodes.Ldloc, value);
                     ilg.Emit(OpCodes.Brtrue_S, nonNull);
                     ilg.Emit(OpCodes.Ldloc, packer);
-                    ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackNull);
+                    ilg.Emit(OpCodes.Call, Methods.Packer_PackNull);
                     ilg.Emit(OpCodes.Br, end);
                     ilg.MarkLabel(nonNull);
                 }

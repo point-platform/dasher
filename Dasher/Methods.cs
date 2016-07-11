@@ -41,20 +41,20 @@ namespace Dasher
         public static MethodInfo Unpacker_SkipValue                             { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.SkipValue));
         public static MethodInfo Unpacker_HasStreamEnded_Get                    { get; } = typeof(Unpacker).GetProperty(nameof(Unpacker.HasStreamEnded)).GetMethod;
 
-        public static MethodInfo UnsafePacker_PackArrayHeader                   { get; } = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackArrayHeader));
-        public static MethodInfo UnsafePacker_PackMapHeader                     { get; } = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackMapHeader));
-        public static MethodInfo UnsafePacker_PackNull                          { get; } = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.PackNull));
-        public static MethodInfo UnsafePacker_Pack_String                       { get; } = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(string)});
-        public static MethodInfo UnsafePacker_Pack_Int16                        { get; } = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(short)});
-        public static MethodInfo UnsafePacker_Pack_Int64                        { get; } = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(long)});
-        public static MethodInfo UnsafePacker_Pack_ByteArray                    { get; } = typeof(UnsafePacker).GetMethod(nameof(UnsafePacker.Pack), new[] {typeof(byte[])});
+        public static MethodInfo Packer_PackArrayHeader                         { get; } = typeof(Packer).GetMethod(nameof(Packer.PackArrayHeader));
+        public static MethodInfo Packer_PackMapHeader                           { get; } = typeof(Packer).GetMethod(nameof(Packer.PackMapHeader));
+        public static MethodInfo Packer_PackNull                                { get; } = typeof(Packer).GetMethod(nameof(Packer.PackNull));
+        public static MethodInfo Packer_Pack_String                             { get; } = typeof(Packer).GetMethod(nameof(Packer.Pack), new[] {typeof(string)});
+        public static MethodInfo Packer_Pack_Int16                              { get; } = typeof(Packer).GetMethod(nameof(Packer.Pack), new[] {typeof(short)});
+        public static MethodInfo Packer_Pack_Int64                              { get; } = typeof(Packer).GetMethod(nameof(Packer.Pack), new[] {typeof(long)});
+        public static MethodInfo Packer_Pack_ByteArray                          { get; } = typeof(Packer).GetMethod(nameof(Packer.Pack), new[] {typeof(byte[])});
 
         public static MethodInfo Object_Equals_Object_Object                    { get; } = typeof(object).GetMethod(nameof(object.Equals), BindingFlags.Static | BindingFlags.Public);
 
         public static MethodInfo UnionProvider_GetTypeName                      { get; } = typeof(UnionProvider).GetMethod(nameof(UnionProvider.GetTypeName), BindingFlags.Static | BindingFlags.Public);
 
         public static MethodInfo DasherDeserialiseFunc_Invoke                   { get; } = typeof(Func<Unpacker, DasherContext, object>).GetMethod(nameof(Func<Unpacker, DasherContext, object>.Invoke), new[] {typeof(Unpacker), typeof(DasherContext)});
-        public static MethodInfo DasherSerialiseAction_Invoke                   { get; } = typeof(Action<UnsafePacker, DasherContext, object>).GetMethod(nameof(Func<UnsafePacker, DasherContext, object>.Invoke), new[] {typeof(UnsafePacker), typeof(DasherContext), typeof(object)});
+        public static MethodInfo DasherSerialiseAction_Invoke                   { get; } = typeof(Action<Packer, DasherContext, object>).GetMethod(nameof(Func<Packer, DasherContext, object>.Invoke), new[] {typeof(Packer), typeof(DasherContext), typeof(object)});
 
         public static MethodInfo DasherContext_GetOrCreateDeserialiseFunc       { get; } = typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateDeserialiseFunc), BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof(Type), typeof(UnexpectedFieldBehaviour)}, null);
         public static MethodInfo DasherContext_GetOrCreateSerialiseAction       { get; } = typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateSerialiseAction), BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof(Type)}, null);

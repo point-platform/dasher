@@ -78,7 +78,7 @@ namespace Dasher.TypeProviders
             // write map header
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldc_I4, props.Count);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_PackMapHeader);
+            ilg.Emit(OpCodes.Call, Methods.Packer_PackMapHeader);
 
             var success = true;
 
@@ -90,7 +90,7 @@ namespace Dasher.TypeProviders
                 // write property name
                 ilg.Emit(OpCodes.Ldloc, packer);
                 ilg.Emit(OpCodes.Ldstr, prop.Name);
-                ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_String);
+                ilg.Emit(OpCodes.Call, Methods.Packer_Pack_String);
 
                 // get property value
                 ilg.Emit(value.LocalType.IsValueType ? OpCodes.Ldloca : OpCodes.Ldloc, value);

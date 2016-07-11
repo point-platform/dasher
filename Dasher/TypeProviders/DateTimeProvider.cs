@@ -38,7 +38,7 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Call, Methods.DateTime_ToBinary);
-            ilg.Emit(OpCodes.Call, Methods.UnsafePacker_Pack_Int64);
+            ilg.Emit(OpCodes.Call, Methods.Packer_Pack_Int64);
 
             return true;
         }

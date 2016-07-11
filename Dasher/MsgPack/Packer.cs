@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 //
 // Dasher
 //
@@ -29,100 +29,265 @@ using static Dasher.MsgPackConstants;
 
 namespace Dasher
 {
-    public sealed class Packer
+    public sealed
+#if UNSAFE
+        unsafe
+#endif
+        class Packer : IDisposable
     {
         private readonly Stream _stream;
+        private readonly byte[] _buffer;
+        private int _offset;
 
-        public Packer(Stream stream)
+        public Packer(Stream stream, int bufferSize = 4096)
         {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+            if (bufferSize < 1024)
+                throw new ArgumentOutOfRangeException(nameof(bufferSize), bufferSize, "Must be 1024 or greater.");
+
             _stream = stream;
+            _buffer = new byte[bufferSize];
+        }
+
+        public void Flush()
+        {
+            if (_offset == 0)
+                return;
+            _stream.Write(_buffer, 0, _offset);
+            _offset = 0;
+        }
+
+        void IDisposable.Dispose()
+        {
+            Flush();
+        }
+
+        private void CheckBuffer(int space)
+        {
+            if (_offset + space > _buffer.Length)
+                Flush();
+        }
+
+        private void Append(byte[] bytes)
+        {
+            if (_offset + bytes.Length <= _buffer.Length)
+            {
+                // copy to buffer
+                Array.Copy(bytes, 0, _buffer, _offset, bytes.Length);
+                _offset += bytes.Length;
+            }
+            else
+            {
+                // buffer will spill
+                Flush();
+//                if (bytes.Length < 20)
+//                {
+//                     // TODO copy short string to buffer
+//                }
+//                else
+//                {
+                    _stream.Write(bytes, 0, bytes.Length);
+//                }
+            }
         }
 
         public void PackNull()
         {
-            _stream.WriteByte(NullByte);
+            CheckBuffer(1);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+                *(b + _offset++) = NullByte;
+#else
+            _buffer[_offset++] = NullByte;
+#endif
         }
 
         public void PackArrayHeader(uint length)
         {
+            CheckBuffer(5);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                if (length <= FixArrayMaxLength)
+                {
+                    *(b + _offset++) = (byte)(FixArrayPrefixBits | length);
+                }
+                else if (length <= ushort.MaxValue)
+                {
+                    var p = b + _offset;
+                    *p++ = Array16PrefixByte;
+                    *p++ = (byte)(length>>8);
+                    *p   = (byte)length;
+                    _offset += 3;
+                }
+                else
+                {
+                    var p = b + _offset;
+                    *p++ = Array32PrefixByte;
+                    *p++ = (byte)(length >> 24);
+                    *p++ = (byte)(length >> 16);
+                    *p++ = (byte)(length >> 8);
+                    *p   = (byte)length;
+                    _offset += 5;
+                }
+            }
+#else
             if (length <= FixArrayMaxLength)
             {
-                _stream.WriteByte((byte)(FixArrayPrefixBits | length));
+                _buffer[_offset++] = (byte)(FixArrayPrefixBits | length);
             }
             else if (length <= ushort.MaxValue)
             {
-                _stream.WriteByte(Array16PrefixByte);
-                _stream.WriteByte((byte)(length >> 8));
-                _stream.WriteByte((byte)length);
+                _buffer[_offset++] = Array16PrefixByte;
+                _buffer[_offset++] = (byte)(length >> 8);
+                _buffer[_offset++] = (byte)length;
             }
             else
             {
-                _stream.WriteByte(Array32PrefixByte);
-                _stream.WriteByte((byte)(length >> 24));
-                _stream.WriteByte((byte)(length >> 16));
-                _stream.WriteByte((byte)(length >> 8));
-                _stream.WriteByte((byte)length);
+                _buffer[_offset++] = Array32PrefixByte;
+                _buffer[_offset++] = (byte)(length >> 24);
+                _buffer[_offset++] = (byte)(length >> 16);
+                _buffer[_offset++] = (byte)(length >> 8);
+                _buffer[_offset++] = (byte)length;
             }
+#endif
         }
 
         public void PackMapHeader(uint length)
         {
+            CheckBuffer(5);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                if (length <= FixMapMaxLength)
+                {
+                    *(b + _offset++) = (byte)(FixMapPrefixBits | length);
+                }
+                else if (length <= ushort.MaxValue)
+                {
+                    var p = b + _offset;
+                    *p++ = Map16PrefixByte;
+                    *p++ = (byte)(length >> 8);
+                    *p   = (byte)length;
+                    _offset += 3;
+                }
+                else
+                {
+                    var p = b + _offset;
+                    *p++ = Map32PrefixByte;
+                    *p++ = (byte)(length >> 24);
+                    *p++ = (byte)(length >> 16);
+                    *p++ = (byte)(length >> 8);
+                    *p   = (byte)length;
+                    _offset += 5;
+                }
+            }
+#else
             if (length <= FixMapMaxLength)
             {
-                _stream.WriteByte((byte)(FixMapPrefixBits | length));
+                _buffer[_offset++] = (byte)(FixMapPrefixBits | length);
             }
             else if (length <= ushort.MaxValue)
             {
-                _stream.WriteByte(Map16PrefixByte);
-                _stream.WriteByte((byte)(length >> 8));
-                _stream.WriteByte((byte)length);
+                _buffer[_offset++] = Map16PrefixByte;
+                _buffer[_offset++] = (byte)(length >> 8);
+                _buffer[_offset++] = (byte)length;
             }
             else
             {
-                _stream.WriteByte(Map32PrefixByte);
-                _stream.WriteByte((byte)(length >> 24));
-                _stream.WriteByte((byte)(length >> 16));
-                _stream.WriteByte((byte)(length >> 8));
-                _stream.WriteByte((byte)length);
+                _buffer[_offset++] = Map32PrefixByte;
+                _buffer[_offset++] = (byte)(length >> 24);
+                _buffer[_offset++] = (byte)(length >> 16);
+                _buffer[_offset++] = (byte)(length >> 8);
+                _buffer[_offset++] = (byte)length;
             }
+#endif
         }
 
         public void Pack(bool value)
         {
-            _stream.WriteByte(value ? TrueByte : FalseByte);
+            CheckBuffer(1);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+                *(b + _offset++) = value ? TrueByte : FalseByte;
+#else
+            _buffer[_offset++] = value ? TrueByte : FalseByte;
+#endif
         }
 
         public void Pack(byte[] bytes)
         {
             if (bytes == null)
             {
+                CheckBuffer(1);
                 PackNull();
                 return;
             }
 
-            if (bytes.Length <= byte.MaxValue)
+            CheckBuffer(5);
+
+            var length = bytes.Length;
+
+            if (length <= byte.MaxValue)
             {
-                _stream.WriteByte(Bin8PrefixByte);
-                _stream.WriteByte((byte)bytes.Length);
-                _stream.Write(bytes, 0, bytes.Length);
+#if UNSAFE
+                fixed (byte* b = _buffer)
+                {
+                    var p = b + _offset;
+                    *p++ = Bin8PrefixByte;
+                    *p = (byte)length;
+                    _offset += 2;
+                }
+#else
+                _buffer[_offset++] = Bin8PrefixByte;
+                _buffer[_offset++] = (byte)length;
+#endif
+                Append(bytes);
             }
-            else if (bytes.Length <= ushort.MaxValue)
+            else if (length <= ushort.MaxValue)
             {
-                _stream.WriteByte(Bin16PrefixByte);
-                var l = bytes.Length;
-                _stream.WriteByte((byte)(l >> 8));
-                _stream.WriteByte((byte)l);
-                _stream.Write(bytes, 0, bytes.Length);
+#if UNSAFE
+                fixed (byte* b = _buffer)
+                {
+                    var p = b + _offset;
+                    *p++ = Bin16PrefixByte;
+                    *p++ = (byte)(length >> 8);
+                    *p   = (byte)length;
+                    _offset += 3;
+                }
+#else
+                _buffer[_offset++] = Bin16PrefixByte;
+                _buffer[_offset++] = (byte)(length >> 8);
+                _buffer[_offset++] = (byte)length;
+#endif
+                Append(bytes);
             }
             else
             {
-                _stream.WriteByte(Bin32PrefixByte);
-                var l = bytes.Length;
-                _stream.WriteByte((byte)(l >> 24));
-                _stream.WriteByte((byte)(l >> 16));
-                _stream.WriteByte((byte)(l >> 8));
-                _stream.WriteByte((byte)l);
-                _stream.Write(bytes, 0, bytes.Length);
+#if UNSAFE
+                fixed (byte* b = _buffer)
+                {
+                    var p = b + _offset;
+                    *p++ = Bin32PrefixByte;
+                    *p++ = (byte)(length >> 24);
+                    *p++ = (byte)(length >> 16);
+                    *p++ = (byte)(length >> 8);
+                    *p   = (byte)length;
+                    _offset += 5;
+                }
+#else
+                _buffer[_offset++] = Bin32PrefixByte;
+                _buffer[_offset++] = (byte)(length >> 24);
+                _buffer[_offset++] = (byte)(length >> 16);
+                _buffer[_offset++] = (byte)(length >> 8);
+                _buffer[_offset++] = (byte)length;
+#endif
+                Append(bytes);
             }
         }
 
@@ -135,278 +300,690 @@ namespace Dasher
         {
             if (value == null)
             {
+                CheckBuffer(1);
                 PackNull();
                 return;
             }
 
-            var bytes = encoding.GetBytes(value);
+            var byteCount = encoding.GetByteCount(value);
 
-            if (bytes.Length <= FixStrMaxLength)
+            if (byteCount <= FixStrMaxLength)
             {
-                _stream.WriteByte((byte)(FixStrPrefixBits | bytes.Length));
-                _stream.Write(bytes, 0, bytes.Length);
+                CheckBuffer(1);
+#if UNSAFE
+                fixed (byte* b = _buffer)
+                {
+                    *(b + _offset++) = (byte)(FixStrPrefixBits | byteCount);
+
+                    if (_offset + byteCount + 1 <= _buffer.Length)
+                    {
+                        fixed (char* c = value)
+                            encoding.GetBytes(c, value.Length, b + _offset, byteCount);
+                        _offset += byteCount;
+                        return;
+                    }
+                }
+#else
+                _buffer[_offset++] = (byte)(FixStrPrefixBits | byteCount);
+
+                if (_offset + byteCount + 1 <= _buffer.Length)
+                {
+                    _offset += encoding.GetBytes(value, 0, value.Length, _buffer, _offset);
+                    return;
+                }
+#endif
+                Append(encoding.GetBytes(value));
             }
-            else if (bytes.Length <= byte.MaxValue)
+            else if (byteCount <= byte.MaxValue)
             {
-                _stream.WriteByte(Str8PrefixByte);
-                _stream.WriteByte((byte)bytes.Length);
-                _stream.Write(bytes, 0, bytes.Length);
+                CheckBuffer(2);
+#if UNSAFE
+                fixed (byte* b = _buffer)
+                {
+                    var p = b + _offset;
+                    *p++ = Str8PrefixByte;
+                    *p   = (byte)byteCount;
+                    _offset += 2;
+
+                    if (_offset + byteCount + 1 <= _buffer.Length)
+                    {
+                        fixed (char* c = value)
+                            encoding.GetBytes(c, value.Length, b + _offset, byteCount);
+                        _offset += byteCount;
+                        return;
+                    }
+                }
+#else
+                _buffer[_offset++] = Str8PrefixByte;
+                _buffer[_offset++] = (byte)byteCount;
+
+                if (_offset + byteCount + 1 <= _buffer.Length)
+                {
+                    _offset += encoding.GetBytes(value, 0, value.Length, _buffer, _offset);
+                    return;
+                }
+#endif
+                Append(encoding.GetBytes(value));
             }
-            else if (bytes.Length <= ushort.MaxValue)
+            else if (byteCount <= ushort.MaxValue)
             {
-                _stream.WriteByte(Str16PrefixByte);
-                var l = bytes.Length;
-                _stream.WriteByte((byte)(l >> 8));
-                _stream.WriteByte((byte)l);
-                _stream.Write(bytes, 0, bytes.Length);
+                CheckBuffer(3);
+#if UNSAFE
+                fixed (byte* b = _buffer)
+                {
+                    var p = b + _offset;
+                    *p++ = Str16PrefixByte;
+                    *p++ = (byte)(byteCount >> 8);
+                    *p   = (byte)byteCount;
+                    _offset += 3;
+
+                    if (_offset + byteCount + 1 <= _buffer.Length)
+                    {
+                        fixed (char* c = value)
+                            encoding.GetBytes(c, value.Length, b + _offset, byteCount);
+                        _offset += byteCount;
+                        return;
+                    }
+                }
+#else
+                _buffer[_offset++] = Str16PrefixByte;
+                _buffer[_offset++] = (byte)(byteCount >> 8);
+                _buffer[_offset++] = (byte)byteCount;
+
+                if (_offset + byteCount + 1 <= _buffer.Length)
+                {
+                    _offset += encoding.GetBytes(value, 0, value.Length, _buffer, _offset);
+                    return;
+                }
+#endif
+                Append(encoding.GetBytes(value));
             }
             else
             {
-                _stream.WriteByte(Str32PrefixByte);
-                var l = bytes.Length;
-                _stream.WriteByte((byte)(l >> 24));
-                _stream.WriteByte((byte)(l >> 16));
-                _stream.WriteByte((byte)(l >> 8));
-                _stream.WriteByte((byte)l);
-                _stream.Write(bytes, 0, bytes.Length);
+                CheckBuffer(5);
+#if UNSAFE
+                fixed (byte* b = _buffer)
+                {
+                    var p = b + _offset;
+                    *p++ = Str32PrefixByte;
+                    *p++ = (byte)(byteCount >> 24);
+                    *p++ = (byte)(byteCount >> 16);
+                    *p++ = (byte)(byteCount >> 8);
+                    *p   = (byte)byteCount;
+                    _offset += 5;
+                }
+#else
+                _buffer[_offset++] = Str32PrefixByte;
+                _buffer[_offset++] = (byte)(byteCount >> 24);
+                _buffer[_offset++] = (byte)(byteCount >> 16);
+                _buffer[_offset++] = (byte)(byteCount >> 8);
+                _buffer[_offset++] = (byte)byteCount;
+
+                if (_offset + byteCount + 1 <= _buffer.Length)
+                {
+                    _offset += encoding.GetBytes(value, 0, value.Length, _buffer, _offset);
+                    return;
+                }
+#endif
+                Append(encoding.GetBytes(value));
             }
         }
 
         public void Pack(float value)
         {
-            _stream.WriteByte(Float32PrefixByte);
+            CheckBuffer(5);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b + _offset;
+                *p++ = Float32PrefixByte;
+                var l = *(int*)&value;
+                *p++ = (byte)(l >> 24);
+                *p++ = (byte)(l >> 16);
+                *p++ = (byte)(l >> 8);
+                *p = (byte)l;
+                _offset += 5;
+            }
+#else
+            _buffer[_offset++] = Float32PrefixByte;
             // TODO this is a terrible, but probably correct, hack that technically could be broken by future releases of .NET, though that seems unlikely
             var i = value.GetHashCode();
-            _stream.WriteByte((byte)(i >> 24));
-            _stream.WriteByte((byte)(i >> 16));
-            _stream.WriteByte((byte)(i >> 8));
-            _stream.WriteByte((byte)i);
+            _buffer[_offset++] = (byte)(i >> 24);
+            _buffer[_offset++] = (byte)(i >> 16);
+            _buffer[_offset++] = (byte)(i >> 8);
+            _buffer[_offset++] = (byte)i;
+#endif
         }
 
         public void Pack(double value)
         {
-            _stream.WriteByte(Float64PrefixByte);
+            CheckBuffer(9);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b + _offset;
+                *p++ = Float64PrefixByte;
+                var l = *(ulong*)&value;
+                *p++ = (byte)(l >> 56);
+                *p++ = (byte)(l >> 48);
+                *p++ = (byte)(l >> 40);
+                *p++ = (byte)(l >> 32);
+                *p++ = (byte)(l >> 24);
+                *p++ = (byte)(l >> 16);
+                *p++ = (byte)(l >> 8);
+                *p = (byte)l;
+                _offset += 9;
+            }
+#else
+            _buffer[_offset++] = Float64PrefixByte;
             var l = BitConverter.DoubleToInt64Bits(value);
-            _stream.WriteByte((byte)(l >> 56));
-            _stream.WriteByte((byte)(l >> 48));
-            _stream.WriteByte((byte)(l >> 40));
-            _stream.WriteByte((byte)(l >> 32));
-            _stream.WriteByte((byte)(l >> 24));
-            _stream.WriteByte((byte)(l >> 16));
-            _stream.WriteByte((byte)(l >> 8));
-            _stream.WriteByte((byte)l);
+            _buffer[_offset++] = (byte)(l >> 56);
+            _buffer[_offset++] = (byte)(l >> 48);
+            _buffer[_offset++] = (byte)(l >> 40);
+            _buffer[_offset++] = (byte)(l >> 32);
+            _buffer[_offset++] = (byte)(l >> 24);
+            _buffer[_offset++] = (byte)(l >> 16);
+            _buffer[_offset++] = (byte)(l >> 8);
+            _buffer[_offset++] = (byte)l;
+#endif
         }
 
         public void Pack(byte value)
         {
+            CheckBuffer(2);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b + _offset;
+                if (value <= PosFixIntMaxValue)
+                {
+                    *p = value;
+                    _offset++;
+                }
+                else
+                {
+                    *p++ = UInt8PrefixByte;
+                    *p = value;
+                    _offset += 2;
+                }
+            }
+#else
             if (value <= PosFixIntMaxValue)
             {
-                _stream.WriteByte(value);
+                _buffer[_offset++] = value;
             }
             else
             {
-                _stream.WriteByte(UInt8PrefixByte);
-                _stream.WriteByte(value);
+                _buffer[_offset++] = UInt8PrefixByte;
+                _buffer[_offset++] = value;
             }
+#endif
         }
 
         public void Pack(sbyte value)
         {
+            CheckBuffer(2);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b + _offset;
+                if (value >= 0)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else if (value >= NegFixIntMinValue)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else
+                {
+                    *p++ = Int8PrefixByte;
+                    *p = (byte)value;
+                    _offset += 2;
+                }
+            }
+#else
             if (value >= 0)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value >= NegFixIntMinValue)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else
             {
-                _stream.WriteByte(Int8PrefixByte);
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = Int8PrefixByte;
+                _buffer[_offset++] = (byte)value;
             }
+#endif
         }
 
         public void Pack(ushort value)
         {
+            CheckBuffer(3);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b + _offset;
+                if (value <= PosFixIntMaxValue)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else if (value <= byte.MaxValue)
+                {
+                    *p++ = UInt8PrefixByte;
+                    *p = (byte)value;
+                    _offset += 2;
+                }
+                else
+                {
+                    *p++ = UInt16PrefixByte;
+                    *p++ = (byte)(value >> 8);
+                    *p = (byte)value;
+                    _offset += 3;
+                }
+            }
+#else
             if (value <= PosFixIntMaxValue)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value <= byte.MaxValue)
             {
-                _stream.WriteByte(UInt8PrefixByte);
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = UInt8PrefixByte;
+                _buffer[_offset++] = (byte)value;
             }
             else
             {
-                _stream.WriteByte(UInt16PrefixByte);
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = UInt16PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
+#endif
         }
 
         public void Pack(short value)
         {
+            CheckBuffer(3);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b + _offset;
+                if (value >= 0 && value <= PosFixIntMaxValue)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else if (value >= NegFixIntMinValue && value < 0)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
+                {
+                    *p++ = Int8PrefixByte;
+                    *p = (byte)value;
+                    _offset += 2;
+                }
+                else
+                {
+                    *p++ = Int16PrefixByte;
+                    *p++ = (byte)(value >> 8);
+                    *p = (byte)value;
+                    _offset += 3;
+                }
+            }
+#else
             if (value >= 0 && value <= PosFixIntMaxValue)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value >= NegFixIntMinValue && value < 0)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
             {
-                _stream.WriteByte(Int8PrefixByte);
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = Int8PrefixByte;
+                _buffer[_offset++] = (byte)value;
             }
             else
             {
-                _stream.WriteByte(Int16PrefixByte);
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++]= Int16PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
+#endif
         }
 
         public void Pack(uint value)
         {
+            CheckBuffer(5);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b + _offset;
+                if (value <= PosFixIntMaxValue)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else if (value <= byte.MaxValue)
+                {
+                    *p++ = UInt8PrefixByte;
+                    *p   = (byte)value;
+                    _offset += 2;
+                }
+                else if (value <= ushort.MaxValue)
+                {
+                    *p++ = UInt16PrefixByte;
+                    *p++ = (byte)(value >> 8);
+                    *p   = (byte)value;
+                    _offset += 3;
+                }
+                else
+                {
+                    *p++ = UInt32PrefixByte;
+                    *p++ = (byte)(value >> 24);
+                    *p++ = (byte)(value >> 16);
+                    *p++ = (byte)(value >> 8);
+                    *p   = (byte)value;
+                    _offset += 5;
+                }
+            }
+#else
             if (value <= PosFixIntMaxValue)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value <= byte.MaxValue)
             {
-                _stream.WriteByte(UInt8PrefixByte);
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = UInt8PrefixByte;
+                _buffer[_offset++] = (byte)value;
             }
             else if (value <= ushort.MaxValue)
             {
-                _stream.WriteByte(UInt16PrefixByte);
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = UInt16PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
             else
             {
-                _stream.WriteByte(UInt32PrefixByte);
-                _stream.WriteByte((byte)(value >> 24));
-                _stream.WriteByte((byte)(value >> 16));
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = UInt32PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 24);
+                _buffer[_offset++] = (byte)(value >> 16);
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
+#endif
         }
 
         public void Pack(int value)
         {
+            CheckBuffer(5);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b + _offset;
+                if (value >= 0 && value <= PosFixIntMaxValue)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else if (value >= NegFixIntMinValue && value < 0)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
+                {
+                    *p++ = Int8PrefixByte;
+                    *p = (byte)value;
+                    _offset += 2;
+                }
+                else if (value >= short.MinValue && value <= short.MaxValue)
+                {
+                    *p++ = Int16PrefixByte;
+                    *p++ = (byte)(value >> 8);
+                    *p = (byte)value;
+                    _offset += 3;
+                }
+                else
+                {
+                    *p++ = Int32PrefixByte;
+                    *p++ = (byte)(value >> 24);
+                    *p++ = (byte)(value >> 16);
+                    *p++ = (byte)(value >> 8);
+                    *p = (byte)value;
+                    _offset += 5;
+                }
+            }
+#else
             if (value >= 0 && value <= PosFixIntMaxValue)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value >= NegFixIntMinValue && value < 0)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
             {
-                _stream.WriteByte(Int8PrefixByte);
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = Int8PrefixByte;
+                _buffer[_offset++] = (byte)value;
             }
             else if (value >= short.MinValue && value <= short.MaxValue)
             {
-                _stream.WriteByte(Int16PrefixByte);
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = Int16PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
             else
             {
-                _stream.WriteByte(Int32PrefixByte);
-                _stream.WriteByte((byte)(value >> 24));
-                _stream.WriteByte((byte)(value >> 16));
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = Int32PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 24);
+                _buffer[_offset++] = (byte)(value >> 16);
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
+#endif
         }
 
         public void Pack(long value)
         {
+            CheckBuffer(9);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b + _offset;
+                if (value >= 0 && value <= PosFixIntMaxValue)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else if (value >= NegFixIntMinValue && value < 0)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
+                {
+                    *p++ = Int8PrefixByte;
+                    *p = (byte)value;
+                    _offset += 2;
+                }
+                else if (value >= short.MinValue && value <= short.MaxValue)
+                {
+                    *p++ = Int16PrefixByte;
+                    *p++ = (byte)(value >> 8);
+                    *p = (byte)value;
+                    _offset += 3;
+                }
+                else if (value >= int.MinValue && value <= int.MaxValue)
+                {
+                    *p++ = Int32PrefixByte;
+                    *p++ = (byte)(value >> 24);
+                    *p++ = (byte)(value >> 16);
+                    *p++ = (byte)(value >> 8);
+                    *p = (byte)value;
+                    _offset += 5;
+                }
+                else
+                {
+                    *p++ = Int64PrefixByte;
+                    *p++ = (byte)(value >> 56);
+                    *p++ = (byte)(value >> 48);
+                    *p++ = (byte)(value >> 40);
+                    *p++ = (byte)(value >> 32);
+                    *p++ = (byte)(value >> 24);
+                    *p++ = (byte)(value >> 16);
+                    *p++ = (byte)(value >> 8);
+                    *p = (byte)value;
+                    _offset += 9;
+                }
+            }
+#else
             if (value >= 0 && value <= PosFixIntMaxValue)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value >= NegFixIntMinValue && value < 0)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value >= sbyte.MinValue && value <= sbyte.MaxValue)
             {
-                _stream.WriteByte(Int8PrefixByte);
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = Int8PrefixByte;
+                _buffer[_offset++] = (byte)value;
             }
             else if (value >= short.MinValue && value <= short.MaxValue)
             {
-                _stream.WriteByte(Int16PrefixByte);
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = Int16PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value >= int.MinValue && value <= int.MaxValue)
             {
-                _stream.WriteByte(Int32PrefixByte);
-                _stream.WriteByte((byte)(value >> 24));
-                _stream.WriteByte((byte)(value >> 16));
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = Int32PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 24);
+                _buffer[_offset++] = (byte)(value >> 16);
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
             else
             {
-                _stream.WriteByte(Int64PrefixByte);
-                _stream.WriteByte((byte)(value >> 56));
-                _stream.WriteByte((byte)(value >> 48));
-                _stream.WriteByte((byte)(value >> 40));
-                _stream.WriteByte((byte)(value >> 32));
-                _stream.WriteByte((byte)(value >> 24));
-                _stream.WriteByte((byte)(value >> 16));
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = Int64PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 56);
+                _buffer[_offset++] = (byte)(value >> 48);
+                _buffer[_offset++] = (byte)(value >> 40);
+                _buffer[_offset++] = (byte)(value >> 32);
+                _buffer[_offset++] = (byte)(value >> 24);
+                _buffer[_offset++] = (byte)(value >> 16);
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
+#endif
         }
 
         public void Pack(ulong value)
         {
+            CheckBuffer(9);
+
+#if UNSAFE
+            fixed (byte* b = _buffer)
+            {
+                var p = b + _offset;
+                if (value <= PosFixIntMaxValue)
+                {
+                    *p = (byte)value;
+                    _offset++;
+                }
+                else if (value <= byte.MaxValue)
+                {
+                    *p++ = UInt8PrefixByte;
+                    *p = (byte)value;
+                    _offset += 2;
+                }
+                else if (value <= ushort.MaxValue)
+                {
+                    *p++ = UInt16PrefixByte;
+                    *p++ = (byte)(value >> 8);
+                    *p = (byte)value;
+                    _offset += 3;
+                }
+                else if (value <= uint.MaxValue)
+                {
+                    *p++ = UInt32PrefixByte;
+                    *p++ = (byte)(value >> 24);
+                    *p++ = (byte)(value >> 16);
+                    *p++ = (byte)(value >> 8);
+                    *p = (byte)value;
+                    _offset += 5;
+                }
+                else
+                {
+                    *p++ = UInt64PrefixByte;
+                    *p++ = (byte)(value >> 56);
+                    *p++ = (byte)(value >> 48);
+                    *p++ = (byte)(value >> 40);
+                    *p++ = (byte)(value >> 32);
+                    *p++ = (byte)(value >> 24);
+                    *p++ = (byte)(value >> 16);
+                    *p++ = (byte)(value >> 8);
+                    *p = (byte)value;
+                    _offset += 9;
+                }
+            }
+#else
             if (value <= PosFixIntMaxValue)
             {
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value <= byte.MaxValue)
             {
-                _stream.WriteByte(UInt8PrefixByte);
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = UInt8PrefixByte;
+                _buffer[_offset++] = (byte)value;
             }
             else if (value <= ushort.MaxValue)
             {
-                _stream.WriteByte(UInt16PrefixByte);
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = UInt16PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
             else if (value <= uint.MaxValue)
             {
-                _stream.WriteByte(UInt32PrefixByte);
-                _stream.WriteByte((byte)(value >> 24));
-                _stream.WriteByte((byte)(value >> 16));
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = UInt32PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 24);
+                _buffer[_offset++] = (byte)(value >> 16);
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
             else
             {
-                _stream.WriteByte(UInt64PrefixByte);
-                _stream.WriteByte((byte)(value >> 56));
-                _stream.WriteByte((byte)(value >> 48));
-                _stream.WriteByte((byte)(value >> 40));
-                _stream.WriteByte((byte)(value >> 32));
-                _stream.WriteByte((byte)(value >> 24));
-                _stream.WriteByte((byte)(value >> 16));
-                _stream.WriteByte((byte)(value >> 8));
-                _stream.WriteByte((byte)value);
+                _buffer[_offset++] = UInt64PrefixByte;
+                _buffer[_offset++] = (byte)(value >> 56);
+                _buffer[_offset++] = (byte)(value >> 48);
+                _buffer[_offset++] = (byte)(value >> 40);
+                _buffer[_offset++] = (byte)(value >> 32);
+                _buffer[_offset++] = (byte)(value >> 24);
+                _buffer[_offset++] = (byte)(value >> 16);
+                _buffer[_offset++] = (byte)(value >> 8);
+                _buffer[_offset++] = (byte)value;
             }
+#endif
         }
     }
 }
