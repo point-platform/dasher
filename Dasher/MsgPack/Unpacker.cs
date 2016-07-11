@@ -632,8 +632,7 @@ namespace Dasher
             var b = (byte)_nextByte;
 
             // TODO can arrange these comparisons to take advantage of mutual information
-            if (b <= PosFixIntMaxByte ||
-                b >= NegFixIntMinByte)
+            if (b <= PosFixIntMaxByte || b >= NegFixIntMinByte)
             {
                 _nextByte = -1;
                 return;
