@@ -36,6 +36,8 @@ namespace Dasher
 #endif
         class Unpacker
     {
+        private static Exception EOF() => new IOException("End of stream reached.");
+
         private readonly Stream _stream;
         private readonly byte[] _buffer = new byte[8];
 
@@ -50,48 +52,43 @@ namespace Dasher
         {
             get
             {
-                if (_nextByte == -1)
-                {
-                    _nextByte = _stream.ReadByte();
-                    if (_nextByte == -1)
-                        return true;
-                }
-                return false;
+                if (_nextByte != -1)
+                    return false;
+
+                _nextByte = _stream.ReadByte();
+                return _nextByte == -1;
             }
         }
 
-        private bool TryPrepareNextByte()
+        private void PrepareNextByte()
         {
-            if (_nextByte == -1)
-            {
-                _nextByte = _stream.ReadByte();
+            if (_nextByte != -1)
+                return;
 
-                // TODO wouldn't it be more consistent if this threw IOException too? otherwise some TryRead methods throw or return false depending upon how many bytes need to be read
-                if (_nextByte == -1)
-                    return false;
-            }
-            return true;
+            _nextByte = _stream.ReadByte();
+
+            if (_nextByte == -1)
+                throw EOF();
         }
 
         #region TryRead integral types
 
         public bool TryReadByte(out byte value)
         {
-            if (TryPrepareNextByte())
-            {
-                if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
-                {
-                    value = (byte)_nextByte;
-                    _nextByte = -1;
-                    return true;
-                }
+            PrepareNextByte();
 
-                if (_nextByte == UInt8PrefixByte)
-                {
-                    value = ReadByte();
-                    _nextByte = -1;
-                    return true;
-                }
+            if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
+            {
+                value = (byte)_nextByte;
+                _nextByte = -1;
+                return true;
+            }
+
+            if (_nextByte == UInt8PrefixByte)
+            {
+                value = ReadByte();
+                _nextByte = -1;
+                return true;
             }
 
             value = default(byte);
@@ -100,11 +97,7 @@ namespace Dasher
 
         public bool TryReadInt16(out short value)
         {
-            if (!TryPrepareNextByte())
-            {
-                value = default(short);
-                return false;
-            }
+            PrepareNextByte();
 
             if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
@@ -137,11 +130,7 @@ namespace Dasher
 
         public bool TryReadInt32(out int value)
         {
-            if (!TryPrepareNextByte())
-            {
-                value = default(int);
-                return false;
-            }
+            PrepareNextByte();
 
             if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
@@ -176,11 +165,7 @@ namespace Dasher
 
         public bool TryReadInt64(out long value)
         {
-            if (!TryPrepareNextByte())
-            {
-                value = default(long);
-                return false;
-            }
+            PrepareNextByte();
 
             if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
@@ -217,28 +202,27 @@ namespace Dasher
 
         public bool TryReadSByte(out sbyte value)
         {
-            if (TryPrepareNextByte())
+            PrepareNextByte();
+
+            if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
-                if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
-                {
-                    value = (sbyte)_nextByte;
-                    _nextByte = -1;
-                    return true;
-                }
+                value = (sbyte)_nextByte;
+                _nextByte = -1;
+                return true;
+            }
 
-                if ((_nextByte & NegFixIntPrefixBitsMask) == NegFixIntPrefixBits)
-                {
-                    value = (sbyte)_nextByte;
-                    _nextByte = -1;
-                    return true;
-                }
+            if ((_nextByte & NegFixIntPrefixBitsMask) == NegFixIntPrefixBits)
+            {
+                value = (sbyte)_nextByte;
+                _nextByte = -1;
+                return true;
+            }
 
-                if (_nextByte == Int8PrefixByte)
-                {
-                    value = ReadSByte();
-                    _nextByte = -1;
-                    return true;
-                }
+            if (_nextByte == Int8PrefixByte)
+            {
+                value = ReadSByte();
+                _nextByte = -1;
+                return true;
             }
 
             value = default(sbyte);
@@ -247,11 +231,7 @@ namespace Dasher
 
         public bool TryReadUInt16(out ushort value)
         {
-            if (!TryPrepareNextByte())
-            {
-                value = default(ushort);
-                return false;
-            }
+            PrepareNextByte();
 
             if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
@@ -276,11 +256,7 @@ namespace Dasher
 
         public bool TryReadUInt32(out uint value)
         {
-            if (!TryPrepareNextByte())
-            {
-                value = default(uint);
-                return false;
-            }
+            PrepareNextByte();
 
             if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
@@ -306,11 +282,7 @@ namespace Dasher
 
         public bool TryReadUInt64(out ulong value)
         {
-            if (!TryPrepareNextByte())
-            {
-                value = default(ulong);
-                return false;
-            }
+            PrepareNextByte();
 
             if ((_nextByte & PosFixIntPrefixBitsMask) == PosFixIntPrefixBits)
             {
@@ -339,21 +311,20 @@ namespace Dasher
 
         public bool TryReadSingle(out float value)
         {
-            if (TryPrepareNextByte())
+            PrepareNextByte();
+
+            if (_nextByte == Float32PrefixByte)
             {
-                if (_nextByte == Float32PrefixByte)
-                {
-                    // big-endian 32-bit IEEE 754 floating point
+                // big-endian 32-bit IEEE 754 floating point
 #if UNSAFE
-                    var bits = ReadUInt32();
-                    value = *(float*)&bits;
+                var bits = ReadUInt32();
+                value = *(float*)&bits;
 #else
-                    Read(4, _buffer);
-                    value = BitConverter.ToSingle(_buffer, 0);
+                Read(4, _buffer);
+                value = BitConverter.ToSingle(_buffer, 0);
 #endif
-                    _nextByte = -1;
-                    return true;
-                }
+                _nextByte = -1;
+                return true;
             }
 
             value = default(float);
@@ -362,21 +333,20 @@ namespace Dasher
 
         public bool TryReadDouble(out double value)
         {
-            if (TryPrepareNextByte())
+            PrepareNextByte();
+
+            if (_nextByte == Float64PrefixByte)
             {
-                if (_nextByte == Float64PrefixByte)
-                {
-                    // big-endian 64-bit IEEE 754 floating point
+                // big-endian 64-bit IEEE 754 floating point
 #if UNSAFE
-                    var bits = ReadUInt64();
-                    value = *(double*)&bits;
+                var bits = ReadUInt64();
+                value = *(double*)&bits;
 #else
-                    Read(8, _buffer);
-                    value = BitConverter.ToDouble(_buffer, 0);
+                Read(8, _buffer);
+                value = BitConverter.ToDouble(_buffer, 0);
 #endif
-                    _nextByte = -1;
-                    return true;
-                }
+                _nextByte = -1;
+                return true;
             }
 
             value = default(double);
@@ -385,21 +355,20 @@ namespace Dasher
 
         public bool TryReadBoolean(out bool value)
         {
-            if (TryPrepareNextByte())
-            {
-                if (_nextByte == FalseByte)
-                {
-                    value = false;
-                    _nextByte = -1;
-                    return true;
-                }
+            PrepareNextByte();
 
-                if (_nextByte == TrueByte)
-                {
-                    value = true;
-                    _nextByte = -1;
-                    return true;
-                }
+            if (_nextByte == FalseByte)
+            {
+                value = false;
+                _nextByte = -1;
+                return true;
+            }
+
+            if (_nextByte == TrueByte)
+            {
+                value = true;
+                _nextByte = -1;
+                return true;
             }
 
             value = default(bool);
@@ -408,41 +377,44 @@ namespace Dasher
 
         public bool TryReadNull()
         {
-            if (TryPrepareNextByte() && _nextByte == NullByte)
-            {
-                _nextByte = -1;
-                return true;
-            }
+            PrepareNextByte();
 
-            return false;
+            if (_nextByte != NullByte)
+                return false;
+
+            _nextByte = -1;
+            return true;
         }
 
         public bool TryReadArrayLength(out int value)
         {
-            if (TryPrepareNextByte())
-            {
-                uint? length = null;
-                if ((_nextByte & FixArrayPrefixBitsMask) == FixArrayPrefixBits)
-                {
-                    length = (uint)(_nextByte & FixArrayMaxLength);
-                }
-                else
-                {
-                    switch (_nextByte)
-                    {
-                        case Array16PrefixByte: length = ReadUInt16(); break;
-                        case Array32PrefixByte: length = ReadUInt32(); break;
-                    }
-                }
+            PrepareNextByte();
 
-                if (length != null)
+            uint? length = null;
+            if ((_nextByte & FixArrayPrefixBitsMask) == FixArrayPrefixBits)
+            {
+                length = (uint)(_nextByte & FixArrayMaxLength);
+            }
+            else
+            {
+                switch (_nextByte)
                 {
-                    if (length > int.MaxValue)
-                        throw new Exception("Array length too large");
-                    _nextByte = -1;
-                    value = (int)length;
-                    return true;
+                    case Array16PrefixByte:
+                        length = ReadUInt16();
+                        break;
+                    case Array32PrefixByte:
+                        length = ReadUInt32();
+                        break;
                 }
+            }
+
+            if (length != null)
+            {
+                if (length > int.MaxValue)
+                    throw new Exception("Array length too large");
+                _nextByte = -1;
+                value = (int)length;
+                return true;
             }
 
             value = default(int);
@@ -451,30 +423,33 @@ namespace Dasher
 
         public bool TryReadMapLength(out int value)
         {
-            if (TryPrepareNextByte())
-            {
-                uint? length = null;
-                if ((_nextByte & FixMapPrefixBitsMask) == FixMapPrefixBits)
-                {
-                    length = (uint)(_nextByte & FixMapMaxLength);
-                }
-                else
-                {
-                    switch (_nextByte)
-                    {
-                        case Map16PrefixByte: length = ReadUInt16(); break;
-                        case Map32PrefixByte: length = ReadUInt32(); break;
-                    }
-                }
+            PrepareNextByte();
 
-                if (length != null)
+            uint? length = null;
+            if ((_nextByte & FixMapPrefixBitsMask) == FixMapPrefixBits)
+            {
+                length = (uint)(_nextByte & FixMapMaxLength);
+            }
+            else
+            {
+                switch (_nextByte)
                 {
-                    if (length > int.MaxValue)
-                        throw new Exception("Map length too large");
-                    _nextByte = -1;
-                    value = (int)length;
-                    return true;
+                    case Map16PrefixByte:
+                        length = ReadUInt16();
+                        break;
+                    case Map32PrefixByte:
+                        length = ReadUInt32();
+                        break;
                 }
+            }
+
+            if (length != null)
+            {
+                if (length > int.MaxValue)
+                    throw new Exception("Map length too large");
+                _nextByte = -1;
+                value = (int)length;
+                return true;
             }
 
             value = default(int);
@@ -483,32 +458,37 @@ namespace Dasher
 
         public bool TryReadBinary(out byte[] value)
         {
-            if (TryPrepareNextByte())
+            PrepareNextByte();
+
+            if (_nextByte == NullByte)
             {
-                if (_nextByte == NullByte)
-                {
-                    value = null;
-                    _nextByte = -1;
-                    return true;
-                }
+                value = null;
+                _nextByte = -1;
+                return true;
+            }
 
-                uint? length = null;
-                switch (_nextByte)
-                {
-                    case Bin8PrefixByte:  length = ReadByte();   break;
-                    case Bin16PrefixByte: length = ReadUInt16(); break;
-                    case Bin32PrefixByte: length = ReadUInt32(); break;
-                }
+            uint? length = null;
+            switch (_nextByte)
+            {
+                case Bin8PrefixByte:
+                    length = ReadByte();
+                    break;
+                case Bin16PrefixByte:
+                    length = ReadUInt16();
+                    break;
+                case Bin32PrefixByte:
+                    length = ReadUInt32();
+                    break;
+            }
 
-                if (length != null)
-                {
-                    if (length > int.MaxValue)
-                        throw new Exception("Byte array length is too long to read");
-                    _nextByte = -1;
-                    value = new byte[(int)length];
-                    Read((int)length, value);
-                    return true;
-                }
+            if (length != null)
+            {
+                if (length > int.MaxValue)
+                    throw new Exception("Byte array length is too long to read");
+                _nextByte = -1;
+                value = new byte[(int)length];
+                Read((int)length, value);
+                return true;
             }
 
             value = default(byte[]);
@@ -517,58 +497,57 @@ namespace Dasher
 
         public bool TryPeekFormatFamily(out FormatFamily family)
         {
-            if (TryPrepareNextByte())
+            PrepareNextByte();
+
+            if ((_nextByte <= PosFixIntMaxByte) ||
+                (_nextByte >= UInt8PrefixByte && _nextByte <= Int64PrefixByte) ||
+                (_nextByte >= NegFixIntMinByte))
             {
-                if ((_nextByte <= PosFixIntMaxByte) ||
-                    (_nextByte >= UInt8PrefixByte && _nextByte <= Int64PrefixByte) ||
-                    (_nextByte >= NegFixIntMinByte))
-                {
-                    family = FormatFamily.Integer;
-                    return true;
-                }
+                family = FormatFamily.Integer;
+                return true;
+            }
 
-                if ((_nextByte >= FixMapMinPrefixByte && _nextByte <= FixMapMaxPrefixByte) ||
-                     _nextByte == Map16PrefixByte ||
-                     _nextByte == Map32PrefixByte)
-                {
-                    family = FormatFamily.Map;
-                    return true;
-                }
+            if ((_nextByte >= FixMapMinPrefixByte && _nextByte <= FixMapMaxPrefixByte) ||
+                _nextByte == Map16PrefixByte ||
+                _nextByte == Map32PrefixByte)
+            {
+                family = FormatFamily.Map;
+                return true;
+            }
 
-                if ((_nextByte >= FixArrayMinPrefixByte && _nextByte <= FixArrayMaxPrefixByte) ||
-                     _nextByte == Array16PrefixByte ||
-                     _nextByte == Array32PrefixByte)
-                {
-                    family = FormatFamily.Array;
-                    return true;
-                }
+            if ((_nextByte >= FixArrayMinPrefixByte && _nextByte <= FixArrayMaxPrefixByte) ||
+                _nextByte == Array16PrefixByte ||
+                _nextByte == Array32PrefixByte)
+            {
+                family = FormatFamily.Array;
+                return true;
+            }
 
-                if ((_nextByte >= FixStrMinPrefixByte && _nextByte <= FixStrMaxPrefixByte) ||
-                    (_nextByte >= Str8PrefixByte && _nextByte <= Str32PrefixByte))
-                {
-                    family = FormatFamily.String;
-                    return true;
-                }
+            if ((_nextByte >= FixStrMinPrefixByte && _nextByte <= FixStrMaxPrefixByte) ||
+                (_nextByte >= Str8PrefixByte && _nextByte <= Str32PrefixByte))
+            {
+                family = FormatFamily.String;
+                return true;
+            }
 
-                switch (_nextByte)
-                {
-                    case NullByte:
-                        family = FormatFamily.Null;
-                        return true;
-                    case TrueByte:
-                    case FalseByte:
-                        family = FormatFamily.Boolean;
-                        return true;
-                    case Bin8PrefixByte:
-                    case Bin16PrefixByte:
-                    case Bin32PrefixByte:
-                        family = FormatFamily.Binary;
-                        return true;
-                    case Float32PrefixByte:
-                    case Float64PrefixByte:
-                        family = FormatFamily.Float;
-                        return true;
-                }
+            switch (_nextByte)
+            {
+                case NullByte:
+                    family = FormatFamily.Null;
+                    return true;
+                case TrueByte:
+                case FalseByte:
+                    family = FormatFamily.Boolean;
+                    return true;
+                case Bin8PrefixByte:
+                case Bin16PrefixByte:
+                case Bin32PrefixByte:
+                    family = FormatFamily.Binary;
+                    return true;
+                case Float32PrefixByte:
+                case Float64PrefixByte:
+                    family = FormatFamily.Float;
+                    return true;
             }
 
             family = default(FormatFamily);
@@ -577,14 +556,10 @@ namespace Dasher
 
         public bool TryPeekFormat(out Format format)
         {
-            if (TryPrepareNextByte())
-            {
-                format = DecodeFormat((byte)_nextByte);
-                return format != Format.Unknown;
-            }
+            PrepareNextByte();
 
-            format = default(Format);
-            return false;
+            format = DecodeFormat((byte)_nextByte);
+            return format != Format.Unknown;
         }
 
         private static Format DecodeFormat(byte b)
@@ -643,8 +618,7 @@ namespace Dasher
 
         public void SkipValue()
         {
-            if (!TryPrepareNextByte())
-                throw new IOException("End of stream reached");
+            PrepareNextByte();
 
             var b = (byte)_nextByte;
 
@@ -734,8 +708,8 @@ namespace Dasher
                 case 0:
                     return;
                 case 1:
-                    if (_nextByte == -1 && !TryPrepareNextByte())
-                        throw new IOException("End of stream reached.");
+                    if (_nextByte == -1)
+                        PrepareNextByte();
                     _nextByte = -1;
                     return;
             }
@@ -753,7 +727,7 @@ namespace Dasher
                 var startPos = _stream.Position;
                 var endPos = _stream.Seek(count, SeekOrigin.Current);
                 if (endPos - startPos != count)
-                    throw new IOException("End of stream reached.");
+                    throw EOF();
             }
             else
             {
@@ -774,41 +748,46 @@ namespace Dasher
 
         public bool TryReadString(out string value, Encoding encoding)
         {
-            if (TryPrepareNextByte())
+            PrepareNextByte();
+
+            if (_nextByte == NullByte)
             {
-                if (_nextByte == NullByte)
-                {
-                    value = null;
-                    _nextByte = -1;
-                    return true;
-                }
+                value = null;
+                _nextByte = -1;
+                return true;
+            }
 
-                uint? length = null;
-                if ((_nextByte & FixStrPrefixBitsMask) == FixStrPrefixBits)
+            uint? length = null;
+            if ((_nextByte & FixStrPrefixBitsMask) == FixStrPrefixBits)
+            {
+                length = (uint)(_nextByte & FixStrMaxLength);
+            }
+            else
+            {
+                switch (_nextByte)
                 {
-                    length = (uint)(_nextByte & FixStrMaxLength);
+                    case Str8PrefixByte:
+                        length = ReadByte();
+                        break;
+                    case Str16PrefixByte:
+                        length = ReadUInt16();
+                        break;
+                    case Str32PrefixByte:
+                        length = ReadUInt32();
+                        break;
                 }
-                else
-                {
-                    switch (_nextByte)
-                    {
-                        case Str8PrefixByte:  length = ReadByte();   break;
-                        case Str16PrefixByte: length = ReadUInt16(); break;
-                        case Str32PrefixByte: length = ReadUInt32(); break;
-                    }
-                }
+            }
 
-                if (length != null)
-                {
-                    if (length > int.MaxValue)
-                        throw new Exception("String length is too long to read");
+            if (length != null)
+            {
+                if (length > int.MaxValue)
+                    throw new Exception("String length is too long to read");
 
-                    _nextByte = -1;
-                    var bytes = new byte[(int)length];
-                    Read((int)length, bytes);
-                    value = encoding.GetString(bytes);
-                    return true;
-                }
+                _nextByte = -1;
+                var bytes = new byte[(int)length];
+                Read((int)length, bytes);
+                value = encoding.GetString(bytes);
+                return true;
             }
 
             value = default(string);
@@ -824,7 +803,7 @@ namespace Dasher
             {
                 var read = _stream.Read(bytes, pos, length - pos);
                 if (read == 0)
-                    throw new IOException("End of stream reached.");
+                    throw EOF();
                 pos += read;
             }
         }
@@ -835,7 +814,7 @@ namespace Dasher
         {
             var i = _stream.ReadByte();
             if (i == -1)
-                throw new IOException("Unexpected end of stream.");
+                throw EOF();
             return (byte)i;
         }
 
@@ -843,7 +822,7 @@ namespace Dasher
         {
             var i = _stream.ReadByte();
             if (i == -1)
-                throw new IOException("Unexpected end of stream.");
+                throw EOF();
             return (sbyte)(byte)i;
         }
 

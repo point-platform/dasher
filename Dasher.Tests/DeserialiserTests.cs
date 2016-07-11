@@ -189,11 +189,10 @@ namespace Dasher.Tests
             var bytes = new byte[0];
 
             var deserialiser = new Deserialiser<UserScore>();
-            var ex = Assert.Throws<DeserialisationException>(
+            var ex = Assert.Throws<IOException>(
                 () => deserialiser.Deserialise(bytes));
 
-            Assert.Equal(typeof(UserScore), ex.TargetType);
-            Assert.Equal("Data stream empty", ex.Message);
+            Assert.Equal("End of stream reached.", ex.Message);
         }
 
         [Fact]
