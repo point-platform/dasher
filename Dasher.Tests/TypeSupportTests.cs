@@ -284,26 +284,26 @@ namespace Dasher.Tests
 
         private static T TestTopLevel<T>(T value, Action<MsgPack.Packer> packAction, Action<T> customEvaluator = null)
         {
-            byte[] expectedBytes;
+            byte[] msgPackCliBytes;
             using (var stream = new MemoryStream())
             using (var packer = MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None))
             {
                 packAction(packer);
                 stream.Position = 0;
-                expectedBytes = stream.ToArray();
+                msgPackCliBytes = stream.ToArray();
             }
 
-            var deserialisedValue = new Deserialiser<T>().Deserialise(expectedBytes);
+            var deserialisedValue = new Deserialiser<T>().Deserialise(msgPackCliBytes);
 
             if (customEvaluator != null)
                 customEvaluator(value);
             else
                 Assert.Equal(value, deserialisedValue);
 
-            var serialisedBytes = new Serialiser<T>().Serialise(value);
+            var dasherBytes = new Serialiser<T>().Serialise(value);
 
-            Assert.Equal(expectedBytes.Length, serialisedBytes.Length);
-            Assert.Equal(expectedBytes, serialisedBytes);
+            Assert.Equal(msgPackCliBytes.Length, dasherBytes.Length);
+            Assert.Equal(msgPackCliBytes, dasherBytes);
 
             return deserialisedValue;
         }
