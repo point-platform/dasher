@@ -781,7 +781,7 @@ namespace Dasher
             if (length != null)
             {
                 if (length > int.MaxValue)
-                    throw new Exception("String length is too long to read");
+                    throw new Exception("String length is too long to read.");
 
                 _nextByte = -1;
                 var bytes = new byte[(int)length];
