@@ -631,6 +631,7 @@ namespace Dasher
 
             var b = (byte)_nextByte;
 
+            // TODO can arrange these comparisons to take advantage of mutual information
             if (b <= PosFixIntMaxByte ||
                 b >= NegFixIntMinByte)
             {
@@ -740,6 +741,7 @@ namespace Dasher
             }
             else
             {
+                // TODO do this without allocating a byte[]
                 Read(checked((int)count));
             }
         }
