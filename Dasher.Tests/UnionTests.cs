@@ -69,6 +69,9 @@ namespace Dasher.Tests
 
             Assert.NotNull(union);
             Assert.Equal(123, union);
+
+            Assert.False(Union<int, double>.TryCreate("Wrong type", out union));
+            Assert.Null(union);
         }
 
         [Fact]
