@@ -32,6 +32,9 @@ namespace Dasher
 {
     // NOTE this file is generated
 
+    /// <summary>
+    /// Models a value which may be of one of 2 types.
+    /// </summary>
     public abstract class Union<T1, T2>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2);
@@ -82,6 +85,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 3 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3);
@@ -148,6 +154,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 4 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4);
@@ -230,6 +239,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 5 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5);
@@ -328,6 +340,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 6 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6);
@@ -442,6 +457,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 7 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6, T7>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6, Func<T7, T> func7);
@@ -572,6 +590,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 8 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6, T7, T8>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6, Func<T7, T> func7, Func<T8, T> func8);
@@ -718,6 +739,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 9 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6, T7, T8, T9>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6, Func<T7, T> func7, Func<T8, T> func8, Func<T9, T> func9);
@@ -880,6 +904,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 10 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6, Func<T7, T> func7, Func<T8, T> func8, Func<T9, T> func9, Func<T10, T> func10);
@@ -1058,6 +1085,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 11 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6, Func<T7, T> func7, Func<T8, T> func8, Func<T9, T> func9, Func<T10, T> func10, Func<T11, T> func11);
@@ -1252,6 +1282,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 12 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6, Func<T7, T> func7, Func<T8, T> func8, Func<T9, T> func9, Func<T10, T> func10, Func<T11, T> func11, Func<T12, T> func12);
@@ -1462,6 +1495,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 13 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6, Func<T7, T> func7, Func<T8, T> func8, Func<T9, T> func9, Func<T10, T> func10, Func<T11, T> func11, Func<T12, T> func12, Func<T13, T> func13);
@@ -1688,6 +1724,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 14 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6, Func<T7, T> func7, Func<T8, T> func8, Func<T9, T> func9, Func<T10, T> func10, Func<T11, T> func11, Func<T12, T> func12, Func<T13, T> func13, Func<T14, T> func14);
@@ -1930,6 +1969,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 15 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6, Func<T7, T> func7, Func<T8, T> func8, Func<T9, T> func9, Func<T10, T> func10, Func<T11, T> func11, Func<T12, T> func12, Func<T13, T> func13, Func<T14, T> func14, Func<T15, T> func15);
@@ -2188,6 +2230,9 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Models a value which may be of one of 16 types.
+    /// </summary>
     public abstract class Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>
     {
         public abstract T Match<T>(Func<T1, T> func1, Func<T2, T> func2, Func<T3, T> func3, Func<T4, T> func4, Func<T5, T> func5, Func<T6, T> func6, Func<T7, T> func7, Func<T8, T> func8, Func<T9, T> func9, Func<T10, T> func10, Func<T11, T> func11, Func<T12, T> func12, Func<T13, T> func13, Func<T14, T> func14, Func<T15, T> func15, Func<T16, T> func16);

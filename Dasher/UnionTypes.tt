@@ -44,6 +44,9 @@ for (var level = 2; level <= 16; level++)
     var actionMatchArgs = string.Join(", ", Enumerable.Range(1, level).Select(n => $"Action<T{n}> action{n}"));
 #>
 
+    /// <summary>
+    /// Models a value which may be of one of <#= level #> types.
+    /// </summary>
     public abstract class <#= unionName #>
     {
         public abstract T Match<T>(<#=funcMatchArgs#>);
