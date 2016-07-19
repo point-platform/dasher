@@ -72,6 +72,10 @@ for (var level = 2; level <= 16; level++)
 <# for (var i = 1; i <= level; i++) { #>
         public static implicit operator <#= unionName #>(T<#=i#> value) => new Type<#=i#>(value);
 <# } #>
+
+<# for (var i = 1; i <= level; i++) { #>
+        public static explicit operator T<#=i#>(<#= unionName #> union) => (T<#=i#>)union.Value;
+<# } #>
 <# for (var i = 1; i <= level; i++) { #>
 
         private sealed class Type<#=i#> : <#= unionName #>

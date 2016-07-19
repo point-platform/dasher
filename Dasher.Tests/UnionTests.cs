@@ -147,5 +147,15 @@ namespace Dasher.Tests
             Assert.Equal(typeof(int), Union<int, double>.Create(1).Type);
             Assert.Equal(typeof(double), Union<int, double>.Create(1.0).Type);
         }
+
+        [Fact]
+        public void ExplicitCastToValue()
+        {
+            Assert.Equal(1, (int)Union<int, double>.Create(1));
+            Assert.Equal(1.0, (double)Union<int, double>.Create(1.0));
+
+            Assert.Throws<InvalidCastException>(() => (double)Union<int, double>.Create(1));
+            Assert.Throws<InvalidCastException>(() => (int)Union<int, double>.Create(1.0));
+        }
     }
 }

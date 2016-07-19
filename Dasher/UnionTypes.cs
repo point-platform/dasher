@@ -58,6 +58,9 @@ namespace Dasher
         public static implicit operator Union<T1, T2>(T1 value) => new Type1(value);
         public static implicit operator Union<T1, T2>(T2 value) => new Type2(value);
 
+        public static explicit operator T1(Union<T1, T2> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2> union) => (T2)union.Value;
+
         private sealed class Type1 : Union<T1, T2>
         {
             private T1 _value;
@@ -113,6 +116,10 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3>(T1 value) => new Type1(value);
         public static implicit operator Union<T1, T2, T3>(T2 value) => new Type2(value);
         public static implicit operator Union<T1, T2, T3>(T3 value) => new Type3(value);
+
+        public static explicit operator T1(Union<T1, T2, T3> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3> union) => (T3)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3>
         {
@@ -185,6 +192,11 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4>(T2 value) => new Type2(value);
         public static implicit operator Union<T1, T2, T3, T4>(T3 value) => new Type3(value);
         public static implicit operator Union<T1, T2, T3, T4>(T4 value) => new Type4(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4> union) => (T4)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4>
         {
@@ -273,6 +285,12 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5>(T3 value) => new Type3(value);
         public static implicit operator Union<T1, T2, T3, T4, T5>(T4 value) => new Type4(value);
         public static implicit operator Union<T1, T2, T3, T4, T5>(T5 value) => new Type5(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5> union) => (T5)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5>
         {
@@ -377,6 +395,13 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6>(T4 value) => new Type4(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6>(T5 value) => new Type5(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6>(T6 value) => new Type6(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6> union) => (T6)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6>
         {
@@ -497,6 +522,14 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7>(T5 value) => new Type5(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7>(T6 value) => new Type6(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7>(T7 value) => new Type7(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T6)union.Value;
+        public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T7)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6, T7>
         {
@@ -633,6 +666,15 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8>(T6 value) => new Type6(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8>(T7 value) => new Type7(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8>(T8 value) => new Type8(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T6)union.Value;
+        public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T7)union.Value;
+        public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T8)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6, T7, T8>
         {
@@ -785,6 +827,16 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9>(T7 value) => new Type7(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9>(T8 value) => new Type8(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9>(T9 value) => new Type9(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T6)union.Value;
+        public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T7)union.Value;
+        public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T8)union.Value;
+        public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T9)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6, T7, T8, T9>
         {
@@ -953,6 +1005,17 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T8 value) => new Type8(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T9 value) => new Type9(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(T10 value) => new Type10(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T6)union.Value;
+        public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T7)union.Value;
+        public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T8)union.Value;
+        public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T9)union.Value;
+        public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T10)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
         {
@@ -1137,6 +1200,18 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T9 value) => new Type9(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T10 value) => new Type10(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(T11 value) => new Type11(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T6)union.Value;
+        public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T7)union.Value;
+        public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T8)union.Value;
+        public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T9)union.Value;
+        public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T10)union.Value;
+        public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T11)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
         {
@@ -1337,6 +1412,19 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T10 value) => new Type10(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T11 value) => new Type11(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(T12 value) => new Type12(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T6)union.Value;
+        public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T7)union.Value;
+        public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T8)union.Value;
+        public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T9)union.Value;
+        public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T10)union.Value;
+        public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T11)union.Value;
+        public static explicit operator T12(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T12)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
         {
@@ -1553,6 +1641,20 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T11 value) => new Type11(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T12 value) => new Type12(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(T13 value) => new Type13(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T6)union.Value;
+        public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T7)union.Value;
+        public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T8)union.Value;
+        public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T9)union.Value;
+        public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T10)union.Value;
+        public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T11)union.Value;
+        public static explicit operator T12(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T12)union.Value;
+        public static explicit operator T13(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T13)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
         {
@@ -1785,6 +1887,21 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T12 value) => new Type12(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T13 value) => new Type13(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(T14 value) => new Type14(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T6)union.Value;
+        public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T7)union.Value;
+        public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T8)union.Value;
+        public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T9)union.Value;
+        public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T10)union.Value;
+        public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T11)union.Value;
+        public static explicit operator T12(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T12)union.Value;
+        public static explicit operator T13(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T13)union.Value;
+        public static explicit operator T14(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T14)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
         {
@@ -2033,6 +2150,22 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T13 value) => new Type13(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T14 value) => new Type14(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(T15 value) => new Type15(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T6)union.Value;
+        public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T7)union.Value;
+        public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T8)union.Value;
+        public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T9)union.Value;
+        public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T10)union.Value;
+        public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T11)union.Value;
+        public static explicit operator T12(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T12)union.Value;
+        public static explicit operator T13(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T13)union.Value;
+        public static explicit operator T14(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T14)union.Value;
+        public static explicit operator T15(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T15)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
         {
@@ -2297,6 +2430,23 @@ namespace Dasher
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T14 value) => new Type14(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T15 value) => new Type15(value);
         public static implicit operator Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(T16 value) => new Type16(value);
+
+        public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T1)union.Value;
+        public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T2)union.Value;
+        public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T3)union.Value;
+        public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T4)union.Value;
+        public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T5)union.Value;
+        public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T6)union.Value;
+        public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T7)union.Value;
+        public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T8)union.Value;
+        public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T9)union.Value;
+        public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T10)union.Value;
+        public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T11)union.Value;
+        public static explicit operator T12(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T12)union.Value;
+        public static explicit operator T13(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T13)union.Value;
+        public static explicit operator T14(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T14)union.Value;
+        public static explicit operator T15(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T15)union.Value;
+        public static explicit operator T16(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T16)union.Value;
 
         private sealed class Type1 : Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>
         {
