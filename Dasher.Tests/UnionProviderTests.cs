@@ -39,7 +39,7 @@ namespace Dasher.Tests
             Assert.Equal("Version", UnionProvider.GetTypeName(typeof(Version)));
             Assert.Equal("Guid", UnionProvider.GetTypeName(typeof(Guid)));
 
-            Assert.Equal("Union<Int32,String>", UnionProvider.GetTypeName(typeof(Union<int, string>))); ;
+            Assert.Equal("Union<Int32,String>", UnionProvider.GetTypeName(typeof(Union<int, string>)));
 
             Assert.Equal("Dasher.Tests.ValueWrapper<String>", UnionProvider.GetTypeName(typeof(ValueWrapper<string>)));
 
