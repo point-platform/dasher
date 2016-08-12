@@ -51,7 +51,7 @@ namespace Dasher.Tests
         public void DisallowsPrimitiveTypes()
         {
             var exception = Assert.Throws<DeserialisationException>(() => new Deserialiser<int>());
-            Assert.Equal("Cannot deserialise type \"System.Int32\": Top-level primitive types are not supported. An object with properties supports future versioning.", exception.Message);
+            Assert.Equal("Cannot deserialise type \"System.Int32\": Top level types must be complex to support future versioning.", exception.Message);
         }
 
         [Fact]

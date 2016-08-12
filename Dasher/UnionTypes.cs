@@ -23,6 +23,8 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 // ReSharper disable AssignNullToNotNullAttribute
 // ReSharper disable FieldCanBeMadeReadOnly.Local
@@ -31,6 +33,23 @@ using System;
 namespace Dasher
 {
     // NOTE this file is generated
+
+    internal static class Union
+    {
+        public static bool IsUnionType(Type type)
+        {
+            return type.FullName.StartsWith("Dasher.Union`", StringComparison.Ordinal)
+                && type.Assembly == Assembly.GetExecutingAssembly();
+        }
+
+        public static IReadOnlyList<Type> GetTypes(Type type)
+        {
+            if (!IsUnionType(type))
+                throw new ArgumentException("Must be a union type.", nameof(type));
+
+            return type.GetGenericArguments();
+        }
+    }
 
     /// <summary>
     /// Models a value which may be of one of 2 types.

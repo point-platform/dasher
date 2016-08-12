@@ -99,11 +99,26 @@ namespace Dasher
 
         internal void ValidateTopLevelType(Type type, ICollection<string> errors)
         {
-            if (type.IsPrimitive)
-                errors.Add("Top-level primitive types are not supported. An object with properties supports future versioning.");
-
-            if (!_typeProviders.Any(p => p.CanProvide(type)))
+            if (Union.IsUnionType(type))
+            {
+                foreach (var memberType in Union.GetTypes(type))
+                    ValidateTopLevelType(memberType, errors);
+            }
+            else if (_typeProviders.Any(p => p.CanProvide(type)))
+            {
+                errors.Add("Top level types must be complex to support future versioning.");
+            }
+            else
+            {
                 ComplexTypeProvider.TryValidateComplexType(type, errors);
+            }
+        }
+
+        public bool IsValidTopLevelType(Type type)
+        {
+            var errors = new List<string>(capacity: 0);
+            ValidateTopLevelType(type, errors);
+            return errors.Count == 0;
         }
     }
 }
