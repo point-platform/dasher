@@ -41,14 +41,14 @@ namespace Dasher.Tests
         public void DisallowsObject()
         {
             var exception = Assert.Throws<SerialisationException>(() => new Serialiser<object>());
-            Assert.Equal("Cannot serialise type \"System.Object\": Complex type provider constructor to have at least one argument.", exception.Message);
+            Assert.Equal("Cannot serialise type \"System.Object\": Complex type provider requires constructor to have at least one argument.", exception.Message);
         }
 
         [Fact]
         public void DisallowsTypeWithNoProperties()
         {
             var exception = Assert.Throws<SerialisationException>(() => new Serialiser<NoProperties>());
-            Assert.Equal("Cannot serialise type \"Dasher.Tests.NoProperties\": Complex type provider constructor to have at least one argument.", exception.Message);
+            Assert.Equal("Cannot serialise type \"Dasher.Tests.NoProperties\": Complex type provider requires constructor to have at least one argument.", exception.Message);
         }
 
         [Fact]

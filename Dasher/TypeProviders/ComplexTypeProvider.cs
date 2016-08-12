@@ -51,7 +51,7 @@ namespace Dasher.TypeProviders
 
             if (constructors[0].GetParameters().Length == 0)
             {
-                errors.Add("Complex type provider constructor to have at least one argument.");
+                errors.Add("Complex type provider requires constructor to have at least one argument.");
                 return false;
             }
 
