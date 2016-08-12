@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 
 namespace Dasher.TypeProviders
 {
@@ -227,11 +228,20 @@ namespace Dasher.TypeProviders
             if (arguments.Length == 2 && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
                 return $"({GetTypeName(arguments[0])}=>{GetTypeName(arguments[1])})";
 
-            var baseName = type.FullName.StartsWith("Dasher.Union`")
-                ? "Union"
-                : type.FullName.Substring(0, type.FullName.IndexOf('`'));
+            var name = type.FullName.Substring(0, type.FullName.IndexOf("[[", StringComparison.Ordinal));
 
-            return $"{baseName}<{string.Join(",", arguments.Select(GetTypeName))}>";
+            name = Regex.Replace(name, @"^Dasher\.Union", "Union");
+
+            var argIndex = 0;
+            name = Regex.Replace(name, "`([0-9]+)", match =>
+            {
+                var count = int.Parse(match.Groups[1].Value);
+                var args = $"<{string.Join(",", arguments.Skip(argIndex).Take(count).Select(GetTypeName))}>";
+                argIndex += count;
+                return args;
+            });
+
+            return name;
         }
     }
 }

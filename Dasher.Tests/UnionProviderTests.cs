@@ -24,13 +24,25 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Dasher.TypeProviders;
 using Xunit;
 
 namespace Dasher.Tests
 {
+    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+    [SuppressMessage("ReSharper", "UnusedTypeParameter")]
+    internal class Foo<T>
+    {
+        internal struct Bar { }
+        internal struct Baz<U> { }
+    }
+
     public class UnionProviderTests
     {
+        public struct NestedType { }
+        public struct NestedType<T> { }
+
         [Fact]
         public void TypeNames()
         {
@@ -44,6 +56,11 @@ namespace Dasher.Tests
             Assert.Equal("Dasher.Tests.ValueWrapper<String>", UnionProvider.GetTypeName(typeof(ValueWrapper<string>)));
 
             Assert.Equal("Dasher.Tests.UnionProviderTests", UnionProvider.GetTypeName(typeof(UnionProviderTests)));
+
+            Assert.Equal("Dasher.Tests.UnionProviderTests+NestedType", UnionProvider.GetTypeName(typeof(NestedType)));
+            Assert.Equal("Dasher.Tests.UnionProviderTests+NestedType<Int32>", UnionProvider.GetTypeName(typeof(NestedType<int>)));
+            Assert.Equal("Dasher.Tests.Foo<Int32>+Bar", UnionProvider.GetTypeName(typeof(Foo<int>.Bar)));
+            Assert.Equal("Dasher.Tests.Foo<Int32>+Baz<String>", UnionProvider.GetTypeName(typeof(Foo<int>.Baz<string>)));
 
             Assert.Equal("[String]", UnionProvider.GetTypeName(typeof(IReadOnlyList<string>)));
 
