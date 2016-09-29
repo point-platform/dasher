@@ -179,7 +179,7 @@ namespace Dasher.Tests
 
             var deserialiser = new Deserialiser<UserScore>();
             var ex = Assert.Throws<DeserialisationException>(() => deserialiser.Deserialise(bytes));
-            Assert.Equal("Message must be encoded as a MsgPack map", ex.Message);
+            Assert.Equal("Message must be encoded as a MsgPack map, not \"FixArray\".", ex.Message);
             Assert.Equal(typeof(UserScore), ex.TargetType);
         }
 

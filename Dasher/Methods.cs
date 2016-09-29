@@ -18,6 +18,7 @@ namespace Dasher
 
         public static MethodInfo String_Equals_String_String                    { get; } = typeof(string).GetMethod(nameof(string.Equals), BindingFlags.Static | BindingFlags.Public, null, new[] {typeof(string), typeof(string)}, null);
         public static MethodInfo String_Equals_String_StringComparison          { get; } = typeof(string).GetMethod(nameof(string.Equals), new[] {typeof(string), typeof(StringComparison)});
+        public static MethodInfo String_Format_String_Object                    { get; } = typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)});
         public static MethodInfo String_Format_String_Object_Object             { get; } = typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)});
         public static MethodInfo String_Format_String_Object_Object_Object      { get; } = typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object), typeof(object)});
 
