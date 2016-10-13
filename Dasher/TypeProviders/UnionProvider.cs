@@ -221,15 +221,20 @@ namespace Dasher.TypeProviders
             ilg.MarkLabel(labelNextType);
             throwBlocks.Throw(() =>
             {
-                // TODO include received type name in error message and some more general info
-                ilg.Emit(OpCodes.Ldstr, "No match on union type");
-                ilg.Emit(OpCodes.Newobj, Methods.Exception_Ctor_String);
-                ilg.Emit(OpCodes.Throw);
+                ilg.LoadType(targetType);
+                ilg.LoadType(value.LocalType);
+                ilg.Emit(OpCodes.Ldloc, typeName);
+                ilg.Emit(OpCodes.Call, typeof(UnionProvider).GetMethod(nameof(ThrowForUnknownUnionTypeName), BindingFlags.NonPublic | BindingFlags.Static));
             });
 
             ilg.MarkLabel(lblExit);
 
             return success;
+        }
+
+        private static void ThrowForUnknownUnionTypeName(Type targetType, Type unionType, string typeName)
+        {
+            throw new DeserialisationException($"No match in union for type \"{typeName}\". Expected one of {string.Join(", ", Union.GetTypes(unionType).Select(t => $"\"{t.Name}\""))}.", targetType);
         }
     }
 

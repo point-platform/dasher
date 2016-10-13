@@ -545,13 +545,13 @@ namespace Dasher.Tests
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
                 .Pack(nameof(ValueWrapper<Union<int, double>>.Value))
-                .PackArrayHeader(3)
+                .PackArrayHeader(2)
                     .Pack("String")
                     .Pack("Hello"));
 
-            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<Union<int, string>>>().Deserialise(bytes));
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<Union<int, double>>>().Deserialise(bytes));
 
-            Assert.Equal(@"Union array should have 2 elements (not 3) for property ""value"" of type ""Dasher.Union`2[System.Int32,System.String]""",
+            Assert.Equal(@"No match in union for type ""String"". Expected one of ""Int32"", ""Double"".",
                 ex.Message);
         }
 
