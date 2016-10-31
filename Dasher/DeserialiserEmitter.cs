@@ -26,7 +26,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading;
 using Dasher.TypeProviders;
 using System.Reflection;
 
@@ -34,6 +36,8 @@ namespace Dasher
 {
     internal static class DeserialiserEmitter
     {
+        private static readonly Random _random = new Random();
+
         public static Func<Unpacker, DasherContext, object> Build(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour, DasherContext context)
         {
             // Create a collection for errors, initially with zero capacity (minimal allocation)
@@ -45,6 +49,13 @@ namespace Dasher
             // Throw if there were any errors
             if (errors.Any())
                 throw new DeserialisationException(errors, type);
+
+
+//            var assemblyBuilder = Thread.GetDomain().DefineDynamicAssembly(new AssemblyName($"Generated{type.Name}DeserialiserAssembly"), AssemblyBuilderAccess.RunAndSave);
+//            var module = assemblyBuilder.DefineDynamicModule($"Generated{type.Name}DeserialiserModule", emitSymbolInfo: true);
+//            var typeBuilder = module.DefineType($"Generated{type.Name}DeserialiserType", TypeAttributes.Public | TypeAttributes.Class);
+//            var methodbuilder = typeBuilder.DefineMethod($"Generated{type.Name}DeserialiserMethod", MethodAttributes.HideBySig | MethodAttributes.Static | MethodAttributes.Public, typeof(void), new Type[] { typeof(string[]) });
+//            var ilg = methodbuilder.GetILGenerator();
 
             // Initialise code gen
             var method = new DynamicMethod(
@@ -85,8 +96,14 @@ namespace Dasher
             // Write all the exception handling blocks out of line
             throwBlocks.Flush();
 
+            // Return the newly constructed object!
+            ilg.Emit(OpCodes.Ret);
+
+//            assemblyBuilder.Save($"Generated{type.Name}DeserialiserAssembly{_random.Next()}.dll");
+
             // Return a delegate that performs the above operations
             return (Func<Unpacker, DasherContext, object>)method.CreateDelegate(typeof(Func<Unpacker, DasherContext, object>));
+//            return null;
         }
 
         public static bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, DasherContext context, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour, bool isRoot = false)

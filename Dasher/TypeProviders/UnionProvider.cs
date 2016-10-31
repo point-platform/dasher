@@ -219,13 +219,14 @@ namespace Dasher.TypeProviders
 
             // If we exhaust the loop, throws
             ilg.MarkLabel(labelNextType);
-            throwBlocks.Throw(() =>
-            {
+            // TODO why does commenting this throw block out cause the program to work?
+//            throwBlocks.Throw(() =>
+//            {
                 ilg.LoadType(targetType);
                 ilg.LoadType(value.LocalType);
                 ilg.Emit(OpCodes.Ldloc, typeName);
                 ilg.Emit(OpCodes.Call, typeof(UnionProvider).GetMethod(nameof(ThrowForUnknownUnionTypeName), BindingFlags.NonPublic | BindingFlags.Static));
-            });
+//            });
 
             ilg.MarkLabel(lblExit);
 
