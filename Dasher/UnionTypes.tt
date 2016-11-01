@@ -44,7 +44,7 @@ namespace Dasher
         public static bool IsUnionType(Type type)
         {
             return type.FullName.StartsWith("Dasher.Union`", StringComparison.Ordinal)
-                && type.Assembly == Assembly.GetExecutingAssembly();
+                && ReferenceEquals(type.GetTypeInfo().Assembly, typeof(Union).GetTypeInfo().Assembly);
         }
 
         public static IReadOnlyList<Type> GetTypes(Type type)

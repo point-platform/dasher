@@ -24,13 +24,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Dasher.TypeProviders
 {
     internal sealed class EnumProvider : ITypeProvider
     {
-        public bool CanProvide(Type type) => type.IsEnum;
+        public bool CanProvide(Type type) => type.GetTypeInfo().IsEnum;
 
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {

@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Emit;
 using Dasher.TypeProviders;
+using System.Reflection;
 
 namespace Dasher
 {
@@ -65,7 +66,7 @@ namespace Dasher
 
             var value = ilg.DeclareLocal(type);
             ilg.Emit(OpCodes.Ldarg_2); // value
-            ilg.Emit(type.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
+            ilg.Emit(type.GetTypeInfo().IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
             ilg.Emit(OpCodes.Stloc, value);
 
             var throwBlocks = new ThrowBlockGatherer(ilg);
@@ -102,7 +103,7 @@ namespace Dasher
                 ilg.Emit(OpCodes.Ldloc, packer);
                 ilg.Emit(OpCodes.Ldloc, contextLocal);
                 ilg.Emit(OpCodes.Ldloc, value);
-                if (value.LocalType.IsValueType)
+                if (value.LocalType.GetTypeInfo().IsValueType)
                     ilg.Emit(OpCodes.Box, value.LocalType);
                 ilg.Emit(OpCodes.Call, Methods.DasherSerialiseAction_Invoke);
             }
@@ -110,7 +111,7 @@ namespace Dasher
             {
                 var end = ilg.DefineLabel();
 
-                if (!value.LocalType.IsValueType)
+                if (!value.LocalType.GetTypeInfo().IsValueType)
                 {
                     var nonNull = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Ldloc, value);

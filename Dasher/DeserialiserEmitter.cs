@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Emit;
 using Dasher.TypeProviders;
+using System.Reflection;
 
 namespace Dasher
 {
@@ -75,7 +76,7 @@ namespace Dasher
 
             ilg.Emit(OpCodes.Ldloc, valueLocal);
 
-            if (type.IsValueType)
+            if (type.GetTypeInfo().IsValueType)
                 ilg.Emit(OpCodes.Box, type);
 
             // Return the newly constructed object!
@@ -103,14 +104,14 @@ namespace Dasher
                 ilg.Emit(OpCodes.Ldloc, unpacker);
                 ilg.Emit(OpCodes.Ldloc, contextLocal);
                 ilg.Emit(OpCodes.Call, Methods.DasherDeserialiseFunc_Invoke);
-                ilg.Emit(value.LocalType.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, value.LocalType);
+                ilg.Emit(value.LocalType.GetTypeInfo().IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, value.LocalType);
                 ilg.Emit(OpCodes.Stloc, value);
             }
             else
             {
                 var end = ilg.DefineLabel();
 
-                if (!value.LocalType.IsValueType)
+                if (!value.LocalType.GetTypeInfo().IsValueType)
                 {
                     // check for null
                     var nonNullLabel = ilg.DefineLabel();

@@ -25,19 +25,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Dasher.TypeProviders
 {
     internal sealed class ReadOnlyDictionaryProvider : ITypeProvider
     {
-        public bool CanProvide(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>);
+        public bool CanProvide(Type type) => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>);
 
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var dicType = value.LocalType;
-            var readOnlyCollectionType = dicType.GetInterfaces().Single(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IReadOnlyCollection<>));
-            var enumerableType = dicType.GetInterfaces().Single(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            var readOnlyCollectionType = dicType.GetInterfaces().Single(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IReadOnlyCollection<>));
+            var enumerableType = dicType.GetInterfaces().Single(t => t.GetTypeInfo().IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
             var pairType = enumerableType.GenericTypeArguments.Single();
             var enumeratorType = typeof(IEnumerator<>).MakeGenericType(pairType);
             var keyType = dicType.GetGenericArguments()[0];

@@ -11,3 +11,4 @@ _ReSharper*/
 packages/
 .vs
 
+*.lock.json

@@ -488,7 +488,15 @@ namespace Dasher.Tests
             var ex = Assert.Throws<ArgumentException>(
                 () => new Deserialiser<ValueWrapper<IReadOnlyDictionary<int, string>>>().Deserialise(bytes));
 
+#if NETCOREAPP1_0
+            Assert.Equal("An item with the same key has already been added. Key: 1", ex.Message);
+#else
+#if NET451
             Assert.Equal("An item with the same key has already been added.", ex.Message);
+#else
+            throw new Exception("Build configuration is not tested.")
+#endif
+#endif
         }
 
         [Fact]
@@ -571,7 +579,7 @@ namespace Dasher.Tests
                 ex.Message);
         }
 
-        #region Helper
+#region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)
         {
@@ -579,9 +587,9 @@ namespace Dasher.Tests
             var packer = MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None);
             packAction(packer);
             stream.Position = 0;
-            return stream.GetBuffer();
+            return stream.ToArray();
         }
 
-        #endregion
+#endregion
     }
 }

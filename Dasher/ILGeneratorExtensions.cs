@@ -23,6 +23,7 @@
 #endregion
 
 using System;
+using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Dasher
@@ -77,7 +78,7 @@ namespace Dasher
                 }
                 ilg.Emit(OpCodes.Newobj, Methods.Decimal_Ctor_IntArray);
             }
-            else if (value.GetType().IsEnum)
+            else if (value.GetType().GetTypeInfo().IsEnum)
             {
                 // TODO test and cater for non-4-byte enums too
                 ilg.Emit(OpCodes.Ldc_I4, (int)value);

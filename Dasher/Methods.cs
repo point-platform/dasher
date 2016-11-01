@@ -16,7 +16,7 @@ namespace Dasher
 
         public static MethodInfo Object_ToString                                { get; } = typeof(object).GetMethod(nameof(ToString), new Type[0]);
 
-        public static MethodInfo String_Equals_String_String                    { get; } = typeof(string).GetMethod(nameof(string.Equals), BindingFlags.Static | BindingFlags.Public, null, new[] {typeof(string), typeof(string)}, null);
+        public static MethodInfo String_Equals_String_String                    { get; } = typeof(string).GetMethod(nameof(string.Equals), new[] {typeof(string), typeof(string)});
         public static MethodInfo String_Equals_String_StringComparison          { get; } = typeof(string).GetMethod(nameof(string.Equals), new[] {typeof(string), typeof(StringComparison)});
         public static MethodInfo String_Format_String_Object                    { get; } = typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)});
         public static MethodInfo String_Format_String_Object_Object             { get; } = typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)});
@@ -57,8 +57,8 @@ namespace Dasher
         public static MethodInfo DasherDeserialiseFunc_Invoke                   { get; } = typeof(Func<Unpacker, DasherContext, object>).GetMethod(nameof(Func<Unpacker, DasherContext, object>.Invoke), new[] {typeof(Unpacker), typeof(DasherContext)});
         public static MethodInfo DasherSerialiseAction_Invoke                   { get; } = typeof(Action<Packer, DasherContext, object>).GetMethod(nameof(Func<Packer, DasherContext, object>.Invoke), new[] {typeof(Packer), typeof(DasherContext), typeof(object)});
 
-        public static MethodInfo DasherContext_GetOrCreateDeserialiseFunc       { get; } = typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateDeserialiseFunc), BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof(Type), typeof(UnexpectedFieldBehaviour)}, null);
-        public static MethodInfo DasherContext_GetOrCreateSerialiseAction       { get; } = typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateSerialiseAction), BindingFlags.Instance | BindingFlags.NonPublic, null, new[] {typeof(Type)}, null);
+        public static MethodInfo DasherContext_GetOrCreateDeserialiseFunc       { get; } = typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateDeserialiseFunc), BindingFlags.Instance | BindingFlags.NonPublic);
+        public static MethodInfo DasherContext_GetOrCreateSerialiseAction       { get; } = typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateSerialiseAction), BindingFlags.Instance | BindingFlags.NonPublic);
 
         public static MethodInfo Format_ToString                                { get; } = typeof(Format).GetMethod(nameof(Format.ToString), new Type[0]);
 

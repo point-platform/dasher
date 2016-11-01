@@ -93,7 +93,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Call, Methods.Packer_Pack_String);
 
                 // get property value
-                ilg.Emit(value.LocalType.IsValueType ? OpCodes.Ldloca : OpCodes.Ldloc, value);
+                ilg.Emit(value.LocalType.GetTypeInfo().IsValueType ? OpCodes.Ldloca : OpCodes.Ldloc, value);
                 ilg.Emit(OpCodes.Call, prop.GetMethod);
                 ilg.Emit(OpCodes.Stloc, propValue);
 

@@ -163,7 +163,7 @@ namespace Dasher.Tests
             {
                 var stream = new MemoryStream();
                 new Packer(stream).PackMapHeader(0);
-                var bytes = stream.GetBuffer();
+                var bytes = stream.ToArray();
 
                 var builtDeserialisers = Enumerable.Range(0, iterations).Select(i => new Deserialiser<TestDefaultParams>()).ToList();
 
@@ -185,7 +185,7 @@ namespace Dasher.Tests
             {
                 var stream = new MemoryStream();
                 new Packer(stream).PackMapHeader(0);
-                var bytes = stream.GetBuffer();
+                var bytes = stream.ToArray();
 
                 var builtDeserialisers = Enumerable.Range(0, iterations).Select(i => new Deserialiser<TestDefaultParams>()).ToList();
 

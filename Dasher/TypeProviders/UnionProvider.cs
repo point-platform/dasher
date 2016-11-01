@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 
@@ -37,7 +38,7 @@ namespace Dasher.TypeProviders
         //   The serialised value, as per regular Dasher serialisation
 
         public bool CanProvide(Type type)
-            => type.IsGenericType &&
+            => type.GetTypeInfo().IsGenericType &&
                type.GetGenericTypeDefinition().Namespace == nameof(Dasher) &&
                type.GetGenericTypeDefinition().Name.StartsWith($"{nameof(Union<int, int>)}`");
 
@@ -81,7 +82,7 @@ namespace Dasher.TypeProviders
                 var valueObj = ilg.DeclareLocal(type);
                 ilg.Emit(OpCodes.Ldloc, value);
                 ilg.Emit(OpCodes.Callvirt, value.LocalType.GetProperty(nameof(Union<int, int>.Value)).GetMethod);
-                ilg.Emit(type.IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
+                ilg.Emit(type.GetTypeInfo().IsValueType ? OpCodes.Unbox_Any : OpCodes.Castclass, type);
                 ilg.Emit(OpCodes.Stloc, valueObj);
 
                 // write value
@@ -219,7 +220,7 @@ namespace Dasher.TypeProviders
 
         public static string GetTypeName(Type type)
         {
-            if (!type.IsGenericType)
+            if (!type.GetTypeInfo().IsGenericType)
                 return type.Namespace == nameof(System) ? type.Name : type.FullName;
 
             var arguments = type.GetGenericArguments();
