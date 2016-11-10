@@ -55,7 +55,7 @@ namespace Dasher.TypeProviders
             var packerMethod = typeof(Packer).GetMethod(nameof(Packer.Pack), new[] {value.LocalType});
 
             if (packerMethod == null)
-                throw new InvalidOperationException("Type not supported. Call CanProvide first.");
+                throw new InvalidOperationException($"Type not supported. Call {nameof(CanProvide)} first.");
 
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloc, value);
