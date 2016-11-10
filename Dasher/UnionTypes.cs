@@ -34,7 +34,7 @@ namespace Dasher
 {
     // NOTE this file is generated
 
-    internal static class Union
+    public static class Union
     {
         public static bool IsUnionType(Type type)
         {
