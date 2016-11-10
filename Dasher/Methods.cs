@@ -76,7 +76,7 @@ namespace Dasher
 
         public static MethodInfo Object_Equals_Object_Object                    { get; } = typeof(object).GetMethod(nameof(object.Equals), BindingFlags.Static | BindingFlags.Public);
 
-        public static MethodInfo UnionProvider_GetTypeName                      { get; } = typeof(UnionProvider).GetMethod(nameof(UnionProvider.GetTypeName), BindingFlags.Static | BindingFlags.Public);
+        public static MethodInfo UnionEncoding_GetTypeName                      { get; } = typeof(UnionEncoding).GetMethod(nameof(UnionEncoding.GetTypeName), BindingFlags.Static | BindingFlags.Public);
 
         public static MethodInfo DasherDeserialiseFunc_Invoke                   { get; } = typeof(Func<Unpacker, DasherContext, object>).GetMethod(nameof(Func<Unpacker, DasherContext, object>.Invoke), new[] {typeof(Unpacker), typeof(DasherContext)});
         public static MethodInfo DasherSerialiseAction_Invoke                   { get; } = typeof(Action<Packer, DasherContext, object>).GetMethod(nameof(Func<Packer, DasherContext, object>.Invoke), new[] {typeof(Packer), typeof(DasherContext), typeof(object)});

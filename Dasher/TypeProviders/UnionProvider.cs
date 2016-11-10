@@ -59,7 +59,7 @@ namespace Dasher.TypeProviders
             // write type name
             ilg.Emit(OpCodes.Ldloc, packer);
             ilg.Emit(OpCodes.Ldloc, typeObj);
-            ilg.Emit(OpCodes.Call, Methods.UnionProvider_GetTypeName);
+            ilg.Emit(OpCodes.Call, Methods.UnionEncoding_GetTypeName);
             ilg.Emit(OpCodes.Call, Methods.Packer_Pack_String);
 
             var success = true;
@@ -171,7 +171,7 @@ namespace Dasher.TypeProviders
             var labelNextType = ilg.DefineLabel();
             foreach (var type in value.LocalType.GetGenericArguments())
             {
-                var expectedTypeName = GetTypeName(type);
+                var expectedTypeName = UnionEncoding.GetTypeName(type);
 
                 ilg.Emit(OpCodes.Ldloc, typeName);
                 ilg.Emit(OpCodes.Ldstr, expectedTypeName);
@@ -217,7 +217,18 @@ namespace Dasher.TypeProviders
 
             return success;
         }
+    }
 
+    /// <summary>
+    /// Utility class for the encoding of union type data.
+    /// </summary>
+    public static class UnionEncoding
+    {
+        /// <summary>
+        /// Gets the encoded name used to identify a union's member type.
+        /// </summary>
+        /// <param name="type">The union's member type.</param>
+        /// <returns>The name used to identify the union member.</returns>
         public static string GetTypeName(Type type)
         {
             if (!type.GetTypeInfo().IsGenericType)

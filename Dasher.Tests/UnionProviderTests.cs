@@ -24,21 +24,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Dasher.TypeProviders;
 using Xunit;
 
+// ReSharper disable ClassNeverInstantiated.Global
+// ReSharper disable UnusedTypeParameter
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace Dasher.Tests
 {
-    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-    [SuppressMessage("ReSharper", "UnusedTypeParameter")]
     internal class Foo<T>
     {
         internal struct Bar { }
         internal struct Baz<U> { }
     }
 
-    public class UnionProviderTests
+    public class UnionEncodingTests
     {
         public struct NestedType { }
         public struct NestedType<T> { }
@@ -46,28 +47,28 @@ namespace Dasher.Tests
         [Fact]
         public void TypeNames()
         {
-            Assert.Equal("String", UnionProvider.GetTypeName(typeof(string)));
-            Assert.Equal("Int32", UnionProvider.GetTypeName(typeof(int)));
-            Assert.Equal("Version", UnionProvider.GetTypeName(typeof(Version)));
-            Assert.Equal("Guid", UnionProvider.GetTypeName(typeof(Guid)));
+            Assert.Equal("String", UnionEncoding.GetTypeName(typeof(string)));
+            Assert.Equal("Int32", UnionEncoding.GetTypeName(typeof(int)));
+            Assert.Equal("Version", UnionEncoding.GetTypeName(typeof(Version)));
+            Assert.Equal("Guid", UnionEncoding.GetTypeName(typeof(Guid)));
 
-            Assert.Equal("Union<Int32,String>", UnionProvider.GetTypeName(typeof(Union<int, string>)));
+            Assert.Equal("Union<Int32,String>", UnionEncoding.GetTypeName(typeof(Union<int, string>)));
 
-            Assert.Equal("Dasher.Tests.ValueWrapper<String>", UnionProvider.GetTypeName(typeof(ValueWrapper<string>)));
+            Assert.Equal("Dasher.Tests.ValueWrapper<String>", UnionEncoding.GetTypeName(typeof(ValueWrapper<string>)));
 
-            Assert.Equal("Dasher.Tests.UnionProviderTests", UnionProvider.GetTypeName(typeof(UnionProviderTests)));
+            Assert.Equal("Dasher.Tests.UnionEncodingTests", UnionEncoding.GetTypeName(typeof(UnionEncodingTests)));
 
-            Assert.Equal("Dasher.Tests.UnionProviderTests+NestedType", UnionProvider.GetTypeName(typeof(NestedType)));
-            Assert.Equal("Dasher.Tests.UnionProviderTests+NestedType<Int32>", UnionProvider.GetTypeName(typeof(NestedType<int>)));
-            Assert.Equal("Dasher.Tests.Foo<Int32>+Bar", UnionProvider.GetTypeName(typeof(Foo<int>.Bar)));
-            Assert.Equal("Dasher.Tests.Foo<Int32>+Baz<String>", UnionProvider.GetTypeName(typeof(Foo<int>.Baz<string>)));
+            Assert.Equal("Dasher.Tests.UnionEncodingTests+NestedType", UnionEncoding.GetTypeName(typeof(NestedType)));
+            Assert.Equal("Dasher.Tests.UnionEncodingTests+NestedType<Int32>", UnionEncoding.GetTypeName(typeof(NestedType<int>)));
+            Assert.Equal("Dasher.Tests.Foo<Int32>+Bar", UnionEncoding.GetTypeName(typeof(Foo<int>.Bar)));
+            Assert.Equal("Dasher.Tests.Foo<Int32>+Baz<String>", UnionEncoding.GetTypeName(typeof(Foo<int>.Baz<string>)));
 
-            Assert.Equal("[String]", UnionProvider.GetTypeName(typeof(IReadOnlyList<string>)));
+            Assert.Equal("[String]", UnionEncoding.GetTypeName(typeof(IReadOnlyList<string>)));
 
-            Assert.Equal("(Int32=>Boolean)", UnionProvider.GetTypeName(typeof(IReadOnlyDictionary<int, bool>)));
+            Assert.Equal("(Int32=>Boolean)", UnionEncoding.GetTypeName(typeof(IReadOnlyDictionary<int, bool>)));
 
-            Assert.Equal("(Int32=>[Boolean])", UnionProvider.GetTypeName(typeof(IReadOnlyDictionary<int, IReadOnlyList<bool>>)));
-            Assert.Equal("[(Int32=>Boolean)]", UnionProvider.GetTypeName(typeof(IReadOnlyList<IReadOnlyDictionary<int, bool>>)));
+            Assert.Equal("(Int32=>[Boolean])", UnionEncoding.GetTypeName(typeof(IReadOnlyDictionary<int, IReadOnlyList<bool>>)));
+            Assert.Equal("[(Int32=>Boolean)]", UnionEncoding.GetTypeName(typeof(IReadOnlyList<IReadOnlyDictionary<int, bool>>)));
         }
     }
 }
