@@ -159,7 +159,6 @@ namespace SchemaComparisons
         [Fact]
         public void ComplexTypes_InsufficientFields()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test(
                 new Person("Bob", 36),
                 new PersonWithScore("Bob", 36, 100.0),
@@ -230,7 +229,6 @@ namespace SchemaComparisons
         [Fact]
         public void Enum_InsufficientMembers()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test(
                 EnumAbcd.A,
                 EnumAbc.A,
@@ -293,7 +291,6 @@ namespace SchemaComparisons
         [Fact]
         public void UnionSchema_ExtraMember()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test<Union<int, string, double>, Union<int, string>>(
                 1,
                 1,
@@ -349,7 +346,6 @@ namespace SchemaComparisons
         [Fact]
         public void ListSchema_IncompatibleTypes()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test<IReadOnlyList<int>, IReadOnlyList<string>>(
                 new[] {1, 2, 3},
                 new[] {"1", "2", "3"},
@@ -394,14 +390,12 @@ namespace SchemaComparisons
         [Fact]
         public void DictionarySchema_IncompatibleTypes()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test<IReadOnlyDictionary<int, int>, IReadOnlyDictionary<string, int>>(
                 new Dictionary<int, int> {{1, 1}},
                 new Dictionary<string, int> {{"1", 1}},
                 matchIfRelaxed: false,
                 matchIfStrict: false);
 
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test<IReadOnlyDictionary<int, int>, IReadOnlyDictionary<int, string>>(
                 new Dictionary<int, int> {{1, 1}},
                 new Dictionary<int, string> {{1, "1"}},
@@ -425,7 +419,6 @@ namespace SchemaComparisons
         [Fact]
         public void TupleSchema_ExtraMember()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test(
                 Tuple.Create(1, 2, 3),
                 Tuple.Create(1, 2),
@@ -436,7 +429,6 @@ namespace SchemaComparisons
         [Fact]
         public void TupleSchema_FewerMembers()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test(
                 Tuple.Create(1, 2),
                 Tuple.Create(1, 2, 3),
@@ -448,7 +440,6 @@ namespace SchemaComparisons
         [Fact]
         public void PrimitiveToNullablePrimitive()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test(
                 1,
                 (int?)1,
@@ -459,7 +450,6 @@ namespace SchemaComparisons
         [Fact]
         public void NullablePrimitiveToNullablePrimitive()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test(
                 (int?)1,
                 (int?)1,
@@ -470,7 +460,6 @@ namespace SchemaComparisons
         [Fact]
         public void NullablePtimitiveToNullablePrimitiveOfDifferentType()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test(
                 (double?)1,
                 (int?)1,
@@ -481,7 +470,6 @@ namespace SchemaComparisons
         [Fact]
         public void NullablePrimitiveToPrimitive()
         {
-            // ReSharper disable once IteratorMethodResultIsIgnored
             Test(
                 (int?)1,
                 1,
