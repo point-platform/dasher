@@ -307,5 +307,48 @@ namespace SchemaComparisons
             foreach (var v in read)
                 Assert.Equal(1, v);
         }
+
+        [Fact]
+        public void ListSchema_SameType()
+        {
+            var read = Test<IReadOnlyList<int>, IReadOnlyList<int>>(
+                new[] {1, 2, 3},
+                new[] {1, 2, 3},
+                matchIfRelaxed: true,
+                matchIfStrict: true);
+
+            foreach (var list in read)
+                Assert.Equal(new[] {1, 2, 3}, list);
+        }
+
+        [Fact]
+        public void ListSchema_CompatibleIfRelaxed()
+        {
+            var read = Test<IReadOnlyList<PersonWithScore>, IReadOnlyList<Person>>(
+                new[] {new PersonWithScore("Bob", 36, 100.0) },
+                new[] {new Person("Bob", 36) },
+                matchIfRelaxed: true,
+                matchIfStrict: false);
+
+            foreach (var list in read)
+            {
+                foreach (var person in list)
+                {
+                    Assert.Equal("Bob", person.Name);
+                    Assert.Equal(36, person.Age);
+                }
+            }
+        }
+
+        [Fact]
+        public void ListSchema_IncompatibleTypes()
+        {
+            // ReSharper disable once IteratorMethodResultIsIgnored
+            Test<IReadOnlyList<int>, IReadOnlyList<string>>(
+                new[] {1, 2, 3},
+                new[] {"1", "2", "3"},
+                matchIfRelaxed: false,
+                matchIfStrict: false);
+        }
     }
 }
