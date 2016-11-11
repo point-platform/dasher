@@ -123,6 +123,8 @@ namespace SchemaComparisons
             return values;
         }
 
+        #region Complex Types
+
         [Fact]
         public void ComplexTypes_FieldsMatch()
         {
@@ -199,6 +201,10 @@ namespace SchemaComparisons
             }
         }
 
+            #endregion
+
+        #region Enums
+
         [Fact]
         public void Enum_MembersMatch()
         {
@@ -234,6 +240,10 @@ namespace SchemaComparisons
                 matchIfRelaxed: false,
                 matchIfStrict: false);
         }
+
+        #endregion
+
+        #region Empty schema
 
         [Fact]
         public void EmptySchema_ExactMatch()
@@ -274,6 +284,10 @@ namespace SchemaComparisons
                 Assert.Null(v);
         }
 
+        #endregion
+
+        #region Unions
+
         [Fact]
         public void UnionSchema_ExactMatch()
         {
@@ -309,6 +323,10 @@ namespace SchemaComparisons
             foreach (var v in read)
                 Assert.Equal(1, v);
         }
+
+        #endregion
+
+        #region Lists
 
         [Fact]
         public void ListSchema_SameType()
@@ -351,6 +369,10 @@ namespace SchemaComparisons
                 matchIfRelaxed: false,
                 matchIfStrict: false);
         }
+
+        #endregion
+
+        #region Dictionaries
 
         [Fact]
         public void DictionarySchema_SameType()
@@ -402,6 +424,10 @@ namespace SchemaComparisons
                 matchIfStrict: false);
         }
 
+        #endregion
+
+        #region Tuples
+
         [Fact]
         public void TupleSchema_ExactMatch()
         {
@@ -434,6 +460,10 @@ namespace SchemaComparisons
                 matchIfRelaxed: false,
                 matchIfStrict: false);
         }
+
+        #endregion
+
+        #region Nullables
 
         [Fact]
         public void NullableSchema_NonNullableToNullable()
@@ -480,5 +510,7 @@ namespace SchemaComparisons
                 matchIfRelaxed: false,
                 matchIfStrict: false);
         }
+
+        #endregion
     }
 }
