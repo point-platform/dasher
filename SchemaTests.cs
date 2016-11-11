@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -399,6 +400,41 @@ namespace SchemaComparisons
             Test<IReadOnlyDictionary<int, int>, IReadOnlyDictionary<int, string>>(
                 new Dictionary<int, int> {{1, 1}},
                 new Dictionary<int, string> {{1, "1"}},
+                matchIfRelaxed: false,
+                matchIfStrict: false);
+        }
+
+        [Fact]
+        public void TupleSchema_ExactMatch()
+        {
+            var read = Test(
+                Tuple.Create(1, 2),
+                Tuple.Create(1, 2),
+                matchIfRelaxed: true,
+                matchIfStrict: true);
+
+            foreach (var v in read)
+                Assert.Equal(Tuple.Create(1, 2), v);
+        }
+
+        [Fact]
+        public void TupleSchema_ExtraMember()
+        {
+            // ReSharper disable once IteratorMethodResultIsIgnored
+            Test(
+                Tuple.Create(1, 2, 3),
+                Tuple.Create(1, 2),
+                matchIfRelaxed: false,
+                matchIfStrict: false);
+        }
+
+        [Fact]
+        public void TupleSchema_FewerMembers()
+        {
+            // ReSharper disable once IteratorMethodResultIsIgnored
+            Test(
+                Tuple.Create(1, 2),
+                Tuple.Create(1, 2, 3),
                 matchIfRelaxed: false,
                 matchIfStrict: false);
         }
