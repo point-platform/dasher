@@ -6,10 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
-using Dasher;
 using Dasher.TypeProviders;
 
-namespace SchemaComparisons
+namespace Dasher.Schema
 {
     // TODO test consolidation of schema works
     // TODO test XML writing

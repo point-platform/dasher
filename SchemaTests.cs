@@ -9,7 +9,7 @@ using Xunit;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace SchemaComparisons
+namespace Dasher.Schema
 {
     // TODO reflect integral conversions supported by dasher
     // TODO test writing empty message to complex with all-default values
