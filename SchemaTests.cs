@@ -86,7 +86,7 @@ namespace SchemaComparisons
 
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         [SuppressMessage("ReSharper", "RedundantArgumentDefaultValue")]
-        private static IEnumerable<TRead> Test<TWrite, TRead>(TWrite write, TRead read, bool matchIfRelaxed, bool matchIfStrict)
+        private static IReadOnlyList<TRead> Test<TWrite, TRead>(TWrite write, TRead read, bool matchIfRelaxed, bool matchIfStrict)
         {
             var schemaCollection = new SchemaCollection();
 
@@ -100,23 +100,27 @@ namespace SchemaComparisons
             Assert.Equal(matchIfStrict,  actualMatchIfStrict);
 
             if (!actualMatchIfRelaxed && !actualMatchIfStrict)
-                yield break;
+                return new TRead[0];
 
             var stream = new MemoryStream();
 
             new Serialiser<Wrapper<TWrite>>().Serialise(stream, new Wrapper<TWrite>(write));
 
+            var values = new List<TRead>();
+
             if (actualMatchIfRelaxed)
             {
                 stream.Position = 0;
-                yield return new Deserialiser<Wrapper<TRead>>(UnexpectedFieldBehaviour.Ignore).Deserialise(stream).Value;
+                values.Add(new Deserialiser<Wrapper<TRead>>(UnexpectedFieldBehaviour.Ignore).Deserialise(stream).Value);
             }
 
             if (actualMatchIfStrict)
             {
                 stream.Position = 0;
-                yield return new Deserialiser<Wrapper<TRead>>(UnexpectedFieldBehaviour.Throw).Deserialise(stream).Value;
+                values.Add(new Deserialiser<Wrapper<TRead>>(UnexpectedFieldBehaviour.Throw).Deserialise(stream).Value);
             }
+
+            return values;
         }
 
         [Fact]
