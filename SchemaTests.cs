@@ -73,144 +73,153 @@ namespace SchemaComparisons
     {
         private readonly SchemaCollection _schemaCollection = new SchemaCollection();
 
+        private void Test<TWrite, TRead>(TWrite write, TRead read, bool matchIfRelaxed, bool matchIfStrict)
+        {
+            var w = _schemaCollection.GetWriteSchema(typeof(TWrite));
+            var r = _schemaCollection.GetReadSchema(typeof(TRead));
+
+            Assert.Equal(matchIfRelaxed, r.CanReadFrom(w, allowWideningConversion: true));
+            Assert.Equal(matchIfStrict,  r.CanReadFrom(w, allowWideningConversion: false));
+        }
+
         [Fact]
         public void ComplexTypes_FieldsMatch()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(Person));
-            var r = _schemaCollection.GetReadSchema(typeof(Person));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: false));
+            Test(
+                new Person("Bob", 36),
+                new Person("Bob", 36),
+                matchIfRelaxed: true,
+                matchIfStrict: true);
         }
 
         [Fact]
         public void ComplexTypes_ExtraField()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(PersonWithScore));
-            var r = _schemaCollection.GetReadSchema(typeof(Person));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
+            Test(
+                new PersonWithScore("Bob", 36, 100.0),
+                new Person("Bob", 36),
+                matchIfRelaxed: true,
+                matchIfStrict: false);
         }
 
         [Fact]
         public void ComplexTypes_InsufficientFields()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(Person));
-            var r = _schemaCollection.GetReadSchema(typeof(PersonWithScore));
-
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
+            Test(
+                new Person("Bob", 36),
+                new PersonWithScore("Bob", 36, 100.0),
+                matchIfRelaxed: false,
+                matchIfStrict: false);
         }
 
         [Fact]
         public void ComplexTypes_MissingNonRequiredField_AtLexicographicalEnd()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(Person));
-            var r = _schemaCollection.GetReadSchema(typeof(PersonWithDefaultScore));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: false));
+            Test(
+                new Person("Bob", 36),
+                new PersonWithDefaultScore("Bob", 36),
+                matchIfRelaxed: true,
+                matchIfStrict: true);
         }
 
         [Fact]
         public void ComplexTypes_MissingNonRequiredField_InLexicographicalMiddle()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(Person));
-            var r = _schemaCollection.GetReadSchema(typeof(PersonWithDefaultHeight));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: false));
+            Test(
+                new Person("Bob", 36),
+                new PersonWithDefaultHeight("Bob", 36),
+                matchIfRelaxed: true,
+                matchIfStrict: true);
         }
 
         [Fact]
         public void Enum_MembersMatch()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(EnumAbc));
-            var r = _schemaCollection.GetReadSchema(typeof(EnumAbc));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: false));
+            Test(
+                EnumAbc.A,
+                EnumAbc.A,
+                matchIfRelaxed: true,
+                matchIfStrict: true);
         }
 
         [Fact]
         public void Enum_ExtraMember()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(EnumAbc));
-            var r = _schemaCollection.GetReadSchema(typeof(EnumAbcd));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
+            Test(
+                EnumAbc.A,
+                EnumAbcd.A,
+                matchIfRelaxed: true,
+                matchIfStrict: false);
         }
 
         [Fact]
         public void Enum_InsufficientMembers()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(EnumAbcd));
-            var r = _schemaCollection.GetReadSchema(typeof(EnumAbc));
-
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
+            Test(
+                EnumAbcd.A,
+                EnumAbc.A,
+                matchIfRelaxed: false,
+                matchIfStrict: false);
         }
 
         [Fact]
         public void EmptySchema_ExactMatch()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(EmptyMessage));
-            var r = _schemaCollection.GetReadSchema(typeof(EmptyMessage));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: false));
+            Test<EmptyMessage,EmptyMessage>(
+                null,
+                null,
+                matchIfRelaxed: true,
+                matchIfStrict: true);
         }
 
         [Fact]
         public void EmptySchema_Complex()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(Person));
-            var r = _schemaCollection.GetReadSchema(typeof(EmptyMessage));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
+            Test<Person, EmptyMessage>(
+                new Person("Bob", 36),
+                null,
+                matchIfRelaxed: true,
+                matchIfStrict: false);
         }
 
         [Fact]
         public void EmptySchema_Union()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(Union<int, string>));
-            var r = _schemaCollection.GetReadSchema(typeof(EmptyMessage));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
+            Test<Union<int, string>, EmptyMessage>(
+                1,
+                null,
+                matchIfRelaxed: true,
+                matchIfStrict: false);
         }
 
         [Fact]
         public void UnionSchema_ExactMatch()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(Union<int, string>));
-            var r = _schemaCollection.GetReadSchema(typeof(Union<int, string>));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: false));
+            Test<Union<int, string>, Union<int, string>>(
+                1,
+                1,
+                matchIfRelaxed: true,
+                matchIfStrict: true);
         }
 
         [Fact]
         public void UnionSchema_ExtraMember()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(Union<int, string, double>));
-            var r = _schemaCollection.GetReadSchema(typeof(Union<int, string>));
-
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
+            Test<Union<int, string, double>, Union<int, string>>(
+                1,
+                1,
+                matchIfRelaxed: false,
+                matchIfStrict: false);
         }
 
         [Fact]
         public void UnionSchema_FewerMembers()
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(Union<int, string>));
-            var r = _schemaCollection.GetReadSchema(typeof(Union<int, string, double>));
-
-            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
+            Test<Union<int, string>, Union<int, string, double>>(
+                1,
+                1,
+                matchIfRelaxed: true,
+                matchIfStrict: false);
         }
     }
 }
