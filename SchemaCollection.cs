@@ -69,7 +69,7 @@ namespace SchemaComparisons
 
     public interface IReadSchema
     {
-        bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion);
+        bool CanReadFrom(IWriteSchema writeSchema, bool strict);
     }
 
     internal sealed class EnumSchema : IWriteSchema, IReadSchema
@@ -85,22 +85,22 @@ namespace SchemaComparisons
             MemberNames = new HashSet<string>(Enum.GetNames(type), StringComparer.OrdinalIgnoreCase);
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
+        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
         {
             var that = writeSchema as EnumSchema;
             if (that == null)
                 return false;
-            return allowWideningConversion
-                ? MemberNames.IsSupersetOf(that.MemberNames)
-                : MemberNames.SetEquals(that.MemberNames);
+            return strict
+                ? MemberNames.SetEquals(that.MemberNames)
+                : MemberNames.IsSupersetOf(that.MemberNames);
         }
     }
 
     internal sealed class EmptySchema : IWriteSchema, IReadSchema
     {
-        public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
+        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
         {
-            return writeSchema is EmptySchema || allowWideningConversion;
+            return writeSchema is EmptySchema || !strict;
         }
     }
 
@@ -142,7 +142,7 @@ namespace SchemaComparisons
             TypeName = name;
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
+        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
         {
             var ws = writeSchema as PrimitiveSchema;
             return ws != null && ws.TypeName == TypeName;
@@ -198,12 +198,12 @@ namespace SchemaComparisons
             Items = type.GetGenericArguments().Select(schemaCollection.GetReadSchema).ToList();
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
+        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
         {
             var that = writeSchema as TupleWriteSchema;
 
             return that?.Items.Count == Items.Count
-                   && !Items.Where((rs, i) => !rs.CanReadFrom(that.Items[i], allowWideningConversion)).Any();
+                   && !Items.Where((rs, i) => !rs.CanReadFrom(that.Items[i], strict)).Any();
         }
     }
 
@@ -269,7 +269,7 @@ namespace SchemaComparisons
                 .ToList();
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
+        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
         {
             // TODO write EmptySchema test for this case and several others... (eg. tuple, union, ...)
             if (writeSchema is EmptySchema)
@@ -305,7 +305,7 @@ namespace SchemaComparisons
                 if (cmp == 0)
                 {
                     // match
-                    if (!rf.Schema.CanReadFrom(wf.Schema, allowWideningConversion))
+                    if (!rf.Schema.CanReadFrom(wf.Schema, strict))
                         return false;
 
                     // step both forwards
@@ -315,7 +315,7 @@ namespace SchemaComparisons
                 else if (cmp > 0)
                 {
                     // write field comes before read field -- write type contains an extra field
-                    if (!allowWideningConversion)
+                    if (strict)
                         return false;
                     // skip the write field only
                     iw++;
@@ -329,7 +329,7 @@ namespace SchemaComparisons
                 }
             }
 
-            if (iw != writeFields.Count && !allowWideningConversion)
+            if (iw != writeFields.Count && strict)
                 return false;
 
             return true;
@@ -367,17 +367,17 @@ namespace SchemaComparisons
             Inner = schemaCollection.GetReadSchema(Nullable.GetUnderlyingType(type));
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
+        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
         {
             var ws = writeSchema as NullableWriteSchema;
 
             if (ws != null)
-                return Inner.CanReadFrom(ws.Inner, allowWideningConversion);
+                return Inner.CanReadFrom(ws.Inner, strict);
 
-            if (!allowWideningConversion)
+            if (strict)
                 return false;
 
-            return Inner.CanReadFrom(writeSchema, allowWideningConversion);
+            return Inner.CanReadFrom(writeSchema, strict);
         }
     }
 
@@ -412,12 +412,12 @@ namespace SchemaComparisons
             ItemSchema = schemaCollection.GetReadSchema(type.GetGenericArguments().Single());
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
+        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
         {
             var ws = writeSchema as ListWriteSchema;
             if (ws == null)
                 return false;
-            return ItemSchema.CanReadFrom(ws.ItemSchema, allowWideningConversion);
+            return ItemSchema.CanReadFrom(ws.ItemSchema, strict);
         }
     }
 
@@ -456,13 +456,13 @@ namespace SchemaComparisons
             ValueSchema = schemaCollection.GetReadSchema(type.GetGenericArguments()[1]);
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
+        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
         {
             var ws = writeSchema as DictionaryWriteSchema;
             if (ws == null)
                 return false;
-            return KeySchema.CanReadFrom(ws.KeySchema, allowWideningConversion)
-                   && ValueSchema.CanReadFrom(ws.ValueSchema, allowWideningConversion);
+            return KeySchema.CanReadFrom(ws.KeySchema, strict) &&
+                   ValueSchema.CanReadFrom(ws.ValueSchema, strict);
         }
     }
 
@@ -527,7 +527,7 @@ namespace SchemaComparisons
                 .ToArray();
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
+        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
         {
             // TODO write EmptySchema test for this case
             if (writeSchema is EmptySchema)
@@ -557,7 +557,7 @@ namespace SchemaComparisons
                 if (cmp == 0)
                 {
                     // match
-                    if (!rm.Schema.CanReadFrom(wm.Schema, allowWideningConversion))
+                    if (!rm.Schema.CanReadFrom(wm.Schema, strict))
                         return false;
 
                     // step both forwards
@@ -567,7 +567,7 @@ namespace SchemaComparisons
                 else if (cmp < 0)
                 {
                     // read member comes before write member -- read type contains an extra member
-                    if (!allowWideningConversion)
+                    if (strict)
                         return false;
                     // skip the read member only
                     iw++;
@@ -578,7 +578,7 @@ namespace SchemaComparisons
                 }
             }
 
-            if (ir != readMembers.Count && !allowWideningConversion)
+            if (ir != readMembers.Count && strict)
                 return false;
 
             return true;

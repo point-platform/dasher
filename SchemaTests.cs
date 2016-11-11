@@ -93,8 +93,8 @@ namespace SchemaComparisons
             var w = schemaCollection.GetWriteSchema(typeof(TWrite));
             var r = schemaCollection.GetReadSchema(typeof(TRead));
 
-            var actualMatchIfRelaxed = r.CanReadFrom(w, allowWideningConversion: true);
-            var actualMatchIfStrict = r.CanReadFrom(w, allowWideningConversion: false);
+            var actualMatchIfRelaxed = r.CanReadFrom(w, strict: false);
+            var actualMatchIfStrict = r.CanReadFrom(w, strict: true);
 
             Assert.Equal(matchIfRelaxed, actualMatchIfRelaxed);
             Assert.Equal(matchIfStrict,  actualMatchIfStrict);
