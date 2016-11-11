@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using Dasher;
 using Xunit;
 
@@ -439,6 +440,51 @@ namespace SchemaComparisons
             Test(
                 Tuple.Create(1, 2),
                 Tuple.Create(1, 2, 3),
+                matchIfRelaxed: false,
+                matchIfStrict: false);
+        }
+
+
+        [Fact]
+        public void PrimitiveToNullablePrimitive()
+        {
+            // ReSharper disable once IteratorMethodResultIsIgnored
+            Test(
+                1,
+                (int?)1,
+                matchIfRelaxed: true,
+                matchIfStrict: true);
+        }
+
+        [Fact]
+        public void NullablePrimitiveToNullablePrimitive()
+        {
+            // ReSharper disable once IteratorMethodResultIsIgnored
+            Test(
+                (int?)1,
+                (int?)1,
+                matchIfRelaxed: true,
+                matchIfStrict: true);
+        }
+
+        [Fact]
+        public void NullablePtimitiveToNullablePrimitiveOfDifferentType()
+        {
+            // ReSharper disable once IteratorMethodResultIsIgnored
+            Test(
+                (double?)1,
+                (int?)1,
+                matchIfRelaxed: false,
+                matchIfStrict: false);
+        }
+
+        [Fact]
+        public void NullablePrimitiveToPrimitive()
+        {
+            // ReSharper disable once IteratorMethodResultIsIgnored
+            Test(
+                (int?)1,
+                1,
                 matchIfRelaxed: false,
                 matchIfStrict: false);
         }
