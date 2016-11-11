@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Dasher;
 using Xunit;
 
@@ -41,7 +44,7 @@ namespace SchemaComparisons
 
     public class PersonWithDefaultScore
     {
-        public PersonWithDefaultScore(string name, int age, double score = 0)
+        public PersonWithDefaultScore(string name, int age, double score = 100.0)
         {
             Name = name;
             Age = age;
@@ -67,44 +70,90 @@ namespace SchemaComparisons
         public double Height { get; }
     }
 
-    // TODO tests should actually serialise/deserialise objects and verify schema claim matches reality
-
     public class SchemaTests
     {
-        private readonly SchemaCollection _schemaCollection = new SchemaCollection();
-
-        private void Test<TWrite, TRead>(TWrite write, TRead read, bool matchIfRelaxed, bool matchIfStrict)
+        /// <summary>Required as Dasher won't serialise non-complex top-level types.</summary>
+        public class Wrapper<T>
         {
-            var w = _schemaCollection.GetWriteSchema(typeof(TWrite));
-            var r = _schemaCollection.GetReadSchema(typeof(TRead));
+            public T Value { get; }
 
-            Assert.Equal(matchIfRelaxed, r.CanReadFrom(w, allowWideningConversion: true));
-            Assert.Equal(matchIfStrict,  r.CanReadFrom(w, allowWideningConversion: false));
+            public Wrapper(T value)
+            {
+                Value = value;
+            }
+        }
+
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
+        [SuppressMessage("ReSharper", "RedundantArgumentDefaultValue")]
+        private static IEnumerable<TRead> Test<TWrite, TRead>(TWrite write, TRead read, bool matchIfRelaxed, bool matchIfStrict)
+        {
+            var schemaCollection = new SchemaCollection();
+
+            var w = schemaCollection.GetWriteSchema(typeof(TWrite));
+            var r = schemaCollection.GetReadSchema(typeof(TRead));
+
+            var actualMatchIfRelaxed = r.CanReadFrom(w, allowWideningConversion: true);
+            var actualMatchIfStrict = r.CanReadFrom(w, allowWideningConversion: false);
+
+            Assert.Equal(matchIfRelaxed, actualMatchIfRelaxed);
+            Assert.Equal(matchIfStrict,  actualMatchIfStrict);
+
+            if (!actualMatchIfRelaxed && !actualMatchIfStrict)
+                yield break;
+
+            var stream = new MemoryStream();
+
+            new Serialiser<Wrapper<TWrite>>().Serialise(stream, new Wrapper<TWrite>(write));
+
+            if (actualMatchIfRelaxed)
+            {
+                stream.Position = 0;
+                yield return new Deserialiser<Wrapper<TRead>>(UnexpectedFieldBehaviour.Ignore).Deserialise(stream).Value;
+            }
+
+            if (actualMatchIfStrict)
+            {
+                stream.Position = 0;
+                yield return new Deserialiser<Wrapper<TRead>>(UnexpectedFieldBehaviour.Throw).Deserialise(stream).Value;
+            }
         }
 
         [Fact]
         public void ComplexTypes_FieldsMatch()
         {
-            Test(
+            var read = Test(
                 new Person("Bob", 36),
                 new Person("Bob", 36),
                 matchIfRelaxed: true,
                 matchIfStrict: true);
+
+            foreach (var person in read)
+            {
+                Assert.Equal("Bob", person.Name);
+                Assert.Equal(36, person.Age);
+            }
         }
 
         [Fact]
         public void ComplexTypes_ExtraField()
         {
-            Test(
+            var read = Test(
                 new PersonWithScore("Bob", 36, 100.0),
                 new Person("Bob", 36),
                 matchIfRelaxed: true,
                 matchIfStrict: false);
+
+            foreach (var person in read)
+            {
+                Assert.Equal("Bob", person.Name);
+                Assert.Equal(36, person.Age);
+            }
         }
 
         [Fact]
         public void ComplexTypes_InsufficientFields()
         {
+            // ReSharper disable once IteratorMethodResultIsIgnored
             Test(
                 new Person("Bob", 36),
                 new PersonWithScore("Bob", 36, 100.0),
@@ -115,46 +164,67 @@ namespace SchemaComparisons
         [Fact]
         public void ComplexTypes_MissingNonRequiredField_AtLexicographicalEnd()
         {
-            Test(
+            var read = Test(
                 new Person("Bob", 36),
                 new PersonWithDefaultScore("Bob", 36),
                 matchIfRelaxed: true,
                 matchIfStrict: true);
+
+            foreach (var person in read)
+            {
+                Assert.Equal("Bob", person.Name);
+                Assert.Equal(36, person.Age);
+                Assert.Equal(100.0, person.Score);
+            }
         }
 
         [Fact]
         public void ComplexTypes_MissingNonRequiredField_InLexicographicalMiddle()
         {
-            Test(
+            var read = Test(
                 new Person("Bob", 36),
                 new PersonWithDefaultHeight("Bob", 36),
                 matchIfRelaxed: true,
                 matchIfStrict: true);
+
+            foreach (var person in read)
+            {
+                Assert.Equal("Bob", person.Name);
+                Assert.Equal(36, person.Age);
+                Assert.Equal(double.NaN, person.Height);
+            }
         }
 
         [Fact]
         public void Enum_MembersMatch()
         {
-            Test(
+            var read = Test(
                 EnumAbc.A,
                 EnumAbc.A,
                 matchIfRelaxed: true,
                 matchIfStrict: true);
+
+            foreach (var e in read)
+                Assert.Equal(EnumAbc.A, e);
         }
 
         [Fact]
         public void Enum_ExtraMember()
         {
-            Test(
+            var read = Test(
                 EnumAbc.A,
                 EnumAbcd.A,
                 matchIfRelaxed: true,
                 matchIfStrict: false);
+
+            foreach (var e in read)
+                Assert.Equal(EnumAbcd.A, e);
         }
 
         [Fact]
         public void Enum_InsufficientMembers()
         {
+            // ReSharper disable once IteratorMethodResultIsIgnored
             Test(
                 EnumAbcd.A,
                 EnumAbc.A,
@@ -165,46 +235,59 @@ namespace SchemaComparisons
         [Fact]
         public void EmptySchema_ExactMatch()
         {
-            Test<EmptyMessage,EmptyMessage>(
+            var read = Test<EmptyMessage, EmptyMessage>(
                 null,
                 null,
                 matchIfRelaxed: true,
                 matchIfStrict: true);
+
+            foreach (var v in read)
+                Assert.Null(v);
         }
 
         [Fact]
         public void EmptySchema_Complex()
         {
-            Test<Person, EmptyMessage>(
+            var read = Test<Person, EmptyMessage>(
                 new Person("Bob", 36),
                 null,
                 matchIfRelaxed: true,
                 matchIfStrict: false);
+
+            foreach (var v in read)
+                Assert.Null(v);
         }
 
         [Fact]
         public void EmptySchema_Union()
         {
-            Test<Union<int, string>, EmptyMessage>(
+            var read = Test<Union<int, string>, EmptyMessage>(
                 1,
                 null,
                 matchIfRelaxed: true,
                 matchIfStrict: false);
+
+            foreach (var v in read)
+                Assert.Null(v);
         }
 
         [Fact]
         public void UnionSchema_ExactMatch()
         {
-            Test<Union<int, string>, Union<int, string>>(
+            var read = Test<Union<int, string>, Union<int, string>>(
                 1,
                 1,
                 matchIfRelaxed: true,
                 matchIfStrict: true);
+
+            foreach (var v in read)
+                Assert.Equal(1, v);
         }
 
         [Fact]
         public void UnionSchema_ExtraMember()
         {
+            // ReSharper disable once IteratorMethodResultIsIgnored
             Test<Union<int, string, double>, Union<int, string>>(
                 1,
                 1,
@@ -215,11 +298,14 @@ namespace SchemaComparisons
         [Fact]
         public void UnionSchema_FewerMembers()
         {
-            Test<Union<int, string>, Union<int, string, double>>(
+            var read = Test<Union<int, string>, Union<int, string, double>>(
                 1,
                 1,
                 matchIfRelaxed: true,
                 matchIfStrict: false);
+
+            foreach (var v in read)
+                Assert.Equal(1, v);
         }
     }
 }
