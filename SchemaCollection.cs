@@ -259,7 +259,7 @@ namespace Dasher.Schema
                         return false;
                 }
 
-                Debug.Assert(be.MoveNext());
+                Debug.Assert(!be.MoveNext());
                 return true;
             }
         }
