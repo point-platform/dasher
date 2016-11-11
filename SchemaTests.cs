@@ -435,29 +435,34 @@ namespace SchemaComparisons
                 matchIfStrict: false);
         }
 
-
         [Fact]
-        public void PrimitiveToNullablePrimitive()
+        public void NullableSchema_NonNullableToNullable()
         {
-            Test(
+            var read = Test(
                 1,
                 (int?)1,
                 matchIfRelaxed: true,
-                matchIfStrict: true);
+                matchIfStrict: false);
+
+            foreach (var i in read)
+                Assert.Equal(1, i);
         }
 
         [Fact]
-        public void NullablePrimitiveToNullablePrimitive()
+        public void NullableSchema_ExactMatch()
         {
-            Test(
+            var read = Test(
                 (int?)1,
                 (int?)1,
                 matchIfRelaxed: true,
                 matchIfStrict: true);
+
+            foreach (var i in read)
+                Assert.Equal(1, i);
         }
 
         [Fact]
-        public void NullablePtimitiveToNullablePrimitiveOfDifferentType()
+        public void NullableSchema_IncompatibleTypes()
         {
             Test(
                 (double?)1,
@@ -467,7 +472,7 @@ namespace SchemaComparisons
         }
 
         [Fact]
-        public void NullablePrimitiveToPrimitive()
+        public void NullableSchema_NullableToNonNullable()
         {
             Test(
                 (int?)1,

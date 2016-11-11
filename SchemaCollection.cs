@@ -369,11 +369,15 @@ namespace SchemaComparisons
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
         {
-            // TODO only accept non-nullable writer if allowWideningConversion?
-            // If the writer was nullable, unwrap its inner schema
-            var schema = (writeSchema as NullableWriteSchema)?.Inner ?? writeSchema;
+            var ws = writeSchema as NullableWriteSchema;
 
-            return Inner.CanReadFrom(schema, allowWideningConversion);
+            if (ws != null)
+                return Inner.CanReadFrom(ws.Inner, allowWideningConversion);
+
+            if (!allowWideningConversion)
+                return false;
+
+            return Inner.CanReadFrom(writeSchema, allowWideningConversion);
         }
     }
 
