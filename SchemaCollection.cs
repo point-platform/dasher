@@ -8,7 +8,6 @@ using Dasher.TypeProviders;
 
 namespace SchemaComparisons
 {
-    // TODO list and dictionary
     // TODO support recursive types
 
     public sealed class SchemaCollection
