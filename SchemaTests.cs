@@ -350,5 +350,57 @@ namespace SchemaComparisons
                 matchIfRelaxed: false,
                 matchIfStrict: false);
         }
+
+        [Fact]
+        public void DictionarySchema_SameType()
+        {
+            var read = Test<IReadOnlyDictionary<int, int>, IReadOnlyDictionary<int, int>>(
+                new Dictionary<int, int> {{1, 1}, {2, 2}},
+                new Dictionary<int, int> {{1, 1}, {2, 2}},
+                matchIfRelaxed: true,
+                matchIfStrict: true);
+
+            foreach (var dic in read)
+            {
+                Assert.Equal(2, dic.Count);
+                Assert.Equal(1, dic[1]);
+                Assert.Equal(2, dic[2]);
+            }
+        }
+
+        [Fact]
+        public void DictionarySchema_CompatibleIfRelaxed()
+        {
+            var read = Test<IReadOnlyDictionary<int, PersonWithScore>, IReadOnlyDictionary<int, Person>>(
+                new Dictionary<int, PersonWithScore> {{1, new PersonWithScore("Bob", 36, 100.0) } },
+                new Dictionary<int, Person> {{1, new Person("Bob", 36) } },
+                matchIfRelaxed: true,
+                matchIfStrict: false);
+
+            foreach (var dic in read)
+            {
+                Assert.Equal(1, dic.Count);
+                Assert.Equal("Bob", dic[1].Name);
+                Assert.Equal(36, dic[1].Age);
+            }
+        }
+
+        [Fact]
+        public void DictionarySchema_IncompatibleTypes()
+        {
+            // ReSharper disable once IteratorMethodResultIsIgnored
+            Test<IReadOnlyDictionary<int, int>, IReadOnlyDictionary<string, int>>(
+                new Dictionary<int, int> {{1, 1}},
+                new Dictionary<string, int> {{"1", 1}},
+                matchIfRelaxed: false,
+                matchIfStrict: false);
+
+            // ReSharper disable once IteratorMethodResultIsIgnored
+            Test<IReadOnlyDictionary<int, int>, IReadOnlyDictionary<int, string>>(
+                new Dictionary<int, int> {{1, 1}},
+                new Dictionary<int, string> {{1, "1"}},
+                matchIfRelaxed: false,
+                matchIfStrict: false);
+        }
     }
 }
