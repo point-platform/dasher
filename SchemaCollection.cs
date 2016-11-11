@@ -31,8 +31,8 @@ namespace SchemaComparisons
                 return new ListWriteSchema(type, this);
             if (DictionaryWriteSchema.CanProcess(type))
                 return new DictionaryWriteSchema(type, this);
-//            if (UnionWriteSchema.CanProcess(type))
-//                return new UnionWriteSchema(type, this);
+            if (UnionWriteSchema.CanProcess(type))
+                return new UnionWriteSchema(type, this);
 
             return new ComplexWriteSchema(type, this);
         }
@@ -54,8 +54,8 @@ namespace SchemaComparisons
                 return new ListReadSchema(type, this);
             if (DictionaryReadSchema.CanProcess(type))
                 return new DictionaryReadSchema(type, this);
-//            if (UnionReadSchema.CanProcess(type))
-//                return new UnionReadSchema(type, this);
+            if (UnionReadSchema.CanProcess(type))
+                return new UnionReadSchema(type, this);
 
             return new ComplexReadSchema(type, this);
         }
@@ -234,7 +234,7 @@ namespace SchemaComparisons
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase);
             if (!properties.Any())
-                throw new ArgumentException($"Type {type} must have at least one public instance pro.", nameof(type));
+                throw new ArgumentException($"Type {type} must have at least one public instance property.", nameof(type));
             Fields = properties.Select(p => new Field(p.Name, schemaCollection.GetWriteSchema(p.PropertyType))).ToArray();
         }
     }
@@ -472,7 +472,6 @@ namespace SchemaComparisons
 
     #region Union
 
-/*
     internal sealed class UnionWriteSchema : IWriteSchema
     {
         public static bool CanProcess(Type type) => Union.IsUnionType(type);
@@ -534,15 +533,61 @@ namespace SchemaComparisons
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion)
         {
+            // TODO write EmptySchema test for this case
+            if (writeSchema is EmptySchema)
+                return true;
+
             var ws = writeSchema as UnionWriteSchema;
 
             if (ws == null)
                 return false;
 
-            return Members.CanReadFrom(schema, allowWideningConversion);
+            var readMembers = Members;
+            var writeMembers = ws.Members;
+
+            var ir = 0;
+            var iw = 0;
+
+            while (iw < writeMembers.Count)
+            {
+                if (ir == readMembers.Count)
+                    return false;
+
+                var rm = readMembers[ir];
+                var wm = writeMembers[iw];
+
+                var cmp = StringComparer.OrdinalIgnoreCase.Compare(rm.Id, wm.Id);
+
+                if (cmp == 0)
+                {
+                    // match
+                    if (!rm.Schema.CanReadFrom(wm.Schema, allowWideningConversion))
+                        return false;
+
+                    // step both forwards
+                    ir++;
+                    iw++;
+                }
+                else if (cmp < 0)
+                {
+                    // read member comes before write member -- read type contains an extra member
+                    if (!allowWideningConversion)
+                        return false;
+                    // skip the read member only
+                    iw++;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            if (ir != readMembers.Count && !allowWideningConversion)
+                return false;
+
+            return true;
         }
     }
-*/
 
     #endregion
 }

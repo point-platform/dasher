@@ -173,11 +173,41 @@ namespace SchemaComparisons
             Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
         }
 
-        [Fact(Skip = "WIP")]
+        [Fact]
         public void EmptySchema_Union()
         {
             var w = _schemaCollection.GetWriteSchema(typeof(Union<int, string>));
             var r = _schemaCollection.GetReadSchema(typeof(EmptyMessage));
+
+            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
+            Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
+        }
+
+        [Fact]
+        public void UnionSchema_ExactMatch()
+        {
+            var w = _schemaCollection.GetWriteSchema(typeof(Union<int, string>));
+            var r = _schemaCollection.GetReadSchema(typeof(Union<int, string>));
+
+            Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
+            Assert.True(r.CanReadFrom(w, allowWideningConversion: false));
+        }
+
+        [Fact]
+        public void UnionSchema_ExtraMember()
+        {
+            var w = _schemaCollection.GetWriteSchema(typeof(Union<int, string, double>));
+            var r = _schemaCollection.GetReadSchema(typeof(Union<int, string>));
+
+            Assert.False(r.CanReadFrom(w, allowWideningConversion: true));
+            Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
+        }
+
+        [Fact]
+        public void UnionSchema_FewerMembers()
+        {
+            var w = _schemaCollection.GetWriteSchema(typeof(Union<int, string>));
+            var r = _schemaCollection.GetReadSchema(typeof(Union<int, string, double>));
 
             Assert.True(r.CanReadFrom(w, allowWideningConversion: true));
             Assert.False(r.CanReadFrom(w, allowWideningConversion: false));
