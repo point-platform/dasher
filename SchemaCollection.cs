@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using Dasher;
 using Dasher.TypeProviders;
-using JetBrains.Annotations;
 
 namespace SchemaComparisons
 {
@@ -71,7 +70,7 @@ namespace SchemaComparisons
 
     public interface IReadSchema
     {
-        bool CanReadFrom([NotNull] IWriteSchema writeSchema, bool allowWideningConversion);
+        bool CanReadFrom(IWriteSchema writeSchema, bool allowWideningConversion);
     }
 
     internal sealed class EnumSchema : IWriteSchema, IReadSchema
@@ -346,7 +345,6 @@ namespace SchemaComparisons
     {
         public static bool CanProcess(Type type) => Nullable.GetUnderlyingType(type) != null;
 
-        [NotNull]
         public IWriteSchema Inner { get; }
 
         public NullableWriteSchema(Type type, SchemaCollection schemaCollection)
@@ -361,7 +359,6 @@ namespace SchemaComparisons
     {
         public static bool CanProcess(Type type) => NullableWriteSchema.CanProcess(type);
 
-        [NotNull]
         public IReadSchema Inner { get; }
 
         public NullableReadSchema(Type type, SchemaCollection schemaCollection)
@@ -389,7 +386,6 @@ namespace SchemaComparisons
     {
         public static bool CanProcess(Type type) => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>);
 
-        [NotNull]
         public IWriteSchema ItemSchema { get; }
 
         public ListWriteSchema(Type type, SchemaCollection schemaCollection)
@@ -404,7 +400,6 @@ namespace SchemaComparisons
     {
         public static bool CanProcess(Type type) => ListWriteSchema.CanProcess(type);
 
-        [NotNull]
         public IReadSchema ItemSchema { get; }
 
         public ListReadSchema(Type type, SchemaCollection schemaCollection)
@@ -431,8 +426,8 @@ namespace SchemaComparisons
     {
         public static bool CanProcess(Type type) => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>);
 
-        [NotNull] public IWriteSchema KeySchema { get; }
-        [NotNull] public IWriteSchema ValueSchema { get; }
+        public IWriteSchema KeySchema { get; }
+        public IWriteSchema ValueSchema { get; }
 
         public DictionaryWriteSchema(Type type, SchemaCollection schemaCollection)
         {
@@ -447,8 +442,8 @@ namespace SchemaComparisons
     {
         public static bool CanProcess(Type type) => DictionaryWriteSchema.CanProcess(type);
 
-        [NotNull] public IReadSchema KeySchema { get; }
-        [NotNull] public IReadSchema ValueSchema { get; }
+        public IReadSchema KeySchema { get; }
+        public IReadSchema ValueSchema { get; }
 
         public DictionaryReadSchema(Type type, SchemaCollection schemaCollection)
         {
@@ -488,7 +483,6 @@ namespace SchemaComparisons
             }
         }
 
-        [NotNull]
         public IReadOnlyList<Member> Members { get; }
 
         public UnionWriteSchema(Type type, SchemaCollection schemaCollection)
@@ -518,7 +512,6 @@ namespace SchemaComparisons
             }
         }
 
-        [NotNull]
         public IReadOnlyList<Member> Members { get; }
 
         public UnionReadSchema(Type type, SchemaCollection schemaCollection)
