@@ -10,7 +10,6 @@ using Dasher.TypeProviders;
 
 namespace Dasher.Schema
 {
-    // TODO test consolidation of schema works
     // TODO test XML writing
     // TODO test individual IEquatable implementations
     // TODO test all new interface methods

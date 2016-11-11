@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using Dasher;
 using Xunit;
 
@@ -509,6 +510,25 @@ namespace Dasher.Schema
                 1,
                 matchIfRelaxed: false,
                 matchIfStrict: false);
+        }
+
+        #endregion
+
+        #region Consolidation
+
+        [Fact]
+        public void SchemaCollectionConsolidates()
+        {
+            var schemaCollection = new SchemaCollection();
+
+            var s1 = schemaCollection.GetReadSchema(typeof(Person));
+            var s2 = schemaCollection.GetReadSchema(typeof(Person));
+
+            Assert.Same(s1, s2);
+
+            var s3 = schemaCollection.GetReadSchema(typeof(Wrapper<Person>));
+
+            Assert.Same(s2, ((ISchema)s3).Children.Single());
         }
 
         #endregion
