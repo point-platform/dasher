@@ -15,13 +15,16 @@ namespace Dasher.Schema
     // TODO test all new interface methods
     // TODO implement FromXml
 
-
     // TODO support recursive types
 
     public sealed class SchemaCollection
     {
         public XElement ToXml()
         {
+            var i = 0;
+            foreach (var schema in _schema.OfType<IByRefSchema>())
+                schema.Id = $"Schema{i++}";
+
             return new XElement("Schema",
                 _schema.OfType<IByRefSchema>().Select(s => s.ToXml()));
         }

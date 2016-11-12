@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Dasher;
 using Xunit;
+using Xunit.Abstractions;
 
 // ReSharper disable UnusedMember.Global
 // ReSharper disable MemberCanBePrivate.Global
@@ -122,6 +122,13 @@ namespace Dasher.Schema
             }
 
             return values;
+        }
+
+        private readonly ITestOutputHelper _output;
+
+        public SchemaTests(ITestOutputHelper output)
+        {
+            _output = output;
         }
 
         #region Complex Types
@@ -517,7 +524,7 @@ namespace Dasher.Schema
         #region Consolidation
 
         [Fact]
-        public void SchemaCollectionConsolidates()
+        public void SchemaCollection_ConsolidatesSchemata()
         {
             var schemaCollection = new SchemaCollection();
 
@@ -529,6 +536,21 @@ namespace Dasher.Schema
             var s3 = schemaCollection.GetReadSchema(typeof(Wrapper<Person>));
 
             Assert.Same(s2, ((ISchema)s3).Children.Single());
+        }
+
+        #endregion
+
+        #region SchemaCollection.ToXml
+
+        [Fact]
+        public void SchemaCollection_ToXml()
+        {
+            var schemaCollection = new SchemaCollection();
+
+            schemaCollection.GetReadSchema(typeof(Person));
+            schemaCollection.GetReadSchema(typeof(Wrapper<Person>));
+
+            _output.WriteLine(schemaCollection.ToXml().ToString());
         }
 
         #endregion
