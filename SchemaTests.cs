@@ -639,6 +639,47 @@ namespace Dasher.Schemata
             test(typeof(Union<int, long, double>));
             test(typeof(int));
             test(typeof(long));
+
+            //////
+
+            var c = new SchemaCollection();
+
+            // Intern
+            Assert.Same(c.GetReadSchema(typeof(int)), c.GetReadSchema(typeof(int)));
+
+            // Read and write same for some types
+            Assert.Same(c.GetReadSchema(typeof(int)), c.GetWriteSchema(typeof(int)));
+            Assert.Same(c.GetReadSchema(typeof(double)), c.GetWriteSchema(typeof(double)));
+            Assert.Same(c.GetReadSchema(typeof(EnumAbc)), c.GetWriteSchema(typeof(EnumAbc)));
+            Assert.Same(c.GetReadSchema(typeof(int)), c.GetWriteSchema(typeof(int)));
+            Assert.Same(c.GetReadSchema(typeof(EmptyMessage)), c.GetWriteSchema(typeof(EmptyMessage)));
+
+            // NOTE for some types, read and write schema are equal (can this cause trouble?)
+            Assert.Equal((object)c.GetReadSchema(typeof(int)), c.GetWriteSchema(typeof(int)));
+            Assert.Equal((object)c.GetReadSchema(typeof(double)), c.GetWriteSchema(typeof(double)));
+            Assert.Equal((object)c.GetReadSchema(typeof(EnumAbc)), c.GetWriteSchema(typeof(EnumAbc)));
+            Assert.Equal((object)c.GetReadSchema(typeof(int)), c.GetWriteSchema(typeof(int)));
+            Assert.Equal((object)c.GetReadSchema(typeof(EmptyMessage)), c.GetWriteSchema(typeof(EmptyMessage)));
+
+            var schemata = new object[]
+            {
+                c.GetReadSchema(typeof(int)),
+                c.GetReadSchema(typeof(EnumAbc)),
+                c.GetReadSchema(typeof(EnumAbcd)),
+                c.GetReadSchema(typeof(double)),
+
+                c.GetReadSchema(typeof(Person)),
+                c.GetWriteSchema(typeof(Person)),
+                c.GetReadSchema(typeof(Wrapper<double>)),
+                c.GetWriteSchema(typeof(Wrapper<double>))
+            };
+
+            foreach (var schema in schemata)
+            {
+                _output.WriteLine($"Testing {schema}");
+                Assert.Equal(1, schemata.Count(s => s.Equals(schema)));
+                Assert.Equal(1, schemata.Count(s => s.GetHashCode().Equals(schema.GetHashCode())));
+            }
         }
     }
 }
