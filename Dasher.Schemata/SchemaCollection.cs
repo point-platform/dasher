@@ -316,7 +316,7 @@ namespace Dasher.Schemata
 
     internal sealed class EnumSchema : ByRefSchema, IWriteSchema, IReadSchema
     {
-        public static bool CanProcess(Type type) => type.IsEnum;
+        public static bool CanProcess(Type type) => type.GetTypeInfo().IsEnum;
 
         private HashSet<string> MemberNames { get; }
 
@@ -501,7 +501,7 @@ namespace Dasher.Schemata
     {
         public static bool CanProcess(Type type)
         {
-            if (!type.IsGenericType)
+            if (!type.GetTypeInfo().IsGenericType)
                 return false;
             if (!type.IsConstructedGenericType)
                 return false;
@@ -600,7 +600,7 @@ namespace Dasher.Schemata
                 return hash;
             }
         }
-        
+
         internal override IEnumerable<Schema> Children => Items.Cast<Schema>();
 
         internal override string MarkupValue
