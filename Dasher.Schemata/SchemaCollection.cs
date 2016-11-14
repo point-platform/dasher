@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Xml.Linq;
 using Dasher.Schemata.Types;
 using Dasher.Schemata.Utils;
-using Dasher.TypeProviders;
 
 namespace Dasher.Schemata
 {
