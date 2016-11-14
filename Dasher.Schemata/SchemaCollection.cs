@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -451,48 +450,6 @@ namespace Dasher.Schemata
         internal override IEnumerable<Schema> Children => EmptyArray<Schema>.Instance;
 
         internal override string MarkupValue => TypeName;
-    }
-
-    internal static class EnumerableExtensions
-    {
-        public static bool SequenceEqual<T>(this IEnumerable<T> a, IEnumerable<T> b, Func<T, T, bool> comparer)
-        {
-            if (typeof(ICollection).IsAssignableFrom(typeof(T)))
-            {
-                if (((ICollection)a).Count != ((ICollection)b).Count)
-                    return false;
-            }
-
-            using (var ae = a.GetEnumerator())
-            using (var be = b.GetEnumerator())
-            {
-                while (ae.MoveNext())
-                {
-                    var moved = be.MoveNext();
-                    Debug.Assert(moved);
-                    if (!comparer(ae.Current, be.Current))
-                        return false;
-                }
-
-                Debug.Assert(!be.MoveNext());
-                return true;
-            }
-        }
-    }
-
-    internal static class SchemaExtensions
-    {
-        public static string ToReferenceString(this IWriteSchema schema) => ToReferenceStringInternal(schema);
-
-        public static string ToReferenceString(this IReadSchema schema) => ToReferenceStringInternal(schema);
-
-        private static string ToReferenceStringInternal(object schema)
-        {
-            var byRefSchema = schema as ByRefSchema;
-            return byRefSchema != null
-                ? '#' + byRefSchema.Id
-                : ((ByValueSchema)schema).MarkupValue;
-        }
     }
 
     #region Tuple
