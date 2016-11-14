@@ -304,12 +304,14 @@ namespace Dasher.Schemata
     {
         internal string Id { get; set; }
         internal abstract XElement ToXml();
+        public override string ToString() => Id;
     }
 
     /// <summary>For primitive, nullable, list, dictionary, tuple, empty.</summary>
     public abstract class ByValueSchema : Schema
     {
         internal abstract string MarkupValue { get; }
+        public override string ToString() => MarkupValue;
     }
 
     internal sealed class EnumSchema : ByRefSchema, IWriteSchema, IReadSchema
