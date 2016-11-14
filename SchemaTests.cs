@@ -12,15 +12,11 @@ using Xunit.Abstractions;
 
 namespace Dasher.Schemata
 {
-    // TODO test XML writing
-    // TODO implement FromXml
-
-    // TODO test individual IEquatable implementations using matrix
-    // TODO test all new interface methods
     // TODO support recursive types
     // TODO reflect integral conversions supported by dasher
     // TODO test writing empty message to complex with all-default values
 
+/*
     [Flags]
     internal enum CompatabilityLevel
     {
@@ -33,6 +29,7 @@ namespace Dasher.Schemata
         AllowMakingNullable,
         Lenient // = AllowExtraFieldsOnComplex | AllowFewerMembersInEnum | AllowFewerMembersInUnion | AllowLosslessTypeConversion
     }
+*/
 
     public enum EnumAbc { A, B, C }
     public enum EnumAbcd { A, B, C, D }
