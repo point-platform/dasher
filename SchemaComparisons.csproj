@@ -60,6 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EmptyArray.cs" />
     <Compile Include="SchemaCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SchemaMarkupExtension.cs" />

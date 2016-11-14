@@ -12,16 +12,7 @@ namespace Dasher.Schema
 {
     public sealed class SchemaCollection
     {
-        public XElement ToXml()
-        {
-            // TODO revisit how IDs are assigned
-            var i = 0;
-            foreach (var schema in _schema.OfType<IByRefSchema>())
-                schema.Id = $"Schema{i++}";
-
-            return new XElement("Schema",
-                _schema.OfType<IByRefSchema>().Select(s => s.ToXml()));
-        }
+        #region SchemaResolver
 
         private sealed class SchemaResolver
         {
@@ -145,6 +136,21 @@ namespace Dasher.Schema
             }
         }
 
+        #endregion
+
+        #region To/From XML
+
+        public XElement ToXml()
+        {
+            // TODO revisit how IDs are assigned
+            var i = 0;
+            foreach (var schema in _schema.OfType<IByRefSchema>())
+                schema.Id = $"Schema{i++}";
+
+            return new XElement("Schema",
+                _schema.OfType<IByRefSchema>().Select(s => s.ToXml()));
+        }
+
         public static SchemaCollection FromXml(XElement element)
         {
             var collection = new SchemaCollection();
@@ -194,6 +200,8 @@ namespace Dasher.Schema
 
             return collection;
         }
+
+        #endregion
 
         private readonly List<ISchema> _schema = new List<ISchema>();
 
@@ -258,11 +266,6 @@ namespace Dasher.Schema
             _schema.Add(schema);
             return schema;
         }
-    }
-
-    internal static class EmptyArray<T>
-    {
-        public static T[] Instance { get; } = new T[0];
     }
 
     [SuppressMessage("ReSharper", "ConvertToStaticClass")]
