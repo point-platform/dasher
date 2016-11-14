@@ -40,50 +40,50 @@ namespace Dasher.Schema
         public IWriteSchema GetWriteSchema(Type type)
         {
             if (type == typeof(EmptyMessage))
-                return ConsolidateDuplicateSchema(new EmptySchema());
+                return Intern(new EmptySchema());
             if (PrimitiveSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new PrimitiveSchema(type));
+                return Intern(new PrimitiveSchema(type));
             if (EnumSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new EnumSchema(type));
+                return Intern(new EnumSchema(type));
 
             if (TupleWriteSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new TupleWriteSchema(type, this));
+                return Intern(new TupleWriteSchema(type, this));
             if (NullableWriteSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new NullableWriteSchema(type, this));
+                return Intern(new NullableWriteSchema(type, this));
             if (ListWriteSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new ListWriteSchema(type, this));
+                return Intern(new ListWriteSchema(type, this));
             if (DictionaryWriteSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new DictionaryWriteSchema(type, this));
+                return Intern(new DictionaryWriteSchema(type, this));
             if (UnionWriteSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new UnionWriteSchema(type, this));
+                return Intern(new UnionWriteSchema(type, this));
 
-            return ConsolidateDuplicateSchema(new ComplexWriteSchema(type, this));
+            return Intern(new ComplexWriteSchema(type, this));
         }
 
         public IReadSchema GetReadSchema(Type type)
         {
             if (type == typeof(EmptyMessage))
-                return ConsolidateDuplicateSchema(new EmptySchema());
+                return Intern(new EmptySchema());
             if (PrimitiveSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new PrimitiveSchema(type));
+                return Intern(new PrimitiveSchema(type));
             if (EnumSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new EnumSchema(type));
+                return Intern(new EnumSchema(type));
 
             if (TupleReadSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new TupleReadSchema(type, this));
+                return Intern(new TupleReadSchema(type, this));
             if (NullableReadSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new NullableReadSchema(type, this));
+                return Intern(new NullableReadSchema(type, this));
             if (ListReadSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new ListReadSchema(type, this));
+                return Intern(new ListReadSchema(type, this));
             if (DictionaryReadSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new DictionaryReadSchema(type, this));
+                return Intern(new DictionaryReadSchema(type, this));
             if (UnionReadSchema.CanProcess(type))
-                return ConsolidateDuplicateSchema(new UnionReadSchema(type, this));
+                return Intern(new UnionReadSchema(type, this));
 
-            return ConsolidateDuplicateSchema(new ComplexReadSchema(type, this));
+            return Intern(new ComplexReadSchema(type, this));
         }
 
-        private T ConsolidateDuplicateSchema<T>(T schema) where T : ISchema
+        private T Intern<T>(T schema) where T : ISchema
         {
             Debug.Assert(schema is IByRefSchema || schema is IByValueSchema, "schema is IByRefSchema || schema is IByValueSchema");
 
