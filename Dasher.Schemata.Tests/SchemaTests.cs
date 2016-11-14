@@ -564,13 +564,16 @@ namespace Dasher.Schemata.Tests
         {
             var before = new SchemaCollection();
 
-            var s1 = before.GetReadSchema(typeof(Person));
-            var s2 = before.GetReadSchema(typeof(Wrapper<Person>));
-            var s3 = before.GetReadSchema(typeof(EnumAbc));
-            var s4 = before.GetReadSchema(typeof(Wrapper<EnumAbc>));
-            var s5 = before.GetReadSchema(typeof(Union<int, string, Person, EnumAbcd>));
+            before.GetReadSchema(typeof(Person));
+            before.GetWriteSchema(typeof(Person));
+            before.GetReadSchema(typeof(Wrapper<Person>));
+            before.GetReadSchema(typeof(EnumAbc));
+            before.GetWriteSchema(typeof(EnumAbc));
+            before.GetReadSchema(typeof(Wrapper<EnumAbc>));
+            before.GetReadSchema(typeof(Union<int, string, Person, EnumAbcd>));
+            before.GetWriteSchema(typeof(Union<int, string, Person, EnumAbcd>));
 
-            Assert.Equal(6, before.Schema.OfType<ByRefSchema>().Count());
+            Assert.Equal(8, before.Schema.OfType<ByRefSchema>().Count());
 
             var xml = before.ToXml();
 
@@ -579,29 +582,39 @@ namespace Dasher.Schemata.Tests
     <Field Name=""age"" Schema=""Int32"" IsRequired=""true"" />
     <Field Name=""name"" Schema=""String"" IsRequired=""true"" />
   </ComplexRead>
-  <ComplexRead Id=""Schema1"">
+  <ComplexWrite Id=""Schema1"">
+    <Field Name=""Age"" Schema=""Int32"" />
+    <Field Name=""Name"" Schema=""String"" />
+  </ComplexWrite>
+  <ComplexRead Id=""Schema2"">
     <Field Name=""value"" Schema=""#Schema0"" IsRequired=""true"" />
   </ComplexRead>
-  <Enum Id=""Schema2"">
+  <Enum Id=""Schema3"">
     <A />
     <B />
     <C />
   </Enum>
-  <ComplexRead Id=""Schema3"">
-    <Field Name=""value"" Schema=""#Schema2"" IsRequired=""true"" />
+  <ComplexRead Id=""Schema4"">
+    <Field Name=""value"" Schema=""#Schema3"" IsRequired=""true"" />
   </ComplexRead>
-  <Enum Id=""Schema4"">
+  <Enum Id=""Schema5"">
     <A />
     <B />
     <C />
     <D />
   </Enum>
-  <UnionRead Id=""Schema5"">
-    <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema4"" />
+  <UnionRead Id=""Schema6"">
+    <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema5"" />
     <Member Id=""Dasher.Schemata.Tests.Person"" Schema=""#Schema0"" />
     <Member Id=""Int32"" Schema=""Int32"" />
     <Member Id=""String"" Schema=""String"" />
   </UnionRead>
+  <UnionWrite Id=""Schema7"">
+    <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema5"" />
+    <Member Id=""Dasher.Schemata.Tests.Person"" Schema=""#Schema1"" />
+    <Member Id=""Int32"" Schema=""Int32"" />
+    <Member Id=""String"" Schema=""String"" />
+  </UnionWrite>
 </Schema>";
 
             var actualXml = xml.ToString();
@@ -610,7 +623,7 @@ namespace Dasher.Schemata.Tests
 
             Assert.Equal(expectedXml, actualXml);
 
-            Assert.Equal(6, xml.Elements().Count());
+            Assert.Equal(8, xml.Elements().Count());
 
             var after = SchemaCollection.FromXml(xml);
 
