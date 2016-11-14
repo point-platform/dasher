@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Xml.Linq;
 using Dasher.TypeProviders;
 
-namespace Dasher.Schema
+namespace Dasher.Schemata
 {
     public sealed class SchemaCollection
     {
@@ -16,7 +16,7 @@ namespace Dasher.Schema
 
         private sealed class SchemaResolver
         {
-            private readonly Dictionary<string, IByRefSchema> _schemaById = new Dictionary<string, IByRefSchema>();
+            private readonly Dictionary<string, ByRefSchema> _schemaById = new Dictionary<string, ByRefSchema>();
             private readonly SchemaCollection _collection;
             private bool _allowResolution;
 
@@ -25,7 +25,7 @@ namespace Dasher.Schema
                 _collection = collection;
             }
 
-            public void AddByRefSchema(string id, IByRefSchema schema)
+            public void AddByRefSchema(string id, ByRefSchema schema)
             {
                 if (_schemaById.ContainsKey(id))
                     throw new SchemaParseException($"Duplicate schema Id \"{id}\".");
@@ -45,7 +45,7 @@ namespace Dasher.Schema
                 if (str.StartsWith("#"))
                 {
                     var id = str.Substring(1);
-                    IByRefSchema schema;
+                    ByRefSchema schema;
                     if (!_schemaById.TryGetValue(id, out schema))
                         throw new SchemaParseException($"Unresolved schema reference \"{str}\"");
                     var readSchema = schema as IReadSchema;
@@ -94,7 +94,7 @@ namespace Dasher.Schema
                 if (str.StartsWith("#"))
                 {
                     var id = str.Substring(1);
-                    IByRefSchema schema;
+                    ByRefSchema schema;
                     if (!_schemaById.TryGetValue(id, out schema))
                         throw new SchemaParseException($"Unresolved schema reference \"{str}\"");
                     var writeSchema = schema as IWriteSchema;
@@ -144,11 +144,11 @@ namespace Dasher.Schema
         {
             // TODO revisit how IDs are assigned
             var i = 0;
-            foreach (var schema in _schema.OfType<IByRefSchema>())
+            foreach (var schema in _schema.OfType<ByRefSchema>())
                 schema.Id = $"Schema{i++}";
 
             return new XElement("Schema",
-                _schema.OfType<IByRefSchema>().Select(s => s.ToXml()));
+                _schema.OfType<ByRefSchema>().Select(s => s.ToXml()));
         }
 
         public static SchemaCollection FromXml(XElement element)
@@ -166,7 +166,7 @@ namespace Dasher.Schema
                 if (string.IsNullOrWhiteSpace(id))
                     throw new SchemaParseException("Schema XML element must contain a non-empty \"Id\" attribute.");
 
-                IByRefSchema schema;
+                ByRefSchema schema;
                 switch (el.Name.LocalName)
                 {
                     case "ComplexRead":
@@ -203,9 +203,9 @@ namespace Dasher.Schema
 
         #endregion
 
-        private readonly List<ISchema> _schema = new List<ISchema>();
+        private readonly List<Schema> _schema = new List<Schema>();
 
-        internal IReadOnlyList<ISchema> Schema => _schema;
+        internal IReadOnlyList<Schema> Schema => _schema;
 
         public IWriteSchema GetWriteSchema(Type type)
         {
@@ -253,9 +253,9 @@ namespace Dasher.Schema
             return Intern(new ComplexReadSchema(type, this));
         }
 
-        private T Intern<T>(T schema) where T : ISchema
+        private T Intern<T>(T schema) where T : Schema
         {
-            Debug.Assert(schema is IByRefSchema || schema is IByValueSchema, "schema is IByRefSchema || schema is IByValueSchema");
+            Debug.Assert(schema is ByRefSchema || schema is ByValueSchema, "schema is ByRefSchema || schema is ByValueSchema");
 
             // TODO can we improve on a linear scan? create one list per type? multivaluedict on typeof(T)?
             foreach (var existing in _schema)
@@ -274,24 +274,6 @@ namespace Dasher.Schema
         private EmptyMessage() { }
     }
 
-    /// <summary>For complex, union and enum.</summary>
-    internal interface IByRefSchema : ISchema
-    {
-        string Id { get; set; }
-        XElement ToXml();
-    }
-
-    /// <summary>For primitive, nullable, list, dictionary, tuple, empty.</summary>
-    internal interface IByValueSchema : ISchema
-    {
-        string MarkupValue { get; }
-    }
-
-    internal interface ISchema : IEquatable<ISchema>
-    {
-        IEnumerable<ISchema> Children { get; }
-    }
-
     public interface IWriteSchema
     { }
 
@@ -300,7 +282,37 @@ namespace Dasher.Schema
         bool CanReadFrom(IWriteSchema writeSchema, bool strict);
     }
 
-    internal sealed class EnumSchema : IWriteSchema, IReadSchema, IByRefSchema
+    public abstract class Schema
+    {
+        internal abstract IEnumerable<Schema> Children { get; }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as Schema;
+            return other != null && Equals(other);
+        }
+
+        public abstract bool Equals(Schema other);
+
+        public override int GetHashCode() => ComputeHashCode();
+
+        protected abstract int ComputeHashCode();
+    }
+
+    /// <summary>For complex, union and enum.</summary>
+    public abstract class ByRefSchema : Schema
+    {
+        internal string Id { get; set; }
+        internal abstract XElement ToXml();
+    }
+
+    /// <summary>For primitive, nullable, list, dictionary, tuple, empty.</summary>
+    public abstract class ByValueSchema : Schema
+    {
+        internal abstract string MarkupValue { get; }
+    }
+
+    internal sealed class EnumSchema : ByRefSchema, IWriteSchema, IReadSchema
     {
         public static bool CanProcess(Type type) => type.IsEnum;
 
@@ -328,36 +340,50 @@ namespace Dasher.Schema
                 : MemberNames.IsSupersetOf(that.MemberNames);
         }
 
-        IEnumerable<ISchema> ISchema.Children => EmptyArray<ISchema>.Instance;
+        internal override IEnumerable<Schema> Children => EmptyArray<Schema>.Instance;
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
             var e = other as EnumSchema;
             return e != null && MemberNames.SetEquals(e.MemberNames);
         }
 
-        string IByRefSchema.Id { get; set; }
+        protected override int ComputeHashCode()
+        {
+            unchecked
+            {
+                var hash = 0;
+                foreach (var memberName in MemberNames)
+                {
+                    hash <<= 5;
+                    hash ^= memberName.GetHashCode();
+                }
+                return hash;
+            }
+        }
 
-        XElement IByRefSchema.ToXml()
+        internal override XElement ToXml()
         {
             return new XElement("Enum",
-                new XAttribute("Id", ((IByRefSchema)this).Id),
+                new XAttribute("Id", Id),
                 MemberNames.Select(m => new XElement(m)));
         }
     }
 
-    internal sealed class EmptySchema : IWriteSchema, IReadSchema, IByValueSchema
+    internal sealed class EmptySchema : ByValueSchema, IWriteSchema, IReadSchema
     {
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict) => writeSchema is EmptySchema || !strict;
 
-        bool IEquatable<ISchema>.Equals(ISchema other) => other is EmptySchema;
+        public override bool Equals(Schema other) => other is EmptySchema;
 
-        IEnumerable<ISchema> ISchema.Children => EmptyArray<ISchema>.Instance;
+        internal override IEnumerable<Schema> Children => EmptyArray<Schema>.Instance;
 
-        string IByValueSchema.MarkupValue => "{empty}";
+        internal override string MarkupValue => "{empty}";
+
+        protected override int ComputeHashCode() => MarkupValue.GetHashCode();
     }
 
-    internal sealed class PrimitiveSchema : IWriteSchema, IReadSchema, IByValueSchema
+    internal sealed class PrimitiveSchema : ByValueSchema, IWriteSchema, IReadSchema
     {
         private static readonly Dictionary<Type, string> _nameByType;
         private static readonly Dictionary<string, Type> _typeByName;
@@ -416,15 +442,17 @@ namespace Dasher.Schema
             return ws != null && ws.TypeName == TypeName;
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
             var schema = other as PrimitiveSchema;
             return schema != null && schema.TypeName == TypeName;
         }
 
-        IEnumerable<ISchema> ISchema.Children => EmptyArray<ISchema>.Instance;
+        protected override int ComputeHashCode() => TypeName.GetHashCode();
 
-        string IByValueSchema.MarkupValue => TypeName;
+        internal override IEnumerable<Schema> Children => EmptyArray<Schema>.Instance;
+
+        internal override string MarkupValue => TypeName;
     }
 
     internal static class EnumerableExtensions
@@ -462,16 +490,16 @@ namespace Dasher.Schema
 
         private static string ToReferenceStringInternal(object schema)
         {
-            var byRefSchema = schema as IByRefSchema;
+            var byRefSchema = schema as ByRefSchema;
             return byRefSchema != null
                 ? '#' + byRefSchema.Id
-                : ((IByValueSchema)schema).MarkupValue;
+                : ((ByValueSchema)schema).MarkupValue;
         }
     }
 
     #region Tuple
 
-    internal sealed class TupleWriteSchema : IWriteSchema, IByValueSchema
+    internal sealed class TupleWriteSchema : ByValueSchema, IWriteSchema
     {
         public static bool CanProcess(Type type)
         {
@@ -508,21 +536,31 @@ namespace Dasher.Schema
             Items = items;
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other) => (other as TupleWriteSchema)?.Items.SequenceEqual(Items) ?? false;
+
+        protected override int ComputeHashCode()
         {
-            var s = other as TupleWriteSchema;
-            return s != null && Items.SequenceEqual(s.Items, (a, b) => ((IEquatable<ISchema>)a).Equals((ISchema)b));
+            unchecked
+            {
+                var hash = 0;
+                foreach (var item in Items)
+                {
+                    hash <<= 5;
+                    hash ^= item.GetHashCode();
+                }
+                return hash;
+            }
         }
 
-        IEnumerable<ISchema> ISchema.Children => Items.Cast<ISchema>();
+        internal override IEnumerable<Schema> Children => Items.Cast<Schema>();
 
-        string IByValueSchema.MarkupValue
+        internal override string MarkupValue
         {
             get { return $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}"; }
         }
     }
 
-    internal sealed class TupleReadSchema : IReadSchema, IByValueSchema
+    internal sealed class TupleReadSchema : ByValueSchema, IReadSchema
     {
         public static bool CanProcess(Type type) => TupleWriteSchema.CanProcess(type);
 
@@ -549,15 +587,25 @@ namespace Dasher.Schema
                    && !Items.Where((rs, i) => !rs.CanReadFrom(that.Items[i], strict)).Any();
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other) => (other as TupleReadSchema)?.Items.SequenceEqual(Items) ?? false;
+
+        protected override int ComputeHashCode()
         {
-            var s = other as TupleReadSchema;
-            return s != null && Items.SequenceEqual(s.Items, (a, b) => ((IEquatable<ISchema>)a).Equals((ISchema)b));
+            unchecked
+            {
+                var hash = 0;
+                foreach (var item in Items)
+                {
+                    hash <<= 5;
+                    hash ^= item.GetHashCode();
+                }
+                return hash;
+            }
         }
+        
+        internal override IEnumerable<Schema> Children => Items.Cast<Schema>();
 
-        IEnumerable<ISchema> ISchema.Children => Items.Cast<ISchema>();
-
-        string IByValueSchema.MarkupValue
+        internal override string MarkupValue
         {
             get { return $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}"; }
         }
@@ -567,7 +615,7 @@ namespace Dasher.Schema
 
     #region Complex
 
-    internal sealed class ComplexWriteSchema : IWriteSchema, IByRefSchema
+    internal sealed class ComplexWriteSchema : ByRefSchema, IWriteSchema
     {
         public struct Field
         {
@@ -592,7 +640,7 @@ namespace Dasher.Schema
             Fields = properties.Select(p => new Field(p.Name, schemaCollection.GetWriteSchema(p.PropertyType))).ToArray();
         }
 
-        public ComplexWriteSchema(XElement element, Func<string, IWriteSchema> resolveSchema, List<Action> bindActions)
+        public ComplexWriteSchema(XElement element, Func<string, IWriteSchema> resolveSchema, ICollection<Action> bindActions)
         {
             var fields = new List<Field>();
 
@@ -615,27 +663,42 @@ namespace Dasher.Schema
             Fields = fields;
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
-            var s = other as ComplexWriteSchema;
-            return s != null && Fields.SequenceEqual(s.Fields, (a, b) => ((IEquatable<ISchema>)a.Schema).Equals(b.Schema));
+            return (other as ComplexWriteSchema)?.Fields.SequenceEqual(Fields,
+                       (a, b) => a.Name == b.Name && a.Schema.Equals(b.Schema))
+                   ?? false;
         }
 
-        IEnumerable<ISchema> ISchema.Children => Fields.Select(f => f.Schema).Cast<ISchema>();
+        protected override int ComputeHashCode()
+        {
+            unchecked
+            {
+                var hash = 0;
+                foreach (var field in Fields)
+                {
+                    hash <<= 5;
+                    hash ^= field.Name.GetHashCode();
+                    hash <<= 3;
+                    hash ^= field.Schema.GetHashCode();
+                }
+                return hash;
+            }
+        }
 
-        string IByRefSchema.Id { get; set; }
+        internal override IEnumerable<Schema> Children => Fields.Select(f => f.Schema).Cast<Schema>();
 
-        XElement IByRefSchema.ToXml()
+        internal override XElement ToXml()
         {
             return new XElement("ComplexWrite",
-                new XAttribute("Id", ((IByRefSchema)this).Id),
+                new XAttribute("Id", Id),
                 Fields.Select(f => new XElement("Field",
                     new XAttribute("Name", f.Name),
                     new XAttribute("Schema", f.Schema.ToReferenceString()))));
         }
     }
 
-    internal sealed class ComplexReadSchema : IReadSchema, IByRefSchema
+    internal sealed class ComplexReadSchema : ByRefSchema, IReadSchema
     {
         private struct Field
         {
@@ -760,20 +823,37 @@ namespace Dasher.Schema
             return true;
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
-            var s = other as ComplexReadSchema;
-            return s != null && Fields.SequenceEqual(s.Fields, (a, b) => ((IEquatable<ISchema>)a.Schema).Equals(b.Schema));
+            return (other as ComplexReadSchema)?.Fields.SequenceEqual(Fields,
+                       (a, b) => a.Name == b.Name && a.IsRequired == b.IsRequired && a.Schema.Equals(b.Schema))
+                   ?? false;
         }
 
-        IEnumerable<ISchema> ISchema.Children => Fields.Select(f => f.Schema).Cast<ISchema>();
+        protected override int ComputeHashCode()
+        {
+            unchecked
+            {
+                var hash = 0;
+                foreach (var field in Fields)
+                {
+                    hash <<= 5;
+                    hash ^= field.Name.GetHashCode();
+                    hash <<= 3;
+                    hash ^= field.Schema.GetHashCode();
+                    hash <<= 1;
+                    hash |= field.IsRequired.GetHashCode();
+                }
+                return hash;
+            }
+        }
 
-        string IByRefSchema.Id { get; set; }
+        internal override IEnumerable<Schema> Children => Fields.Select(f => f.Schema).Cast<Schema>();
 
-        XElement IByRefSchema.ToXml()
+        internal override XElement ToXml()
         {
             return new XElement("ComplexRead",
-                new XAttribute("Id", ((IByRefSchema)this).Id),
+                new XAttribute("Id", Id),
                 Fields.Select(f => new XElement(nameof(Field),
                     new XAttribute(nameof(Field.Name), f.Name),
                     new XAttribute(nameof(Field.Schema), f.Schema.ToReferenceString()),
@@ -785,7 +865,7 @@ namespace Dasher.Schema
 
     #region Nullable
 
-    internal sealed class NullableWriteSchema : IWriteSchema, IByValueSchema
+    internal sealed class NullableWriteSchema : ByValueSchema, IWriteSchema
     {
         public static bool CanProcess(Type type) => Nullable.GetUnderlyingType(type) != null;
 
@@ -803,18 +883,20 @@ namespace Dasher.Schema
             Inner = inner;
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
             var o = other as NullableWriteSchema;
-            return o != null && ((ISchema)o.Inner).Equals((ISchema)Inner);
+            return o != null && ((Schema)o.Inner).Equals((Schema)Inner);
         }
 
-        IEnumerable<ISchema> ISchema.Children => new[] {(ISchema)Inner};
+        protected override int ComputeHashCode() => unchecked(0x3731AFBB ^ Inner.GetHashCode());
 
-        string IByValueSchema.MarkupValue => $"{{nullable {Inner.ToReferenceString()}}}";
+        internal override IEnumerable<Schema> Children => new[] {(Schema)Inner};
+
+        internal override string MarkupValue => $"{{nullable {Inner.ToReferenceString()}}}";
     }
 
-    internal sealed class NullableReadSchema : IReadSchema, IByValueSchema
+    internal sealed class NullableReadSchema : ByValueSchema, IReadSchema
     {
         public static bool CanProcess(Type type) => NullableWriteSchema.CanProcess(type);
 
@@ -845,22 +927,24 @@ namespace Dasher.Schema
             return Inner.CanReadFrom(writeSchema, strict);
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
             var o = other as NullableReadSchema;
-            return o != null && ((ISchema)o.Inner).Equals((ISchema)Inner);
+            return o != null && ((Schema)o.Inner).Equals((Schema)Inner);
         }
 
-        IEnumerable<ISchema> ISchema.Children => new[] {(ISchema)Inner};
+        protected override int ComputeHashCode() => unchecked(0x563D4345 ^ Inner.GetHashCode());
 
-        string IByValueSchema.MarkupValue => $"{{nullable {Inner.ToReferenceString()}}}";
+        internal override IEnumerable<Schema> Children => new[] {(Schema)Inner};
+
+        internal override string MarkupValue => $"{{nullable {Inner.ToReferenceString()}}}";
     }
 
     #endregion
 
     #region IReadOnlyList
 
-    internal sealed class ListWriteSchema : IWriteSchema, IByValueSchema
+    internal sealed class ListWriteSchema : ByValueSchema, IWriteSchema
     {
         public static bool CanProcess(Type type) => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>);
 
@@ -878,18 +962,20 @@ namespace Dasher.Schema
             ItemSchema = itemSchema;
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
             var o = other as ListWriteSchema;
-            return o != null && ((ISchema)o.ItemSchema).Equals((ISchema)ItemSchema);
+            return o != null && ((Schema)o.ItemSchema).Equals((Schema)ItemSchema);
         }
 
-        IEnumerable<ISchema> ISchema.Children => new[] {(ISchema)ItemSchema};
+        protected override int ComputeHashCode() => unchecked((int)0xA4A76926 ^ ItemSchema.GetHashCode());
 
-        string IByValueSchema.MarkupValue => $"{{list {ItemSchema.ToReferenceString()}}}";
+        internal override IEnumerable<Schema> Children => new[] {(Schema)ItemSchema};
+
+        internal override string MarkupValue => $"{{list {ItemSchema.ToReferenceString()}}}";
     }
 
-    internal sealed class ListReadSchema : IReadSchema, IByValueSchema
+    internal sealed class ListReadSchema : ByValueSchema, IReadSchema
     {
         public static bool CanProcess(Type type) => ListWriteSchema.CanProcess(type);
 
@@ -910,27 +996,23 @@ namespace Dasher.Schema
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
         {
             var ws = writeSchema as ListWriteSchema;
-            if (ws == null)
-                return false;
-            return ItemSchema.CanReadFrom(ws.ItemSchema, strict);
+            return ws != null && ItemSchema.CanReadFrom(ws.ItemSchema, strict);
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
-        {
-            var o = other as ListReadSchema;
-            return o != null && ((ISchema)o.ItemSchema).Equals((ISchema)ItemSchema);
-        }
+        public override bool Equals(Schema other) => (other as ListReadSchema)?.ItemSchema.Equals(ItemSchema) ?? false;
 
-        IEnumerable<ISchema> ISchema.Children => new[] {(ISchema)ItemSchema};
+        protected override int ComputeHashCode() => unchecked((int)0x9ABCF854 ^ ItemSchema.GetHashCode());
 
-        string IByValueSchema.MarkupValue => $"{{list {ItemSchema.ToReferenceString()}}}";
+        internal override IEnumerable<Schema> Children => new[] {(Schema)ItemSchema};
+
+        internal override string MarkupValue => $"{{list {ItemSchema.ToReferenceString()}}}";
     }
 
     #endregion
 
     #region IReadOnlyDictionary
 
-    internal sealed class DictionaryWriteSchema : IWriteSchema, IByValueSchema
+    internal sealed class DictionaryWriteSchema : ByValueSchema, IWriteSchema
     {
         public static bool CanProcess(Type type) => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>);
 
@@ -951,18 +1033,29 @@ namespace Dasher.Schema
             ValueSchema = valueSchema;
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
             var o = other as DictionaryWriteSchema;
-            return o != null && ((ISchema)o.KeySchema).Equals((ISchema)KeySchema) && ((ISchema)o.ValueSchema).Equals((ISchema)ValueSchema);
+            return o != null && o.KeySchema.Equals(KeySchema) && o.ValueSchema.Equals(ValueSchema);
         }
 
-        IEnumerable<ISchema> ISchema.Children => new[] {(ISchema)KeySchema, (ISchema)ValueSchema};
+        protected override int ComputeHashCode()
+        {
+            unchecked
+            {
+                var hash = KeySchema.GetHashCode();
+                hash <<= 5;
+                hash ^= ValueSchema.GetHashCode();
+                return hash;
+            }
+        }
 
-        string IByValueSchema.MarkupValue => $"{{dictionary {KeySchema.ToReferenceString()} {ValueSchema.ToReferenceString()}}}";
+        internal override IEnumerable<Schema> Children => new[] {(Schema)KeySchema, (Schema)ValueSchema};
+
+        internal override string MarkupValue => $"{{dictionary {KeySchema.ToReferenceString()} {ValueSchema.ToReferenceString()}}}";
     }
 
-    internal sealed class DictionaryReadSchema : IReadSchema, IByValueSchema
+    internal sealed class DictionaryReadSchema : ByValueSchema, IReadSchema
     {
         public static bool CanProcess(Type type) => DictionaryWriteSchema.CanProcess(type);
 
@@ -992,22 +1085,33 @@ namespace Dasher.Schema
                    ValueSchema.CanReadFrom(ws.ValueSchema, strict);
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
             var o = other as DictionaryReadSchema;
-            return o != null && ((ISchema)o.KeySchema).Equals((ISchema)KeySchema) && ((ISchema)o.ValueSchema).Equals((ISchema)ValueSchema);
+            return o != null && o.KeySchema.Equals(KeySchema) && o.ValueSchema.Equals(ValueSchema);
         }
 
-        IEnumerable<ISchema> ISchema.Children => new[] {(ISchema)KeySchema, (ISchema)ValueSchema};
+        protected override int ComputeHashCode()
+        {
+            unchecked
+            {
+                var hash = KeySchema.GetHashCode();
+                hash <<= 5;
+                hash ^= ValueSchema.GetHashCode();
+                return hash;
+            }
+        }
 
-        string IByValueSchema.MarkupValue => $"{{dictionary {KeySchema.ToReferenceString()} {ValueSchema.ToReferenceString()}}}";
+        internal override IEnumerable<Schema> Children => new[] {(Schema)KeySchema, (Schema)ValueSchema};
+
+        internal override string MarkupValue => $"{{dictionary {KeySchema.ToReferenceString()} {ValueSchema.ToReferenceString()}}}";
     }
 
     #endregion
 
     #region Union
 
-    internal sealed class UnionWriteSchema : IWriteSchema, IByRefSchema
+    internal sealed class UnionWriteSchema : ByRefSchema, IWriteSchema
     {
         public static bool CanProcess(Type type) => Union.IsUnionType(type);
 
@@ -1058,27 +1162,41 @@ namespace Dasher.Schema
             Members = members;
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
             var o = other as UnionWriteSchema;
-            return o != null && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && ((ISchema)a.Schema).Equals((ISchema)b.Schema));
+            return o != null && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Schema.Equals(b.Schema));
         }
 
-        IEnumerable<ISchema> ISchema.Children => Members.Select(m => m.Schema).Cast<ISchema>();
+        protected override int ComputeHashCode()
+        {
+            unchecked
+            {
+                var hash = 0;
+                foreach (var member in Members)
+                {
+                    hash <<= 5;
+                    hash ^= member.Id.GetHashCode();
+                    hash <<= 3;
+                    hash ^= member.Schema.GetHashCode();
+                }
+                return hash;
+            }
+        }
 
-        string IByRefSchema.Id { get; set; }
+        internal override IEnumerable<Schema> Children => Members.Select(m => m.Schema).Cast<Schema>();
 
-        XElement IByRefSchema.ToXml()
+        internal override XElement ToXml()
         {
             return new XElement("UnionWrite",
-                new XAttribute("Id", ((IByRefSchema)this).Id),
+                new XAttribute("Id", Id),
                 Members.Select(m => new XElement("Member",
                     new XAttribute("Id", m.Id),
                     new XAttribute("Schema", m.Schema.ToReferenceString()))));
         }
     }
 
-    internal sealed class UnionReadSchema : IReadSchema, IByRefSchema
+    internal sealed class UnionReadSchema : ByRefSchema, IReadSchema
     {
         public static bool CanProcess(Type type) => UnionWriteSchema.CanProcess(type);
 
@@ -1186,20 +1304,34 @@ namespace Dasher.Schema
             return true;
         }
 
-        bool IEquatable<ISchema>.Equals(ISchema other)
+        public override bool Equals(Schema other)
         {
             var o = other as UnionReadSchema;
-            return o != null && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && ((ISchema)a.Schema).Equals((ISchema)b.Schema));
+            return o != null && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Schema.Equals(b.Schema));
         }
 
-        IEnumerable<ISchema> ISchema.Children => Members.Select(m => m.Schema).Cast<ISchema>();
+        protected override int ComputeHashCode()
+        {
+            unchecked
+            {
+                var hash = 0;
+                foreach (var member in Members)
+                {
+                    hash <<= 5;
+                    hash ^= member.Id.GetHashCode();
+                    hash <<= 3;
+                    hash ^= member.Schema.GetHashCode();
+                }
+                return hash;
+            }
+        }
 
-        string IByRefSchema.Id { get; set; }
+        internal override IEnumerable<Schema> Children => Members.Select(m => m.Schema).Cast<Schema>();
 
-        XElement IByRefSchema.ToXml()
+        internal override XElement ToXml()
         {
             return new XElement("UnionRead",
-                new XAttribute("Id", ((IByRefSchema)this).Id),
+                new XAttribute("Id", Id),
                 Members.Select(m => new XElement("Member",
                     new XAttribute("Id", m.Id),
                     new XAttribute("Schema", m.Schema.ToReferenceString()))));

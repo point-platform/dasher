@@ -1,6 +1,6 @@
 using System;
 
-namespace Dasher.Schema
+namespace Dasher.Schemata
 {
     public sealed class SchemaParseException : Exception
     {

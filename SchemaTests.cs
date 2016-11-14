@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Dasher.Schema
+namespace Dasher.Schemata
 {
     // TODO test XML writing
     // TODO implement FromXml
@@ -554,7 +554,7 @@ namespace Dasher.Schema
 
             var s3 = schemaCollection.GetReadSchema(typeof(Wrapper<Person>));
 
-            Assert.Same(s2, ((ISchema)s3).Children.Single());
+            Assert.Same(s2, ((Schema)s3).Children.Single());
         }
 
         #endregion
@@ -572,7 +572,7 @@ namespace Dasher.Schema
             var s4 = before.GetReadSchema(typeof(Wrapper<EnumAbc>));
             var s5 = before.GetReadSchema(typeof(Union<int, string, Person, EnumAbcd>));
 
-            Assert.Equal(6, before.Schema.OfType<IByRefSchema>().Count());
+            Assert.Equal(6, before.Schema.OfType<ByRefSchema>().Count());
 
             var xml = before.ToXml();
 
@@ -582,14 +582,14 @@ namespace Dasher.Schema
 
             var after = SchemaCollection.FromXml(xml);
 
-            Assert.True(new HashSet<ISchema>(before.Schema).SetEquals(new HashSet<ISchema>(after.Schema)));
+            Assert.True(new HashSet<Schema>(before.Schema).SetEquals(new HashSet<Schema>(after.Schema)));
 
-//            Assert.Equal(before.Count(), after.Count());
-//
-//            foreach (var b in before)
-//                Assert.Equal(1, after.Count(s => s.Equals(b)));
-//            foreach (var a in after)
-//                Assert.Equal(1, before.Count(s => s.Equals(a)));
+            Assert.Equal(before.Schema.Count, after.Schema.Count);
+
+            foreach (var b in before.Schema)
+                Assert.Equal(1, after.Schema.Count(s => s.Equals(b)));
+            foreach (var a in after.Schema)
+                Assert.Equal(1, before.Schema.Count(s => s.Equals(a)));
         }
 
         [Fact]

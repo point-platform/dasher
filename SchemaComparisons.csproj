@@ -7,8 +7,8 @@
     <ProjectGuid>{2CA40EC3-241F-4716-9F3E-8F63C487095D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dasher.Schema</RootNamespace>
-    <AssemblyName>Dasher.Schema</AssemblyName>
+    <RootNamespace>Dasher.Schemata</RootNamespace>
+    <AssemblyName>Dasher.Schemata</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

@@ -1,4 +1,4 @@
-namespace Dasher.Schema
+namespace Dasher.Schemata
 {
     internal static class EmptyArray<T>
     {

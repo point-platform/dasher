@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Dasher.Schema
+namespace Dasher.Schemata
 {
     internal static class SchemaMarkupExtension
     {
