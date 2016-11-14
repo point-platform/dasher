@@ -153,10 +153,10 @@ namespace Dasher.Schemata
 
         public static SchemaCollection FromXml(XElement element)
         {
-            var collection = new SchemaCollection();
-
             var bindActions = new List<Action>();
+            var unboundSchemata = new List<Schema>();
 
+            var collection = new SchemaCollection();
             var resolver = new SchemaResolver(collection);
 
             foreach (var el in element.Elements())
@@ -190,13 +190,17 @@ namespace Dasher.Schemata
 
                 schema.Id = id;
                 resolver.AddByRefSchema(id, schema);
-                collection.Intern(schema);
+                // We can't add these to the collection until after bind actions execute
+                unboundSchemata.Add(schema);
             }
 
             resolver.AllowResolution();
 
             foreach (var bindAction in bindActions)
                 bindAction();
+
+            foreach (var schema in unboundSchemata)
+                collection.Intern(schema);
 
             return collection;
         }

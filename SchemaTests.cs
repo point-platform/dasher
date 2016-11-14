@@ -573,7 +573,41 @@ namespace Dasher.Schemata
 
             var xml = before.ToXml();
 
-            _output.WriteLine(xml.ToString());
+            const string expectedXml = @"<Schema>
+  <ComplexRead Id=""Schema0"">
+    <Field Name=""age"" Schema=""Int32"" IsRequired=""true"" />
+    <Field Name=""name"" Schema=""String"" IsRequired=""true"" />
+  </ComplexRead>
+  <ComplexRead Id=""Schema1"">
+    <Field Name=""value"" Schema=""#Schema0"" IsRequired=""true"" />
+  </ComplexRead>
+  <Enum Id=""Schema2"">
+    <A />
+    <B />
+    <C />
+  </Enum>
+  <ComplexRead Id=""Schema3"">
+    <Field Name=""value"" Schema=""#Schema2"" IsRequired=""true"" />
+  </ComplexRead>
+  <Enum Id=""Schema4"">
+    <A />
+    <B />
+    <C />
+    <D />
+  </Enum>
+  <UnionRead Id=""Schema5"">
+    <Member Id=""Dasher.Schemata.EnumAbcd"" Schema=""#Schema4"" />
+    <Member Id=""Dasher.Schemata.Person"" Schema=""#Schema0"" />
+    <Member Id=""Int32"" Schema=""Int32"" />
+    <Member Id=""String"" Schema=""String"" />
+  </UnionRead>
+</Schema>";
+
+            var actualXml = xml.ToString();
+
+            _output.WriteLine(actualXml);
+
+            Assert.Equal(expectedXml, actualXml);
 
             Assert.Equal(6, xml.Elements().Count());
 
@@ -676,7 +710,6 @@ namespace Dasher.Schemata
 
             foreach (var schema in schemata)
             {
-                _output.WriteLine($"Testing {schema}");
                 Assert.Equal(1, schemata.Count(s => s.Equals(schema)));
                 Assert.Equal(1, schemata.Count(s => s.GetHashCode().Equals(schema.GetHashCode())));
             }
