@@ -1,0 +1,45 @@
+using System.Collections.Generic;
+using System.Xml.Linq;
+
+namespace Dasher.Schemata
+{
+    public interface IWriteSchema
+    { }
+
+    public interface IReadSchema
+    {
+        bool CanReadFrom(IWriteSchema writeSchema, bool strict);
+    }
+
+    public abstract class Schema
+    {
+        internal abstract IEnumerable<Schema> Children { get; }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as Schema;
+            return other != null && Equals(other);
+        }
+
+        public abstract bool Equals(Schema other);
+
+        public override int GetHashCode() => ComputeHashCode();
+
+        protected abstract int ComputeHashCode();
+    }
+
+    /// <summary>For complex, union and enum.</summary>
+    public abstract class ByRefSchema : Schema
+    {
+        internal string Id { get; set; }
+        internal abstract XElement ToXml();
+        public override string ToString() => Id;
+    }
+
+    /// <summary>For primitive, nullable, list, dictionary, tuple, empty.</summary>
+    public abstract class ByValueSchema : Schema
+    {
+        internal abstract string MarkupValue { get; }
+        public override string ToString() => MarkupValue;
+    }
+}

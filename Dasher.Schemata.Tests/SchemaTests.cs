@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using Dasher.Schemata.Utils;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -10,7 +11,7 @@ using Xunit.Abstractions;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Dasher.Schemata
+namespace Dasher.Schemata.Tests
 {
     // TODO support recursive types
     // TODO reflect integral conversions supported by dasher
@@ -596,8 +597,8 @@ namespace Dasher.Schemata
     <D />
   </Enum>
   <UnionRead Id=""Schema5"">
-    <Member Id=""Dasher.Schemata.EnumAbcd"" Schema=""#Schema4"" />
-    <Member Id=""Dasher.Schemata.Person"" Schema=""#Schema0"" />
+    <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema4"" />
+    <Member Id=""Dasher.Schemata.Tests.Person"" Schema=""#Schema0"" />
     <Member Id=""Int32"" Schema=""Int32"" />
     <Member Id=""String"" Schema=""String"" />
   </UnionRead>

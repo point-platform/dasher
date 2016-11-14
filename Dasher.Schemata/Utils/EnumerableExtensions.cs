@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace Dasher.Schemata
+namespace Dasher.Schemata.Utils
 {
     internal static class EnumerableExtensions
     {

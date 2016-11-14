@@ -1,4 +1,4 @@
-namespace Dasher.Schemata
+namespace Dasher.Schemata.Utils
 {
     internal static class SchemaExtensions
     {
