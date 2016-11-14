@@ -12,8 +12,27 @@ using Xunit.Abstractions;
 
 namespace Dasher.Schema
 {
+    // TODO test XML writing
+    // TODO implement FromXml
+
+    // TODO test individual IEquatable implementations using matrix
+    // TODO test all new interface methods
+    // TODO support recursive types
     // TODO reflect integral conversions supported by dasher
     // TODO test writing empty message to complex with all-default values
+
+    [Flags]
+    internal enum CompatabilityLevel
+    {
+        Strict,
+        AllowExtraFieldsOnComplex,
+        AllowFewerMembersInEnum,
+        AllowFewerMembersInUnion,
+        AllowWideningIntegralTypes,
+        AllowWideningFloatingPointTypes,
+        AllowMakingNullable,
+        Lenient // = AllowExtraFieldsOnComplex | AllowFewerMembersInEnum | AllowFewerMembersInUnion | AllowLosslessTypeConversion
+    }
 
     public enum EnumAbc { A, B, C }
     public enum EnumAbcd { A, B, C, D }
@@ -540,17 +559,52 @@ namespace Dasher.Schema
 
         #endregion
 
-        #region SchemaCollection.ToXml
+        #region SchemaCollection XML Round Trip
 
         [Fact]
-        public void SchemaCollection_ToXml()
+        public void SchemaCollection_XmlRoundTrip()
         {
-            var schemaCollection = new SchemaCollection();
+            var before = new SchemaCollection();
 
-            schemaCollection.GetReadSchema(typeof(Person));
-            schemaCollection.GetReadSchema(typeof(Wrapper<Person>));
+            var s1 = before.GetReadSchema(typeof(Person));
+            var s2 = before.GetReadSchema(typeof(Wrapper<Person>));
+            var s3 = before.GetReadSchema(typeof(EnumAbc));
+            var s4 = before.GetReadSchema(typeof(Wrapper<EnumAbc>));
+            var s5 = before.GetReadSchema(typeof(Union<int, string, Person, EnumAbcd>));
 
-            _output.WriteLine(schemaCollection.ToXml().ToString());
+            Assert.Equal(6, before.Schema.OfType<IByRefSchema>().Count());
+
+            var xml = before.ToXml();
+
+            _output.WriteLine(xml.ToString());
+
+            Assert.Equal(6, xml.Elements().Count());
+
+            var after = SchemaCollection.FromXml(xml);
+
+            Assert.True(new HashSet<ISchema>(before.Schema).SetEquals(new HashSet<ISchema>(after.Schema)));
+
+//            Assert.Equal(before.Count(), after.Count());
+//
+//            foreach (var b in before)
+//                Assert.Equal(1, after.Count(s => s.Equals(b)));
+//            foreach (var a in after)
+//                Assert.Equal(1, before.Count(s => s.Equals(a)));
+        }
+
+        [Fact]
+        public void SchemaMarkupExtensionTokenizer()
+        {
+            Assert.Equal(new[]{"empty"}, SchemaMarkupExtension.Tokenize("{empty}"));
+            Assert.Equal(new[]{"A", "B", "C"}, SchemaMarkupExtension.Tokenize("{A B C}"));
+            Assert.Equal(new[]{"A", "{B C}"}, SchemaMarkupExtension.Tokenize("{A {B C}}"));
+
+            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("}").ToList());
+            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("{}}").ToList());
+            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("{").ToList());
+            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("{{").ToList());
+            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("{a} ").ToList());
+            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("{a}b").ToList());
         }
 
         #endregion

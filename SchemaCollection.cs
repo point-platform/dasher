@@ -10,17 +10,11 @@ using Dasher.TypeProviders;
 
 namespace Dasher.Schema
 {
-    // TODO test XML writing
-    // TODO test individual IEquatable implementations
-    // TODO test all new interface methods
-    // TODO implement FromXml
-
-    // TODO support recursive types
-
     public sealed class SchemaCollection
     {
         public XElement ToXml()
         {
+            // TODO revisit how IDs are assigned
             var i = 0;
             foreach (var schema in _schema.OfType<IByRefSchema>())
                 schema.Id = $"Schema{i++}";
@@ -29,13 +23,181 @@ namespace Dasher.Schema
                 _schema.OfType<IByRefSchema>().Select(s => s.ToXml()));
         }
 
-        public static SchemaCollection FromXml(IEnumerable<XElement> elements)
+        private sealed class SchemaResolver
         {
-            // TODO parse XML and build _schema collection
-            throw new NotImplementedException();
+            private readonly Dictionary<string, IByRefSchema> _schemaById = new Dictionary<string, IByRefSchema>();
+            private readonly SchemaCollection _collection;
+            private bool _allowResolution;
+
+            public SchemaResolver(SchemaCollection collection)
+            {
+                _collection = collection;
+            }
+
+            public void AddByRefSchema(string id, IByRefSchema schema)
+            {
+                if (_schemaById.ContainsKey(id))
+                    throw new SchemaParseException($"Duplicate schema Id \"{id}\".");
+                _schemaById[id] = schema;
+            }
+
+            public void AllowResolution()
+            {
+                _allowResolution = true;
+            }
+
+            public IReadSchema ResolveReadSchema(string str)
+            {
+                if (!_allowResolution)
+                    throw new InvalidOperationException("Cannot resolve schema at this stage. Use a bind action instead.");
+
+                if (str.StartsWith("#"))
+                {
+                    var id = str.Substring(1);
+                    IByRefSchema schema;
+                    if (!_schemaById.TryGetValue(id, out schema))
+                        throw new SchemaParseException($"Unresolved schema reference \"{str}\"");
+                    var readSchema = schema as IReadSchema;
+                    if (readSchema == null)
+                        throw new SchemaParseException($"Referenced schema \"{str}\" must be a read schema.");
+                    return readSchema;
+                }
+
+                if (str.StartsWith("{"))
+                {
+                    var tokens = SchemaMarkupExtension.Tokenize(str).ToList();
+
+                    // ReSharper disable once SwitchStatementMissingSomeCases
+                    switch (tokens.Count)
+                    {
+                        case 1:
+                            if (tokens[0] == "empty")
+                                return _collection.Intern(new EmptySchema());
+                            break;
+                        case 2:
+                            if (tokens[0] == "nullable")
+                                return _collection.Intern(new NullableReadSchema(ResolveReadSchema(tokens[1])));
+                            if (tokens[0] == "list")
+                                return _collection.Intern(new ListReadSchema(ResolveReadSchema(tokens[1])));
+                            break;
+                        case 3:
+                            if (tokens[0] == "dictionary")
+                                return _collection.Intern(new DictionaryReadSchema(ResolveReadSchema(tokens[1]), ResolveReadSchema(tokens[2])));
+                            break;
+                    }
+
+                    if (tokens.Count != 0 && tokens[0] == "tuple")
+                        return _collection.Intern(new TupleReadSchema(tokens.Skip(1).Select(ResolveReadSchema).ToList()));
+
+                    throw new SchemaParseException($"Invalid schema markup extension \"{str}\".");
+                }
+
+                return _collection.Intern(new PrimitiveSchema(str));
+            }
+
+            public IWriteSchema ResolveWriteSchema(string str)
+            {
+                if (!_allowResolution)
+                    throw new InvalidOperationException("Cannot resolve schema at this stage. Use a bind action instead.");
+
+                if (str.StartsWith("#"))
+                {
+                    var id = str.Substring(1);
+                    IByRefSchema schema;
+                    if (!_schemaById.TryGetValue(id, out schema))
+                        throw new SchemaParseException($"Unresolved schema reference \"{str}\"");
+                    var writeSchema = schema as IWriteSchema;
+                    if (writeSchema == null)
+                        throw new SchemaParseException($"Referenced schema \"{str}\" must be a write schema.");
+                    return writeSchema;
+                }
+
+                if (str.StartsWith("{"))
+                {
+                    var tokens = SchemaMarkupExtension.Tokenize(str).ToList();
+
+                    // ReSharper disable once SwitchStatementMissingSomeCases
+                    switch (tokens.Count)
+                    {
+                        case 1:
+                            if (tokens[0] == "empty")
+                                return _collection.Intern(new EmptySchema());
+                            break;
+                        case 2:
+                            if (tokens[0] == "nullable")
+                                return _collection.Intern(new NullableWriteSchema(ResolveWriteSchema(tokens[1])));
+                            if (tokens[0] == "list")
+                                return _collection.Intern(new ListWriteSchema(ResolveWriteSchema(tokens[1])));
+                            break;
+                        case 3:
+                            if (tokens[0] == "dictionary")
+                                return _collection.Intern(new DictionaryWriteSchema(ResolveWriteSchema(tokens[1]), ResolveWriteSchema(tokens[2])));
+                            break;
+                    }
+
+                    if (tokens.Count != 0 && tokens[0] == "tuple")
+                        return _collection.Intern(new TupleWriteSchema(tokens.Skip(1).Select(ResolveWriteSchema).ToList()));
+
+                    throw new SchemaParseException($"Invalid schema markup extension \"{str}\".");
+                }
+
+                return _collection.Intern(new PrimitiveSchema(str));
+            }
+        }
+
+        public static SchemaCollection FromXml(XElement element)
+        {
+            var collection = new SchemaCollection();
+
+            var bindActions = new List<Action>();
+
+            var resolver = new SchemaResolver(collection);
+
+            foreach (var el in element.Elements())
+            {
+                var id = el.Attribute("Id")?.Value;
+
+                if (string.IsNullOrWhiteSpace(id))
+                    throw new SchemaParseException("Schema XML element must contain a non-empty \"Id\" attribute.");
+
+                IByRefSchema schema;
+                switch (el.Name.LocalName)
+                {
+                    case "ComplexRead":
+                        schema = new ComplexReadSchema(el, resolver.ResolveReadSchema, bindActions);
+                        break;
+                    case "ComplexWrite":
+                        schema = new ComplexWriteSchema(el, resolver.ResolveWriteSchema, bindActions);
+                        break;
+                    case "UnionRead":
+                        schema = new UnionReadSchema(el, resolver.ResolveReadSchema, bindActions);
+                        break;
+                    case "UnionWrite":
+                        schema = new UnionWriteSchema(el, resolver.ResolveWriteSchema, bindActions);
+                        break;
+                    case "Enum":
+                        schema = new EnumSchema(el);
+                        break;
+                    default:
+                        throw new SchemaParseException($"Unsupported schema XML element with name \"{el.Name.LocalName}\".");
+                }
+
+                schema.Id = id;
+                resolver.AddByRefSchema(id, schema);
+                collection._schema.Add(schema);
+            }
+
+            resolver.AllowResolution();
+
+            foreach (var bindAction in bindActions)
+                bindAction();
+
+            return collection;
         }
 
         private readonly List<ISchema> _schema = new List<ISchema>();
+
+        internal IReadOnlyList<ISchema> Schema => _schema;
 
         public IWriteSchema GetWriteSchema(Type type)
         {
@@ -109,13 +271,15 @@ namespace Dasher.Schema
         private EmptyMessage() { }
     }
 
-    internal interface IByRefSchema : ISchema // for complex, union and enum
+    /// <summary>For complex, union and enum.</summary>
+    internal interface IByRefSchema : ISchema
     {
         string Id { get; set; }
         XElement ToXml();
     }
 
-    internal interface IByValueSchema : ISchema // for primitive, nullable, list, dictionary, tuple, empty
+    /// <summary>For primitive, nullable, list, dictionary, tuple, empty.</summary>
+    internal interface IByValueSchema : ISchema
     {
         string MarkupValue { get; }
     }
@@ -144,6 +308,11 @@ namespace Dasher.Schema
             if (!CanProcess(type))
                 throw new ArgumentException("Must be an enum.", nameof(type));
             MemberNames = new HashSet<string>(Enum.GetNames(type), StringComparer.OrdinalIgnoreCase);
+        }
+
+        public EnumSchema(XContainer element)
+        {
+            MemberNames = new HashSet<string>(element.Elements().Select(e => e.Name.LocalName));
         }
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
@@ -187,40 +356,55 @@ namespace Dasher.Schema
 
     internal sealed class PrimitiveSchema : IWriteSchema, IReadSchema, IByValueSchema
     {
-        private static readonly Dictionary<Type, string> NameByType = new Dictionary<Type, string>
-        {
-            {typeof(byte), "Byte"},
-            {typeof(sbyte), "SByte"},
-            {typeof(short), "Int16"},
-            {typeof(ushort), "UInt16"},
-            {typeof(int), "Int32"},
-            {typeof(uint), "UInt32"},
-            {typeof(long), "Int64"},
-            {typeof(ulong), "UInt64"},
-            {typeof(float), "Single"},
-            {typeof(double), "Double"},
-            {typeof(bool), "Boolean"},
-            {typeof(string), "String"},
-            {typeof(byte[]), "ByteArray"},
-            {typeof(decimal), "Decimal"},
-            {typeof(DateTime), "DateTime"},
-            {typeof(DateTimeOffset), "DateTimeOffset"},
-            {typeof(TimeSpan), "TimeSpan"},
-            {typeof(IntPtr), "IntPtr"},
-            {typeof(Guid), "Guid"},
-            {typeof(Version), "Version"}
-        };
+        private static readonly Dictionary<Type, string> _nameByType;
+        private static readonly Dictionary<string, Type> _typeByName;
 
-        public static bool CanProcess(Type type) => NameByType.ContainsKey(type);
+        static PrimitiveSchema()
+        {
+            _nameByType = new Dictionary<Type, string>
+            {
+                {typeof(byte), "Byte"},
+                {typeof(sbyte), "SByte"},
+                {typeof(short), "Int16"},
+                {typeof(ushort), "UInt16"},
+                {typeof(int), "Int32"},
+                {typeof(uint), "UInt32"},
+                {typeof(long), "Int64"},
+                {typeof(ulong), "UInt64"},
+                {typeof(float), "Single"},
+                {typeof(double), "Double"},
+                {typeof(bool), "Boolean"},
+                {typeof(string), "String"},
+                {typeof(byte[]), "ByteArray"},
+                {typeof(decimal), "Decimal"},
+                {typeof(DateTime), "DateTime"},
+                {typeof(DateTimeOffset), "DateTimeOffset"},
+                {typeof(TimeSpan), "TimeSpan"},
+                {typeof(IntPtr), "IntPtr"},
+                {typeof(Guid), "Guid"},
+                {typeof(Version), "Version"}
+            };
+
+            _typeByName = _nameByType.ToDictionary(p => p.Value, p => p.Key);
+        }
+
+        public static bool CanProcess(Type type) => _nameByType.ContainsKey(type);
 
         private string TypeName { get; }
 
         public PrimitiveSchema(Type type)
         {
             string name;
-            if (!NameByType.TryGetValue(type, out name))
+            if (!_nameByType.TryGetValue(type, out name))
                 throw new ArgumentException($"Type {type} is not a supported primitive.", nameof(type));
             TypeName = name;
+        }
+
+        public PrimitiveSchema(string typeName)
+        {
+            if (!_typeByName.ContainsKey(typeName))
+                throw new SchemaParseException($"Invalid primitive schema name \"{typeName}\".");
+            TypeName = typeName;
         }
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
@@ -316,6 +500,11 @@ namespace Dasher.Schema
             Items = type.GetGenericArguments().Select(schemaCollection.GetWriteSchema).ToList();
         }
 
+        public TupleWriteSchema(IReadOnlyList<IWriteSchema> items)
+        {
+            Items = items;
+        }
+
         bool IEquatable<ISchema>.Equals(ISchema other)
         {
             var s = other as TupleWriteSchema;
@@ -342,6 +531,11 @@ namespace Dasher.Schema
                 throw new ArgumentException($"Type {type} is not a supported tuple type.", nameof(type));
 
             Items = type.GetGenericArguments().Select(schemaCollection.GetReadSchema).ToList();
+        }
+
+        public TupleReadSchema(IReadOnlyList<IReadSchema> items)
+        {
+            Items = items;
         }
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
@@ -395,6 +589,29 @@ namespace Dasher.Schema
             Fields = properties.Select(p => new Field(p.Name, schemaCollection.GetWriteSchema(p.PropertyType))).ToArray();
         }
 
+        public ComplexWriteSchema(XElement element, Func<string, IWriteSchema> resolveSchema, List<Action> bindActions)
+        {
+            var fields = new List<Field>();
+
+            bindActions.Add(() =>
+            {
+                foreach (var field in element.Elements(nameof(Field)))
+                {
+                    var name = field.Attribute(nameof(Field.Name))?.Value;
+                    var schema = field.Attribute(nameof(Field.Schema))?.Value;
+
+                    if (string.IsNullOrWhiteSpace(name))
+                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Name)}\" attribute.");
+                    if (string.IsNullOrWhiteSpace(schema))
+                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Schema)}\" attribute.");
+
+                    fields.Add(new Field(name, resolveSchema(schema)));
+                }
+            });
+
+            Fields = fields;
+        }
+
         bool IEquatable<ISchema>.Equals(ISchema other)
         {
             var s = other as ComplexWriteSchema;
@@ -417,7 +634,7 @@ namespace Dasher.Schema
 
     internal sealed class ComplexReadSchema : IReadSchema, IByRefSchema
     {
-        public struct Field
+        private struct Field
         {
             public string Name { get; }
             public IReadSchema Schema { get; }
@@ -431,7 +648,7 @@ namespace Dasher.Schema
             }
         }
 
-        public IReadOnlyList<Field> Fields { get; }
+        private IReadOnlyList<Field> Fields { get; }
 
         public ComplexReadSchema(Type type, SchemaCollection schemaCollection)
         {
@@ -445,6 +662,33 @@ namespace Dasher.Schema
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
                 .Select(p => new Field(p.Name, schemaCollection.GetReadSchema(p.ParameterType), isRequired: !p.HasDefaultValue))
                 .ToList();
+        }
+
+        public ComplexReadSchema(XElement element, Func<string, IReadSchema> resolveSchema, ICollection<Action> bindActions)
+        {
+            var fields = new List<Field>();
+
+            bindActions.Add(() =>
+            {
+                foreach (var field in element.Elements(nameof(Field)))
+                {
+                    var name = field.Attribute(nameof(Field.Name))?.Value;
+                    var schema = field.Attribute(nameof(Field.Schema))?.Value;
+                    var isRequiredStr = field.Attribute(nameof(Field.IsRequired))?.Value;
+
+                    if (string.IsNullOrWhiteSpace(name))
+                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Name)}\" attribute.");
+                    if (string.IsNullOrWhiteSpace(schema))
+                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Schema)}\" attribute.");
+                    bool isRequired;
+                    if (!bool.TryParse(isRequiredStr, out isRequired))
+                        throw new SchemaParseException($"\"{element.Name}\" element must have a boolean \"{nameof(Field.IsRequired)}\" attribute.");
+
+                    fields.Add(new Field(name, resolveSchema(schema), isRequired));
+                }
+            });
+
+            Fields = fields;
         }
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
@@ -527,27 +771,14 @@ namespace Dasher.Schema
         {
             return new XElement("ComplexRead",
                 new XAttribute("Id", ((IByRefSchema)this).Id),
-                Fields.Select(f => new XElement("Field",
-                    new XAttribute("Name", f.Name),
-                    new XAttribute("Schema", f.Schema.ToReferenceString()),
-                    new XAttribute("IsRequired", f.IsRequired))));
+                Fields.Select(f => new XElement(nameof(Field),
+                    new XAttribute(nameof(Field.Name), f.Name),
+                    new XAttribute(nameof(Field.Schema), f.Schema.ToReferenceString()),
+                    new XAttribute(nameof(Field.IsRequired), f.IsRequired))));
         }
     }
 
     #endregion
-
-    [Flags]
-    enum CompatabilityLevel
-    {
-        Strict,
-        AllowExtraFieldsOnComplex,
-        AllowFewerMembersInEnum,
-        AllowFewerMembersInUnion,
-        AllowWideningIntegralTypes,
-        AllowWideningFloatingPointTypes,
-        AllowMakingNullable,
-        Lenient // = AllowExtraFieldsOnComplex | AllowFewerMembersInEnum | AllowFewerMembersInUnion | AllowLosslessTypeConversion
-    }
 
     #region Nullable
 
@@ -562,6 +793,11 @@ namespace Dasher.Schema
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be nullable.", nameof(type));
             Inner = schemaCollection.GetWriteSchema(Nullable.GetUnderlyingType(type));
+        }
+
+        public NullableWriteSchema(IWriteSchema inner)
+        {
+            Inner = inner;
         }
 
         bool IEquatable<ISchema>.Equals(ISchema other)
@@ -579,13 +815,18 @@ namespace Dasher.Schema
     {
         public static bool CanProcess(Type type) => NullableWriteSchema.CanProcess(type);
 
-        public IReadSchema Inner { get; }
+        private IReadSchema Inner { get; }
 
         public NullableReadSchema(Type type, SchemaCollection schemaCollection)
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be nullable.", nameof(type));
             Inner = schemaCollection.GetReadSchema(Nullable.GetUnderlyingType(type));
+        }
+
+        public NullableReadSchema(IReadSchema inner)
+        {
+            Inner = inner;
         }
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
@@ -629,6 +870,11 @@ namespace Dasher.Schema
             ItemSchema = schemaCollection.GetWriteSchema(type.GetGenericArguments().Single());
         }
 
+        public ListWriteSchema(IWriteSchema itemSchema)
+        {
+            ItemSchema = itemSchema;
+        }
+
         bool IEquatable<ISchema>.Equals(ISchema other)
         {
             var o = other as ListWriteSchema;
@@ -644,13 +890,18 @@ namespace Dasher.Schema
     {
         public static bool CanProcess(Type type) => ListWriteSchema.CanProcess(type);
 
-        public IReadSchema ItemSchema { get; }
+        private IReadSchema ItemSchema { get; }
 
         public ListReadSchema(Type type, SchemaCollection schemaCollection)
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyList<int>)}<>.", nameof(type));
             ItemSchema = schemaCollection.GetReadSchema(type.GetGenericArguments().Single());
+        }
+
+        public ListReadSchema(IReadSchema itemSchema)
+        {
+            ItemSchema = itemSchema;
         }
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
@@ -691,6 +942,12 @@ namespace Dasher.Schema
             ValueSchema = schemaCollection.GetWriteSchema(type.GetGenericArguments()[1]);
         }
 
+        public DictionaryWriteSchema(IWriteSchema keySchema, IWriteSchema valueSchema)
+        {
+            KeySchema = keySchema;
+            ValueSchema = valueSchema;
+        }
+
         bool IEquatable<ISchema>.Equals(ISchema other)
         {
             var o = other as DictionaryWriteSchema;
@@ -706,8 +963,8 @@ namespace Dasher.Schema
     {
         public static bool CanProcess(Type type) => DictionaryWriteSchema.CanProcess(type);
 
-        public IReadSchema KeySchema { get; }
-        public IReadSchema ValueSchema { get; }
+        private IReadSchema KeySchema { get; }
+        private IReadSchema ValueSchema { get; }
 
         public DictionaryReadSchema(Type type, SchemaCollection schemaCollection)
         {
@@ -715,6 +972,12 @@ namespace Dasher.Schema
                 throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyDictionary<int, int>)}<>.", nameof(type));
             KeySchema = schemaCollection.GetReadSchema(type.GetGenericArguments()[0]);
             ValueSchema = schemaCollection.GetReadSchema(type.GetGenericArguments()[1]);
+        }
+
+        public DictionaryReadSchema(IReadSchema keySchema, IReadSchema valueSchema)
+        {
+            KeySchema = keySchema;
+            ValueSchema = valueSchema;
         }
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
@@ -769,6 +1032,29 @@ namespace Dasher.Schema
                 .ToArray();
         }
 
+        public UnionWriteSchema(XElement element, Func<string, IWriteSchema> resolveSchema, ICollection<Action> bindActions)
+        {
+            var members = new List<Member>();
+
+            bindActions.Add(() =>
+            {
+                foreach (var field in element.Elements(nameof(Member)))
+                {
+                    var id = field.Attribute(nameof(Member.Id))?.Value;
+                    var schema = field.Attribute(nameof(Member.Schema))?.Value;
+
+                    if (string.IsNullOrWhiteSpace(id))
+                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Id)}\" attribute.");
+                    if (string.IsNullOrWhiteSpace(schema))
+                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Schema)}\" attribute.");
+
+                    members.Add(new Member(id, resolveSchema(schema)));
+                }
+            });
+
+            Members = members;
+        }
+
         bool IEquatable<ISchema>.Equals(ISchema other)
         {
             var o = other as UnionWriteSchema;
@@ -781,7 +1067,7 @@ namespace Dasher.Schema
 
         XElement IByRefSchema.ToXml()
         {
-            return new XElement("Union",
+            return new XElement("UnionWrite",
                 new XAttribute("Id", ((IByRefSchema)this).Id),
                 Members.Select(m => new XElement("Member",
                     new XAttribute("Id", m.Id),
@@ -793,7 +1079,7 @@ namespace Dasher.Schema
     {
         public static bool CanProcess(Type type) => UnionWriteSchema.CanProcess(type);
 
-        public struct Member
+        private struct Member
         {
             public string Id { get; }
             public IReadSchema Schema { get; }
@@ -805,7 +1091,7 @@ namespace Dasher.Schema
             }
         }
 
-        public IReadOnlyList<Member> Members { get; }
+        private IReadOnlyList<Member> Members { get; }
 
         public UnionReadSchema(Type type, SchemaCollection schemaCollection)
         {
@@ -815,6 +1101,29 @@ namespace Dasher.Schema
                 .Select(t => new Member(UnionEncoding.GetTypeName(t), schemaCollection.GetReadSchema(t)))
                 .OrderBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
+        }
+
+        public UnionReadSchema(XElement element, Func<string, IReadSchema> resolveSchema, ICollection<Action> bindActions)
+        {
+            var members = new List<Member>();
+
+            bindActions.Add(() =>
+            {
+                foreach (var field in element.Elements(nameof(Member)))
+                {
+                    var id = field.Attribute(nameof(Member.Id))?.Value;
+                    var schema = field.Attribute(nameof(Member.Schema))?.Value;
+
+                    if (string.IsNullOrWhiteSpace(id))
+                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Id)}\" attribute.");
+                    if (string.IsNullOrWhiteSpace(schema))
+                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Schema)}\" attribute.");
+
+                    members.Add(new Member(id, resolveSchema(schema)));
+                }
+            });
+
+            Members = members;
         }
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
@@ -886,7 +1195,7 @@ namespace Dasher.Schema
 
         XElement IByRefSchema.ToXml()
         {
-            return new XElement("Union",
+            return new XElement("UnionRead",
                 new XAttribute("Id", ((IByRefSchema)this).Id),
                 Members.Select(m => new XElement("Member",
                     new XAttribute("Id", m.Id),
