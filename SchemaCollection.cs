@@ -144,11 +144,11 @@ namespace Dasher.Schemata
         {
             // TODO revisit how IDs are assigned
             var i = 0;
-            foreach (var schema in _schema.OfType<ByRefSchema>())
+            foreach (var schema in Schema.OfType<ByRefSchema>())
                 schema.Id = $"Schema{i++}";
 
             return new XElement("Schema",
-                _schema.OfType<ByRefSchema>().Select(s => s.ToXml()));
+                Schema.OfType<ByRefSchema>().Select(s => s.ToXml()));
         }
 
         public static SchemaCollection FromXml(XElement element)
@@ -190,7 +190,7 @@ namespace Dasher.Schemata
 
                 schema.Id = id;
                 resolver.AddByRefSchema(id, schema);
-                collection._schema.Add(schema);
+                collection.Intern(schema);
             }
 
             resolver.AllowResolution();
@@ -203,9 +203,9 @@ namespace Dasher.Schemata
 
         #endregion
 
-        private readonly List<Schema> _schema = new List<Schema>();
+        private readonly Dictionary<Schema, Schema> _schema = new Dictionary<Schema, Schema>();
 
-        internal IReadOnlyList<Schema> Schema => _schema;
+        internal ICollection<Schema> Schema => _schema.Keys;
 
         public IWriteSchema GetWriteSchema(Type type)
         {
@@ -215,7 +215,6 @@ namespace Dasher.Schemata
                 return Intern(new PrimitiveSchema(type));
             if (EnumSchema.CanProcess(type))
                 return Intern(new EnumSchema(type));
-
             if (TupleWriteSchema.CanProcess(type))
                 return Intern(new TupleWriteSchema(type, this));
             if (NullableWriteSchema.CanProcess(type))
@@ -238,7 +237,6 @@ namespace Dasher.Schemata
                 return Intern(new PrimitiveSchema(type));
             if (EnumSchema.CanProcess(type))
                 return Intern(new EnumSchema(type));
-
             if (TupleReadSchema.CanProcess(type))
                 return Intern(new TupleReadSchema(type, this));
             if (NullableReadSchema.CanProcess(type))
@@ -257,13 +255,11 @@ namespace Dasher.Schemata
         {
             Debug.Assert(schema is ByRefSchema || schema is ByValueSchema, "schema is ByRefSchema || schema is ByValueSchema");
 
-            // TODO can we improve on a linear scan? create one list per type? multivaluedict on typeof(T)?
-            foreach (var existing in _schema)
-            {
-                if (existing.Equals(schema))
-                    return (T)existing;
-            }
-            _schema.Add(schema);
+            Schema existing;
+            if (_schema.TryGetValue(schema, out existing))
+                return (T)existing;
+
+            _schema.Add(schema, schema);
             return schema;
         }
     }
@@ -438,11 +434,7 @@ namespace Dasher.Schemata
             TypeName = typeName;
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
-        {
-            var ws = writeSchema as PrimitiveSchema;
-            return ws != null && ws.TypeName == TypeName;
-        }
+        public bool CanReadFrom(IWriteSchema writeSchema, bool strict) => Equals(writeSchema);
 
         public override bool Equals(Schema other)
         {
