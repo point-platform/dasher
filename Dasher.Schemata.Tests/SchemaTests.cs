@@ -13,6 +13,7 @@ using Xunit.Abstractions;
 
 namespace Dasher.Schemata.Tests
 {
+    // TODO better default names for schema (consider type name, though careful with generics...)
     // TODO support recursive types
     // TODO reflect integral conversions supported by dasher
     // TODO test writing empty message to complex with all-default values
