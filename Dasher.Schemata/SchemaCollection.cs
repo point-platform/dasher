@@ -209,7 +209,7 @@ namespace Dasher.Schemata
 
         internal ICollection<Schema> Schema => _schema.Keys;
 
-        public IWriteSchema GetWriteSchema(Type type)
+        public IWriteSchema GetOrAddWriteSchema(Type type)
         {
             if (type == typeof(EmptyMessage))
                 return Intern(new EmptySchema());
@@ -231,7 +231,7 @@ namespace Dasher.Schemata
             return Intern(new ComplexWriteSchema(type, this));
         }
 
-        public IReadSchema GetReadSchema(Type type)
+        public IReadSchema GetOrAddReadSchema(Type type)
         {
             if (type == typeof(EmptyMessage))
                 return Intern(new EmptySchema());

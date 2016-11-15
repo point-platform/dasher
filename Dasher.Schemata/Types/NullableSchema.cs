@@ -14,7 +14,7 @@ namespace Dasher.Schemata.Types
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be nullable.", nameof(type));
-            Inner = schemaCollection.GetWriteSchema(Nullable.GetUnderlyingType(type));
+            Inner = schemaCollection.GetOrAddWriteSchema(Nullable.GetUnderlyingType(type));
         }
 
         public NullableWriteSchema(IWriteSchema inner)
@@ -45,7 +45,7 @@ namespace Dasher.Schemata.Types
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be nullable.", nameof(type));
-            Inner = schemaCollection.GetReadSchema(Nullable.GetUnderlyingType(type));
+            Inner = schemaCollection.GetOrAddReadSchema(Nullable.GetUnderlyingType(type));
         }
 
         public NullableReadSchema(IReadSchema inner)

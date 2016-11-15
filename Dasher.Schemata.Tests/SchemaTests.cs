@@ -109,8 +109,8 @@ namespace Dasher.Schemata.Tests
         {
             var schemaCollection = new SchemaCollection();
 
-            var w = schemaCollection.GetWriteSchema(typeof(TWrite));
-            var r = schemaCollection.GetReadSchema(typeof(TRead));
+            var w = schemaCollection.GetOrAddWriteSchema(typeof(TWrite));
+            var r = schemaCollection.GetOrAddReadSchema(typeof(TRead));
 
             var actualMatchIfRelaxed = r.CanReadFrom(w, strict: false);
             var actualMatchIfStrict = r.CanReadFrom(w, strict: true);
@@ -546,12 +546,12 @@ namespace Dasher.Schemata.Tests
         {
             var schemaCollection = new SchemaCollection();
 
-            var s1 = schemaCollection.GetReadSchema(typeof(Person));
-            var s2 = schemaCollection.GetReadSchema(typeof(Person));
+            var s1 = schemaCollection.GetOrAddReadSchema(typeof(Person));
+            var s2 = schemaCollection.GetOrAddReadSchema(typeof(Person));
 
             Assert.Same(s1, s2);
 
-            var s3 = schemaCollection.GetReadSchema(typeof(Wrapper<Person>));
+            var s3 = schemaCollection.GetOrAddReadSchema(typeof(Wrapper<Person>));
 
             Assert.Same(s2, ((Schema)s3).Children.Single());
         }
@@ -565,14 +565,14 @@ namespace Dasher.Schemata.Tests
         {
             var before = new SchemaCollection();
 
-            before.GetReadSchema(typeof(Person));
-            before.GetWriteSchema(typeof(Person));
-            before.GetReadSchema(typeof(Wrapper<Person>));
-            before.GetReadSchema(typeof(EnumAbc));
-            before.GetWriteSchema(typeof(EnumAbc));
-            before.GetReadSchema(typeof(Wrapper<EnumAbc>));
-            before.GetReadSchema(typeof(Union<int, string, Person, EnumAbcd>));
-            before.GetWriteSchema(typeof(Union<int, string, Person, EnumAbcd>));
+            before.GetOrAddReadSchema(typeof(Person));
+            before.GetOrAddWriteSchema(typeof(Person));
+            before.GetOrAddReadSchema(typeof(Wrapper<Person>));
+            before.GetOrAddReadSchema(typeof(EnumAbc));
+            before.GetOrAddWriteSchema(typeof(EnumAbc));
+            before.GetOrAddReadSchema(typeof(Wrapper<EnumAbc>));
+            before.GetOrAddReadSchema(typeof(Union<int, string, Person, EnumAbcd>));
+            before.GetOrAddWriteSchema(typeof(Union<int, string, Person, EnumAbcd>));
 
             Assert.Equal(8, before.Schema.OfType<ByRefSchema>().Count());
 
@@ -664,10 +664,10 @@ namespace Dasher.Schemata.Tests
             {
                 var c1 = new SchemaCollection();
                 var c2 = new SchemaCollection();
-                var r1 = c1.GetReadSchema(type);
-                var r2 = c2.GetReadSchema(type);
-                var w1 = c1.GetWriteSchema(type);
-                var w2 = c2.GetWriteSchema(type);
+                var r1 = c1.GetOrAddReadSchema(type);
+                var r2 = c2.GetOrAddReadSchema(type);
+                var w1 = c1.GetOrAddWriteSchema(type);
+                var w2 = c2.GetOrAddWriteSchema(type);
 
                 Assert.Equal(r1, r2);
                 Assert.Equal(r2, r1);
@@ -694,33 +694,33 @@ namespace Dasher.Schemata.Tests
             var c = new SchemaCollection();
 
             // Intern
-            Assert.Same(c.GetReadSchema(typeof(int)), c.GetReadSchema(typeof(int)));
+            Assert.Same(c.GetOrAddReadSchema(typeof(int)), c.GetOrAddReadSchema(typeof(int)));
 
             // Read and write same for some types
-            Assert.Same(c.GetReadSchema(typeof(int)), c.GetWriteSchema(typeof(int)));
-            Assert.Same(c.GetReadSchema(typeof(double)), c.GetWriteSchema(typeof(double)));
-            Assert.Same(c.GetReadSchema(typeof(EnumAbc)), c.GetWriteSchema(typeof(EnumAbc)));
-            Assert.Same(c.GetReadSchema(typeof(int)), c.GetWriteSchema(typeof(int)));
-            Assert.Same(c.GetReadSchema(typeof(EmptyMessage)), c.GetWriteSchema(typeof(EmptyMessage)));
+            Assert.Same(c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
+            Assert.Same(c.GetOrAddReadSchema(typeof(double)), c.GetOrAddWriteSchema(typeof(double)));
+            Assert.Same(c.GetOrAddReadSchema(typeof(EnumAbc)), c.GetOrAddWriteSchema(typeof(EnumAbc)));
+            Assert.Same(c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
+            Assert.Same(c.GetOrAddReadSchema(typeof(EmptyMessage)), c.GetOrAddWriteSchema(typeof(EmptyMessage)));
 
             // NOTE for some types, read and write schema are equal (can this cause trouble?)
-            Assert.Equal((object)c.GetReadSchema(typeof(int)), c.GetWriteSchema(typeof(int)));
-            Assert.Equal((object)c.GetReadSchema(typeof(double)), c.GetWriteSchema(typeof(double)));
-            Assert.Equal((object)c.GetReadSchema(typeof(EnumAbc)), c.GetWriteSchema(typeof(EnumAbc)));
-            Assert.Equal((object)c.GetReadSchema(typeof(int)), c.GetWriteSchema(typeof(int)));
-            Assert.Equal((object)c.GetReadSchema(typeof(EmptyMessage)), c.GetWriteSchema(typeof(EmptyMessage)));
+            Assert.Equal((object)c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
+            Assert.Equal((object)c.GetOrAddReadSchema(typeof(double)), c.GetOrAddWriteSchema(typeof(double)));
+            Assert.Equal((object)c.GetOrAddReadSchema(typeof(EnumAbc)), c.GetOrAddWriteSchema(typeof(EnumAbc)));
+            Assert.Equal((object)c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
+            Assert.Equal((object)c.GetOrAddReadSchema(typeof(EmptyMessage)), c.GetOrAddWriteSchema(typeof(EmptyMessage)));
 
             var schemata = new object[]
             {
-                c.GetReadSchema(typeof(int)),
-                c.GetReadSchema(typeof(EnumAbc)),
-                c.GetReadSchema(typeof(EnumAbcd)),
-                c.GetReadSchema(typeof(double)),
+                c.GetOrAddReadSchema(typeof(int)),
+                c.GetOrAddReadSchema(typeof(EnumAbc)),
+                c.GetOrAddReadSchema(typeof(EnumAbcd)),
+                c.GetOrAddReadSchema(typeof(double)),
 
-                c.GetReadSchema(typeof(Person)),
-                c.GetWriteSchema(typeof(Person)),
-                c.GetReadSchema(typeof(Wrapper<double>)),
-                c.GetWriteSchema(typeof(Wrapper<double>))
+                c.GetOrAddReadSchema(typeof(Person)),
+                c.GetOrAddWriteSchema(typeof(Person)),
+                c.GetOrAddReadSchema(typeof(Wrapper<double>)),
+                c.GetOrAddWriteSchema(typeof(Wrapper<double>))
             };
 
             foreach (var schema in schemata)

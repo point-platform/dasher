@@ -29,7 +29,7 @@ namespace Dasher.Schemata.Types
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase);
             if (!properties.Any())
                 throw new ArgumentException($"Type {type} must have at least one public instance property.", nameof(type));
-            Fields = properties.Select(p => new Field(p.Name, schemaCollection.GetWriteSchema(p.PropertyType))).ToArray();
+            Fields = properties.Select(p => new Field(p.Name, schemaCollection.GetOrAddWriteSchema(p.PropertyType))).ToArray();
         }
 
         public ComplexWriteSchema(XElement element, Func<string, IWriteSchema> resolveSchema, ICollection<Action> bindActions)
@@ -118,7 +118,7 @@ namespace Dasher.Schemata.Types
                 throw new ArgumentException($"Constructor for type {type} must have at least one argument.", nameof(type));
             Fields = parameters
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(p => new Field(p.Name, schemaCollection.GetReadSchema(p.ParameterType), isRequired: !p.HasDefaultValue))
+                .Select(p => new Field(p.Name, schemaCollection.GetOrAddReadSchema(p.ParameterType), isRequired: !p.HasDefaultValue))
                 .ToList();
         }
 

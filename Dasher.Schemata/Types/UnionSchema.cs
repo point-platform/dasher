@@ -30,7 +30,7 @@ namespace Dasher.Schemata.Types
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be a union.", nameof(type));
             Members = Union.GetTypes(type)
-                .Select(t => new Member(UnionEncoding.GetTypeName(t), schemaCollection.GetWriteSchema(t)))
+                .Select(t => new Member(UnionEncoding.GetTypeName(t), schemaCollection.GetOrAddWriteSchema(t)))
                 .OrderBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
         }
@@ -115,7 +115,7 @@ namespace Dasher.Schemata.Types
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be a union.", nameof(type));
             Members = Union.GetTypes(type)
-                .Select(t => new Member(UnionEncoding.GetTypeName(t), schemaCollection.GetReadSchema(t)))
+                .Select(t => new Member(UnionEncoding.GetTypeName(t), schemaCollection.GetOrAddReadSchema(t)))
                 .OrderBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
         }

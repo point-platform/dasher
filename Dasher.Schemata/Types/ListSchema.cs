@@ -16,7 +16,7 @@ namespace Dasher.Schemata.Types
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyList<int>)}<>.", nameof(type));
-            ItemSchema = schemaCollection.GetWriteSchema(type.GetGenericArguments().Single());
+            ItemSchema = schemaCollection.GetOrAddWriteSchema(type.GetGenericArguments().Single());
         }
 
         public ListWriteSchema(IWriteSchema itemSchema)
@@ -47,7 +47,7 @@ namespace Dasher.Schemata.Types
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyList<int>)}<>.", nameof(type));
-            ItemSchema = schemaCollection.GetReadSchema(type.GetGenericArguments().Single());
+            ItemSchema = schemaCollection.GetOrAddReadSchema(type.GetGenericArguments().Single());
         }
 
         public ListReadSchema(IReadSchema itemSchema)

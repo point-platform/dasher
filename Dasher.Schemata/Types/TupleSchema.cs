@@ -17,7 +17,7 @@ namespace Dasher.Schemata.Types
             if (!TupleWriteSchema.CanProcess(type))
                 throw new ArgumentException($"Type {type} is not a supported tuple type.", nameof(type));
 
-            Items = type.GetGenericArguments().Select(schemaCollection.GetReadSchema).ToList();
+            Items = type.GetGenericArguments().Select(schemaCollection.GetOrAddReadSchema).ToList();
         }
 
         public TupleReadSchema(IReadOnlyList<IReadSchema> items)
@@ -86,7 +86,7 @@ namespace Dasher.Schemata.Types
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} is not a supported tuple type.", nameof(type));
 
-            Items = type.GetGenericArguments().Select(schemaCollection.GetWriteSchema).ToList();
+            Items = type.GetGenericArguments().Select(schemaCollection.GetOrAddWriteSchema).ToList();
         }
 
         public TupleWriteSchema(IReadOnlyList<IWriteSchema> items)

@@ -16,8 +16,8 @@ namespace Dasher.Schemata.Types
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyDictionary<int, int>)}<>.", nameof(type));
-            KeySchema = schemaCollection.GetWriteSchema(type.GetGenericArguments()[0]);
-            ValueSchema = schemaCollection.GetWriteSchema(type.GetGenericArguments()[1]);
+            KeySchema = schemaCollection.GetOrAddWriteSchema(type.GetGenericArguments()[0]);
+            ValueSchema = schemaCollection.GetOrAddWriteSchema(type.GetGenericArguments()[1]);
         }
 
         public DictionaryWriteSchema(IWriteSchema keySchema, IWriteSchema valueSchema)
@@ -59,8 +59,8 @@ namespace Dasher.Schemata.Types
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyDictionary<int, int>)}<>.", nameof(type));
-            KeySchema = schemaCollection.GetReadSchema(type.GetGenericArguments()[0]);
-            ValueSchema = schemaCollection.GetReadSchema(type.GetGenericArguments()[1]);
+            KeySchema = schemaCollection.GetOrAddReadSchema(type.GetGenericArguments()[0]);
+            ValueSchema = schemaCollection.GetOrAddReadSchema(type.GetGenericArguments()[1]);
         }
 
         public DictionaryReadSchema(IReadSchema keySchema, IReadSchema valueSchema)
