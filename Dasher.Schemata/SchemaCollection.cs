@@ -10,128 +10,198 @@ namespace Dasher.Schemata
 {
     public sealed class SchemaCollection
     {
-        #region SchemaResolver
+        private readonly Dictionary<Schema, Schema> _schema = new Dictionary<Schema, Schema>();
 
-        private sealed class SchemaResolver
+        internal ICollection<Schema> Schema => _schema.Keys;
+
+        #region Schema resolution
+
+        private bool AllowResolution { get; set; }
+
+        public IReadSchema ResolveReadSchema(string str)
         {
-            private readonly Dictionary<string, ByRefSchema> _schemaById = new Dictionary<string, ByRefSchema>();
-            private readonly SchemaCollection _collection;
-            private bool _allowResolution;
+            IReadSchema schema;
+            if (!TryResolveReadSchema(str, out schema))
+                throw new Exception("String \"{str}\" cannot be resolved as a read schema within this collection.");
+            return schema;
+        }
 
-            public SchemaResolver(SchemaCollection collection)
+        public bool TryResolveReadSchema(string str, out IReadSchema readSchema)
+        {
+            if (!AllowResolution)
+                throw new InvalidOperationException("Cannot resolve schema at this stage. Use a bind action instead.");
+
+            if (str.StartsWith("#"))
             {
-                _collection = collection;
+                var id = str.Substring(1);
+                readSchema = Schema.OfType<ByRefSchema>().SingleOrDefault(s => s.Id == id) as IReadSchema;
+                return readSchema != null;
             }
 
-            public void AddByRefSchema(string id, ByRefSchema schema)
+            if (str.StartsWith("{"))
             {
-                if (_schemaById.ContainsKey(id))
-                    throw new SchemaParseException($"Duplicate schema Id \"{id}\".");
-                _schemaById[id] = schema;
-            }
+                var tokens = SchemaMarkupExtension.Tokenize(str).ToList();
 
-            public void AllowResolution()
-            {
-                _allowResolution = true;
-            }
-
-            public IReadSchema ResolveReadSchema(string str)
-            {
-                if (!_allowResolution)
-                    throw new InvalidOperationException("Cannot resolve schema at this stage. Use a bind action instead.");
-
-                if (str.StartsWith("#"))
+                // ReSharper disable once SwitchStatementMissingSomeCases
+                switch (tokens.Count)
                 {
-                    var id = str.Substring(1);
-                    ByRefSchema schema;
-                    if (!_schemaById.TryGetValue(id, out schema))
-                        throw new SchemaParseException($"Unresolved schema reference \"{str}\"");
-                    var readSchema = schema as IReadSchema;
-                    if (readSchema == null)
-                        throw new SchemaParseException($"Referenced schema \"{str}\" must be a read schema.");
-                    return readSchema;
+                    case 1:
+                        if (tokens[0] == "empty")
+                        {
+                            readSchema = Intern(new EmptySchema());
+                            return true;
+                        }
+                        break;
+                    case 2:
+                        if (tokens[0] == "nullable")
+                        {
+                            IReadSchema inner;
+                            if (TryResolveReadSchema(tokens[1], out inner))
+                            {
+                                readSchema = Intern(new NullableReadSchema(inner));
+                                return true;
+                            }
+                        }
+                        else if (tokens[0] == "list")
+                        {
+                            IReadSchema itemSchema;
+                            if (TryResolveReadSchema(tokens[1], out itemSchema))
+                            {
+                                readSchema = Intern(new ListReadSchema(itemSchema));
+                                return true;
+                            }
+                        }
+                        break;
+                    case 3:
+                        if (tokens[0] == "dictionary")
+                        {
+                            IReadSchema keySchema;
+                            IReadSchema valueSchema;
+                            if (TryResolveReadSchema(tokens[1], out keySchema) && TryResolveReadSchema(tokens[2], out valueSchema))
+                            {
+                                readSchema = Intern(new DictionaryReadSchema(keySchema, valueSchema));
+                                return true;
+                            }
+                        }
+                        break;
                 }
 
-                if (str.StartsWith("{"))
+                if (tokens.Count != 0 && tokens[0] == "tuple")
                 {
-                    var tokens = SchemaMarkupExtension.Tokenize(str).ToList();
-
-                    // ReSharper disable once SwitchStatementMissingSomeCases
-                    switch (tokens.Count)
+                    var itemSchemata = new List<IReadSchema>();
+                    foreach (var token in tokens.Skip(1))
                     {
-                        case 1:
-                            if (tokens[0] == "empty")
-                                return _collection.Intern(new EmptySchema());
-                            break;
-                        case 2:
-                            if (tokens[0] == "nullable")
-                                return _collection.Intern(new NullableReadSchema(ResolveReadSchema(tokens[1])));
-                            if (tokens[0] == "list")
-                                return _collection.Intern(new ListReadSchema(ResolveReadSchema(tokens[1])));
-                            break;
-                        case 3:
-                            if (tokens[0] == "dictionary")
-                                return _collection.Intern(new DictionaryReadSchema(ResolveReadSchema(tokens[1]), ResolveReadSchema(tokens[2])));
-                            break;
+                        IReadSchema itemSchema;
+                        if (!TryResolveReadSchema(token, out itemSchema))
+                        {
+                            readSchema = null;
+                            return false;
+                        }
+                        itemSchemata.Add(itemSchema);
                     }
-
-                    if (tokens.Count != 0 && tokens[0] == "tuple")
-                        return _collection.Intern(new TupleReadSchema(tokens.Skip(1).Select(ResolveReadSchema).ToList()));
-
-                    throw new SchemaParseException($"Invalid schema markup extension \"{str}\".");
+                    readSchema = Intern(new TupleReadSchema(itemSchemata));
+                    return true;
                 }
 
-                return _collection.Intern(new PrimitiveSchema(str));
+                readSchema = null;
+                return false;
             }
 
-            public IWriteSchema ResolveWriteSchema(string str)
+            readSchema = Intern(new PrimitiveSchema(str));
+            return true;
+        }
+
+        public IWriteSchema ResolveWriteSchema(string str)
+        {
+            IWriteSchema schema;
+            if (!TryResolveWriteSchema(str, out schema))
+                throw new Exception("String \"{str}\" cannot be resolved as a write schema within this collection.");
+            return schema;
+        }
+
+        public bool TryResolveWriteSchema(string str, out IWriteSchema writeSchema)
+        {
+            if (!AllowResolution)
+                throw new InvalidOperationException("Cannot resolve schema at this stage. Use a bind action instead.");
+
+            if (str.StartsWith("#"))
             {
-                if (!_allowResolution)
-                    throw new InvalidOperationException("Cannot resolve schema at this stage. Use a bind action instead.");
-
-                if (str.StartsWith("#"))
-                {
-                    var id = str.Substring(1);
-                    ByRefSchema schema;
-                    if (!_schemaById.TryGetValue(id, out schema))
-                        throw new SchemaParseException($"Unresolved schema reference \"{str}\"");
-                    var writeSchema = schema as IWriteSchema;
-                    if (writeSchema == null)
-                        throw new SchemaParseException($"Referenced schema \"{str}\" must be a write schema.");
-                    return writeSchema;
-                }
-
-                if (str.StartsWith("{"))
-                {
-                    var tokens = SchemaMarkupExtension.Tokenize(str).ToList();
-
-                    // ReSharper disable once SwitchStatementMissingSomeCases
-                    switch (tokens.Count)
-                    {
-                        case 1:
-                            if (tokens[0] == "empty")
-                                return _collection.Intern(new EmptySchema());
-                            break;
-                        case 2:
-                            if (tokens[0] == "nullable")
-                                return _collection.Intern(new NullableWriteSchema(ResolveWriteSchema(tokens[1])));
-                            if (tokens[0] == "list")
-                                return _collection.Intern(new ListWriteSchema(ResolveWriteSchema(tokens[1])));
-                            break;
-                        case 3:
-                            if (tokens[0] == "dictionary")
-                                return _collection.Intern(new DictionaryWriteSchema(ResolveWriteSchema(tokens[1]), ResolveWriteSchema(tokens[2])));
-                            break;
-                    }
-
-                    if (tokens.Count != 0 && tokens[0] == "tuple")
-                        return _collection.Intern(new TupleWriteSchema(tokens.Skip(1).Select(ResolveWriteSchema).ToList()));
-
-                    throw new SchemaParseException($"Invalid schema markup extension \"{str}\".");
-                }
-
-                return _collection.Intern(new PrimitiveSchema(str));
+                var id = str.Substring(1);
+                writeSchema = Schema.OfType<ByRefSchema>().SingleOrDefault(s => s.Id == id) as IWriteSchema;
+                return writeSchema != null;
             }
+
+            if (str.StartsWith("{"))
+            {
+                var tokens = SchemaMarkupExtension.Tokenize(str).ToList();
+
+                // ReSharper disable once SwitchStatementMissingSomeCases
+                switch (tokens.Count)
+                {
+                    case 1:
+                        if (tokens[0] == "empty")
+                        {
+                            writeSchema = Intern(new EmptySchema());
+                            return true;
+                        }
+                        break;
+                    case 2:
+                        if (tokens[0] == "nullable")
+                        {
+                            IWriteSchema inner;
+                            if (TryResolveWriteSchema(tokens[1], out inner))
+                            {
+                                writeSchema = Intern(new NullableWriteSchema(inner));
+                                return true;
+                            }
+                        }
+                        else if (tokens[0] == "list")
+                        {
+                            IWriteSchema itemSchema;
+                            if (TryResolveWriteSchema(tokens[1], out itemSchema))
+                            {
+                                writeSchema = Intern(new ListWriteSchema(itemSchema));
+                                return true;
+                            }
+                        }
+                        break;
+                    case 3:
+                        if (tokens[0] == "dictionary")
+                        {
+                            IWriteSchema keySchema;
+                            IWriteSchema valueSchema;
+                            if (TryResolveWriteSchema(tokens[1], out keySchema) && TryResolveWriteSchema(tokens[2], out valueSchema))
+                            {
+                                writeSchema = Intern(new DictionaryWriteSchema(keySchema, valueSchema));
+                                return true;
+                            }
+                        }
+                        break;
+                }
+
+                if (tokens.Count != 0 && tokens[0] == "tuple")
+                {
+                    var itemSchemata = new List<IWriteSchema>();
+                    foreach (var token in tokens.Skip(1))
+                    {
+                        IWriteSchema itemSchema;
+                        if (!TryResolveWriteSchema(token, out itemSchema))
+                        {
+                            writeSchema = null;
+                            return false;
+                        }
+                        itemSchemata.Add(itemSchema);
+                    }
+                    writeSchema = Intern(new TupleWriteSchema(itemSchemata));
+                    return true;
+                }
+
+                writeSchema = null;
+                return false;
+            }
+
+            writeSchema = Intern(new PrimitiveSchema(str));
+            return true;
         }
 
         #endregion
@@ -155,7 +225,6 @@ namespace Dasher.Schemata
             var unboundSchemata = new List<Schema>();
 
             var collection = new SchemaCollection();
-            var resolver = new SchemaResolver(collection);
 
             foreach (var el in element.Elements())
             {
@@ -168,16 +237,16 @@ namespace Dasher.Schemata
                 switch (el.Name.LocalName)
                 {
                     case "ComplexRead":
-                        schema = new ComplexReadSchema(el, resolver.ResolveReadSchema, bindActions);
+                        schema = new ComplexReadSchema(el, collection.ResolveReadSchema, bindActions);
                         break;
                     case "ComplexWrite":
-                        schema = new ComplexWriteSchema(el, resolver.ResolveWriteSchema, bindActions);
+                        schema = new ComplexWriteSchema(el, collection.ResolveWriteSchema, bindActions);
                         break;
                     case "UnionRead":
-                        schema = new UnionReadSchema(el, resolver.ResolveReadSchema, bindActions);
+                        schema = new UnionReadSchema(el, collection.ResolveReadSchema, bindActions);
                         break;
                     case "UnionWrite":
-                        schema = new UnionWriteSchema(el, resolver.ResolveWriteSchema, bindActions);
+                        schema = new UnionWriteSchema(el, collection.ResolveWriteSchema, bindActions);
                         break;
                     case "Enum":
                         schema = new EnumSchema(el);
@@ -187,12 +256,12 @@ namespace Dasher.Schemata
                 }
 
                 schema.Id = id;
-                resolver.AddByRefSchema(id, schema);
+
                 // We can't add these to the collection until after bind actions execute
                 unboundSchemata.Add(schema);
             }
 
-            resolver.AllowResolution();
+            collection.AllowResolution = true;
 
             foreach (var bindAction in bindActions)
                 bindAction();
@@ -204,10 +273,6 @@ namespace Dasher.Schemata
         }
 
         #endregion
-
-        private readonly Dictionary<Schema, Schema> _schema = new Dictionary<Schema, Schema>();
-
-        internal ICollection<Schema> Schema => _schema.Keys;
 
         public IWriteSchema GetOrAddWriteSchema(Type type)
         {
