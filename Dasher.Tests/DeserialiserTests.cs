@@ -579,7 +579,7 @@ namespace Dasher.Tests
                 ex.Message);
         }
 
-#region Helper
+        #region Helper
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)
         {
@@ -590,6 +590,6 @@ namespace Dasher.Tests
             return stream.ToArray();
         }
 
-#endregion
+        #endregion
     }
 }

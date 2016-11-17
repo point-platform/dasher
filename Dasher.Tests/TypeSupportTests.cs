@@ -192,13 +192,13 @@ namespace Dasher.Tests
         [Fact]
         public void SupportsNestedReadOnlyDictionary()
         {
+            TestNested<IReadOnlyDictionary<int, string>>(null, packer => packer.PackNull());
             TestNested<IReadOnlyDictionary<int, string>>(
                 new Dictionary<int, string> {{1, "Hello"}, {2, "World"}},
                 packer => packer.PackMapHeader(2)
                     .Pack(1).Pack("Hello")
                     .Pack(2).Pack("World"));
 
-            TestNested<IReadOnlyDictionary<int, string>>(null, packer => packer.PackNull());
 
             TestNested<IReadOnlyDictionary<int, bool?>>(
                 new Dictionary<int, bool?> { { 1, true }, { 2, false }, {3, null} },
@@ -252,7 +252,7 @@ namespace Dasher.Tests
         public void SupportsTopLevelClass()
         {
             TestTopLevel(new UserScore("Foo", 123), packer => packer.PackMapHeader(2).Pack("Name").Pack("Foo").Pack("Score").Pack(123));
-            TestTopLevel<UserScore>(null, packer => packer.PackNull());
+            TestTopLevel((UserScore)null, packer => packer.PackNull());
         }
 
         [Fact]
