@@ -359,6 +359,18 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void TryPeekEmptyMap()
+        {
+            TestEmptyMap(true, packer => packer.PackMapHeader(0));
+
+            for (var i = 1; i < 1024; i++)
+                TestEmptyMap(false, packer => packer.PackMapHeader(i));
+
+            TestEmptyMap(false, packer => packer.PackNull());
+            TestEmptyMap(false, packer => packer.PackArrayHeader(1));
+        }
+
+        [Fact]
         public void Sequences()
         {
             var stream = new MemoryStream();
@@ -735,6 +747,17 @@ namespace Dasher.Tests
             Format actual;
             Assert.True(unpacker.TryPeekFormat(out actual));
             Assert.Equal(expected, actual);
+        }
+
+        private static void TestEmptyMap(bool expected, Action<MsgPack.Packer> packerAction)
+        {
+            var stream = new MemoryStream();
+            packerAction(MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None));
+            stream.Position = 0;
+
+            var unpacker = new Unpacker(stream);
+
+            Assert.Equal(expected, unpacker.TryPeekEmptyMap());
         }
 
         #endregion

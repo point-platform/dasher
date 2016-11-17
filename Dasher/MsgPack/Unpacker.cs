@@ -562,6 +562,13 @@ namespace Dasher
             return format != Format.Unknown;
         }
 
+        public bool TryPeekEmptyMap()
+        {
+            PrepareNextByte();
+
+            return ((byte)_nextByte ^ FixMapPrefixBits) == 0;
+        }
+
         private static Format DecodeFormat(byte b)
         {
             if (b <= PosFixIntMaxByte)
