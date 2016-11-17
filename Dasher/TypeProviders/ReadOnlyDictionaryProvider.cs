@@ -34,6 +34,8 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>);
 
+        public bool UseDefaultNullHandling(Type valueType) => true;
+
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var dicType = value.LocalType;

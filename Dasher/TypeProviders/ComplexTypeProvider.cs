@@ -64,6 +64,8 @@ namespace Dasher.TypeProviders
             return constructors.Length == 1 && constructors[0].GetParameters().Length != 0;
         }
 
+        public bool UseDefaultNullHandling(Type valueType) => !valueType.GetTypeInfo().IsValueType;
+
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // treat as complex object and recur

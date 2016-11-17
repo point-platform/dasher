@@ -42,6 +42,8 @@ namespace Dasher.TypeProviders
                type.GetGenericTypeDefinition().Namespace == nameof(Dasher) &&
                type.GetGenericTypeDefinition().Name.StartsWith($"{nameof(Union<int, int>)}`");
 
+        public bool UseDefaultNullHandling(Type valueType) => true;
+
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write header

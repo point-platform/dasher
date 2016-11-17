@@ -32,6 +32,8 @@ namespace Dasher.TypeProviders
     {
         bool CanProvide(Type type);
 
+        bool UseDefaultNullHandling(Type valueType);
+
         bool TryEmitSerialiseCode(
             ILGenerator ilg,
             ThrowBlockGatherer throwBlocks,

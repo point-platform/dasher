@@ -33,6 +33,8 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type == typeof(Version);
 
+        public bool UseDefaultNullHandling(Type valueType) => true;
+
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write the string form

@@ -32,6 +32,8 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type == typeof(IntPtr);
 
+        public bool UseDefaultNullHandling(Type valueType) => false;
+
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write the int64 form of the value

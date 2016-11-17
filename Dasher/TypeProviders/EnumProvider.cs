@@ -33,6 +33,8 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.GetTypeInfo().IsEnum;
 
+        public bool UseDefaultNullHandling(Type valueType) => false;
+
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write the string form of the value

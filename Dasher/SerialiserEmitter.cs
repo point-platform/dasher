@@ -111,7 +111,7 @@ namespace Dasher
             {
                 var end = ilg.DefineLabel();
 
-                if (!value.LocalType.GetTypeInfo().IsValueType)
+                if (provider.UseDefaultNullHandling(value.LocalType))
                 {
                     var nonNull = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Ldloc, value);

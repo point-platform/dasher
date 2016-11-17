@@ -32,6 +32,8 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type == typeof(TimeSpan);
 
+        public bool UseDefaultNullHandling(Type valueType) => false;
+
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             // write the ticks form of the value as int64

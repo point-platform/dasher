@@ -34,6 +34,8 @@ namespace Dasher.TypeProviders
     {
         public bool CanProvide(Type type) => type.IsConstructedGenericType && type.FullName.StartsWith("System.Tuple`");
 
+        public bool UseDefaultNullHandling(Type valueType) => true;
+
         public bool TryEmitSerialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, LocalBuilder value, LocalBuilder packer, LocalBuilder contextLocal, DasherContext context)
         {
             var tupleType = value.LocalType;
