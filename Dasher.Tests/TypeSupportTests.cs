@@ -233,6 +233,7 @@ namespace Dasher.Tests
             TestNested(Union<int, double>.Create(123.0), packer => packer.PackArrayHeader(2).Pack("Double").Pack(123.0));
             TestNested(Union<int, string>.Create("Hello"), packer => packer.PackArrayHeader(2).Pack("String").Pack("Hello"));
             TestNested(Union<int, string>.Create(null), packer => packer.PackArrayHeader(2).Pack("String").PackNull());
+            TestNested((Union<int, string>)null, packer => packer.PackNull());
         }
 
         [Fact]
@@ -277,8 +278,9 @@ namespace Dasher.Tests
             TestTopLevel(
                 Union<UserScore, UserScoreStruct>.Create(null),
                 packer => packer.PackArrayHeader(2).Pack("Dasher.Tests.UserScore").PackNull());
-        }
 
+            TestTopLevel((Union<UserScore, UserScoreStruct>)null, packer => packer.PackNull());
+        }
 
         #region Helpers
 
