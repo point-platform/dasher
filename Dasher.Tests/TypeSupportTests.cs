@@ -169,6 +169,7 @@ namespace Dasher.Tests
         public void SupportsNestedReadOnlyList()
         {
             TestNested<IReadOnlyList<int>>(new[] {1, 2, 3}, packer => packer.PackArrayHeader(3).Pack(1).Pack(2).Pack(3));
+            TestNested<IReadOnlyList<int>>(new int[0], packer => packer.PackArrayHeader(0));
             TestNested<IReadOnlyList<int>>(null, packer => packer.PackNull());
         }
 
@@ -193,12 +194,13 @@ namespace Dasher.Tests
         public void SupportsNestedReadOnlyDictionary()
         {
             TestNested<IReadOnlyDictionary<int, string>>(null, packer => packer.PackNull());
+            TestNested<IReadOnlyDictionary<int, string>>(new Dictionary<int, string>(), packer => packer.PackMapHeader(0));
+
             TestNested<IReadOnlyDictionary<int, string>>(
                 new Dictionary<int, string> {{1, "Hello"}, {2, "World"}},
                 packer => packer.PackMapHeader(2)
                     .Pack(1).Pack("Hello")
                     .Pack(2).Pack("World"));
-
 
             TestNested<IReadOnlyDictionary<int, bool?>>(
                 new Dictionary<int, bool?> { { 1, true }, { 2, false }, {3, null} },
