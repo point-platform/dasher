@@ -240,20 +240,7 @@ namespace Dasher.Tests
             var deserialiser = new Deserialiser<ClassWithAllDefaults>();
             var after = deserialiser.Deserialise(bytes);
 
-            Assert.Equal(-12, after.Sb);
-            Assert.Equal(12, after.B);
-            Assert.Equal(-1234, after.S);
-            Assert.Equal(1234, after.Us);
-            Assert.Equal(-12345, after.I);
-            Assert.Equal(12345u, after.Ui);
-            Assert.Equal(-12345678900L, after.L);
-            Assert.Equal(12345678900UL, after.Ul);
-            Assert.Equal("str", after.Str);
-            Assert.Equal(1.23f, after.F);
-            Assert.Equal(1.23, after.D);
-            Assert.Equal(1.23M, after.Dc);
-            Assert.Equal(true, after.Bo);
-            Assert.Equal(null, after.Complex);
+            after.AssertHasDefaultValues();
         }
 
         [Fact]

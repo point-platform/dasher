@@ -23,6 +23,7 @@
 #endregion
 
 using System.Collections.Generic;
+using Xunit;
 
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedMember.Global
@@ -134,12 +135,12 @@ namespace Dasher.Tests
         public UserScore Complex { get; }
 
         public ClassWithAllDefaults(
-            sbyte sb = -12,
             byte b = 12,
+            sbyte sb = -12,
             short s = -1234,
             ushort us = 1234,
             int i = -12345,
-            uint ui = 12345,
+            uint ui = 12345u,
             long l = -12345678900L,
             ulong ul = 12345678900UL,
             string str = "str",
@@ -165,6 +166,25 @@ namespace Dasher.Tests
             Bo = bo;
             E = e;
             Complex = complex;
+        }
+
+        public void AssertHasDefaultValues()
+        {
+            Assert.Equal(12, B);
+            Assert.Equal(-12, Sb);
+            Assert.Equal(-1234, S);
+            Assert.Equal(1234, Us);
+            Assert.Equal(-12345, I);
+            Assert.Equal(12345u, Ui);
+            Assert.Equal(-12345678900L, L);
+            Assert.Equal(12345678900UL, Ul);
+            Assert.Equal("str", Str);
+            Assert.Equal(1.23f, F);
+            Assert.Equal(1.23, D);
+            Assert.Equal(1.23M, Dc);
+            Assert.Equal(true, Bo);
+            Assert.Equal(TestEnum.Bar, E);
+            Assert.Equal(null, Complex);
         }
     }
 
