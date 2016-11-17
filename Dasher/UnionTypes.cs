@@ -29,6 +29,9 @@ using System.Reflection;
 // ReSharper disable AssignNullToNotNullAttribute
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 // ReSharper disable NonReadonlyMemberInGetHashCode
+// ReSharper disable ReturnTypeCanBeEnumerable.Global
+// ReSharper disable UnusedMember.Global
+// ReSharper disable MemberCanBeProtected.Global
 
 namespace Dasher
 {
