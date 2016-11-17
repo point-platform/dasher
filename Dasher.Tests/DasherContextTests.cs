@@ -39,6 +39,9 @@ namespace Dasher.Tests
             Assert.True(context.IsValidTopLevelType(typeof(Valid1)));
             Assert.True(context.IsValidTopLevelType(typeof(Valid2)));
             Assert.True(context.IsValidTopLevelType(typeof(Union<Valid1, Valid2>)));
+            Assert.True(context.IsValidTopLevelType(typeof(Empty)));
+            Assert.True(context.IsValidTopLevelType(typeof(Union<Empty, Valid1>)));
+            Assert.True(context.IsValidTopLevelType(typeof(Valid2?)));
         }
     }
 }

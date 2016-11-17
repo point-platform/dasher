@@ -116,11 +116,19 @@ namespace Dasher.TypeProviders
 
         public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
+            var lblValidateArrayLength = ilg.DefineLabel();
+            var lblExit = ilg.DefineLabel();
+
             // read the array length
             var count = ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Ldloca, count);
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadArrayLength);
+            ilg.Emit(OpCodes.Brtrue_S, lblValidateArrayLength);
+
+            // test for empty map (empty type)
+            ilg.Emit(OpCodes.Ldloc, unpacker);
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekEmptyMap);
 
             throwBlocks.ThrowIfFalse(() =>
             {
@@ -133,7 +141,12 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Throw);
             });
 
+            ilg.Emit(OpCodes.Ldnull);
+            ilg.Emit(OpCodes.Stloc, value);
+            ilg.Emit(OpCodes.Br, lblExit);
+
             // ensure we have two items in the array
+            ilg.MarkLabel(lblValidateArrayLength);
             ilg.Emit(OpCodes.Ldloc, count);
             ilg.Emit(OpCodes.Ldc_I4_2);
             throwBlocks.ThrowIfNotEqual(() =>
@@ -169,7 +182,6 @@ namespace Dasher.TypeProviders
             var success = true;
 
             // loop through types within the union, looking for a matching type name
-            var doneLabel = ilg.DefineLabel();
             var labelNextType = ilg.DefineLabel();
             foreach (var type in value.LocalType.GetGenericArguments())
             {
@@ -199,7 +211,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Stloc, value);
 
                 // exit the loop
-                ilg.Emit(OpCodes.Br, doneLabel);
+                ilg.Emit(OpCodes.Br, lblExit);
 
                 ilg.MarkLabel(labelNextType);
                 labelNextType = ilg.DefineLabel();
@@ -215,7 +227,7 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Throw);
             });
 
-            ilg.MarkLabel(doneLabel);
+            ilg.MarkLabel(lblExit);
 
             return success;
         }

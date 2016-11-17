@@ -234,6 +234,31 @@ Union<IReadOnlyList<AddItemRequest>, IReadOnlyList<RemoveItemRequest>> Requests 
 
 ---
 
+# Empty Type
+
+`Empty` is useful in contracts when a value is not currently required, but may be one day in future.
+
+Consider a message that indicates some kind of notification. The message itself might not contain any fields,
+as it is enough to simply observe the empty message. However one day, you may wish to add one or more optional
+fields and support backwards compatibility. In such a case, use `Empty` today and introduce a complex or union
+type at some later point.
+
+It is expected that `Empty` would be most useful as a top-level type (i.e. `Serialiser<Empty>`) or used in
+conjunction with generic wrapper types (e.g. `Serialiser<MyEnvelope<Empty>>>`).
+
+The `Dasher.Empty` CLR type itself cannot be instantiated or subclassed. At runtime, the value will be `null`.
+
+Empty values may be deserialised to the following types:
+
+- A complex type for which all constructor parameters have default values, where an instance is instantiated with those defaults
+- A union type, where the resulting value is `null`
+- A nullable nullable complex struct, where the resulting value is `null`
+
+If a `Deserialiser` is constructed with option `UnexpectedFieldBehaviour.Ignore`, then non-empty values received for an `Empty` type
+are discarded. However if `UnexpectedFieldBehaviour.Throw` is used (the default setting) then a `DeserialisationException` is raised.
+
+---
+
 # Encoding
 
 You don't _need_ to know how Dasher encodes messages in order to use it successfully, but a deeper understanding is never a bad thing.

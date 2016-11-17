@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using MsgPack;
 using Xunit;
@@ -32,6 +33,7 @@ namespace Dasher.Tests
 {
     // TODO mismatch between ctor args and properties (?)
 
+    [SuppressMessage("ReSharper", "RedundantArgumentDefaultValue")]
     public sealed class DeserialiserTests
     {
         [Fact]
@@ -564,6 +566,87 @@ namespace Dasher.Tests
 
             Assert.Equal(@"Union values must be encoded as an array for property ""value"" of type ""Dasher.Union`2[System.Int32,System.String]""",
                 ex.Message);
+        }
+
+        [Fact]
+        public void DeserialiseComplexAsEmpty()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1).Pack("Hello").Pack("World"));
+
+            Assert.Null(new Deserialiser<Empty>(UnexpectedFieldBehaviour.Ignore).Deserialise(bytes));
+
+            var ex = Assert.Throws<DeserialisationException>(
+                () => new Deserialiser<Empty>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes));
+
+            Assert.Equal("Unable to deserialise Empty type for \"<root>\". Expected map with 0 entries, got 1.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void DeserialiseArrayStringAsEmpty()
+        {
+            var bytes = PackBytes(packer => packer.PackArrayHeader(2).Pack("Hello").Pack("World"));
+
+            Assert.Null(new Deserialiser<Empty>(UnexpectedFieldBehaviour.Ignore).Deserialise(bytes));
+
+            var ex = Assert.Throws<DeserialisationException>(
+                () => new Deserialiser<Empty>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes));
+
+            Assert.Equal("Unable to deserialise Empty type for \"<root>\". Expected MsgPack format Null or Map, got FixArray.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void DeserialiseStringAsEmpty()
+        {
+            var bytes = PackBytes(packer => packer.PackString("Hello"));
+
+            Assert.Null(new Deserialiser<Empty>(UnexpectedFieldBehaviour.Ignore).Deserialise(bytes));
+
+            var ex = Assert.Throws<DeserialisationException>(
+                () => new Deserialiser<Empty>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes));
+
+            Assert.Equal("Unable to deserialise Empty type for \"<root>\". Expected MsgPack format Null or Map, got FixStr.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void DeserialiseNullAsEmpty()
+        {
+            var bytes = PackBytes(packer => packer.PackNull());
+
+            Assert.Null(new Deserialiser<Empty>(UnexpectedFieldBehaviour.Ignore).Deserialise(bytes));
+            Assert.Null(new Deserialiser<Empty>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes));
+        }
+
+        [Fact]
+        public void DeserialiseEmptyAsComplexWithAllDefaults()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(0));
+
+            var o = new Deserialiser<ClassWithAllDefaults>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes);
+
+            o.AssertHasDefaultValues();
+        }
+
+        [Fact]
+        public void DeserialiseEmptyAsUnion()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(0));
+
+            var o = new Deserialiser<Union<UserScore, UserScoreStruct>>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes);
+
+            Assert.Null(o);
+        }
+
+        [Fact]
+        public void DeserialiseEmptyAsNullableComplexStructWithAllDefaults()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(0));
+
+            var o = new Deserialiser<StructWithAllDefaults?>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes);
+
+            Assert.Null(o);
         }
 
         #region Helper

@@ -188,6 +188,78 @@ namespace Dasher.Tests
         }
     }
 
+    public struct StructWithAllDefaults
+    {
+        public byte B { get; }
+        public sbyte Sb { get; }
+        public short S { get; }
+        public ushort Us { get; }
+        public int I { get; }
+        public uint Ui { get; }
+        public long L { get; }
+        public ulong Ul { get; }
+        public string Str { get; }
+        public float F { get; }
+        public double D { get; }
+        public decimal Dc { get; }
+        public bool Bo { get; }
+        public TestEnum E { get; }
+        public UserScore Complex { get; }
+
+        public StructWithAllDefaults(
+            byte b = 12,
+            sbyte sb = -12,
+            short s = -1234,
+            ushort us = 1234,
+            int i = -12345,
+            uint ui = 12345,
+            long l = -12345678900L,
+            ulong ul = 12345678900UL,
+            string str = "str",
+            float f = 1.23f,
+            double d = 1.23,
+            decimal dc = 1.23M,
+            bool bo = true,
+            TestEnum e = TestEnum.Bar,
+            UserScore complex = null)
+        {
+            B = b;
+            Sb = sb;
+            S = s;
+            Us = us;
+            I = i;
+            Ui = ui;
+            L = l;
+            Ul = ul;
+            Str = str;
+            F = f;
+            D = d;
+            Dc = dc;
+            Bo = bo;
+            E = e;
+            Complex = complex;
+        }
+
+        public void AssertHasDefaultValues()
+        {
+            Assert.Equal(-12, Sb);
+            Assert.Equal(12, B);
+            Assert.Equal(-1234, S);
+            Assert.Equal(1234, Us);
+            Assert.Equal(-12345, I);
+            Assert.Equal(12345u, Ui);
+            Assert.Equal(-12345678900L, L);
+            Assert.Equal(12345678900UL, Ul);
+            Assert.Equal("str", Str);
+            Assert.Equal(1.23f, F);
+            Assert.Equal(1.23, D);
+            Assert.Equal(1.23M, Dc);
+            Assert.Equal(true, Bo);
+            Assert.Equal(TestEnum.Bar, E);
+            Assert.Equal(null, Complex);
+        }
+    }
+
     public sealed class MultipleConstructors
     {
         public int Number { get; }

@@ -76,25 +76,32 @@ namespace Dasher.TypeProviders
         public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
             var nullableType = value.LocalType;
-            var valueType = nullableType.GetGenericArguments().Single();
+            var valueType = Nullable.GetUnderlyingType(nullableType);
 
-            var lblNonNull = ilg.DefineLabel();
+            var lblStoreNull = ilg.DefineLabel();
+            var lblReadInner = ilg.DefineLabel();
             var lblExit = ilg.DefineLabel();
 
+            // test for null
             ilg.Emit(OpCodes.Ldloc, unpacker);
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadNull);
+            ilg.Emit(OpCodes.Brtrue_S, lblStoreNull);
 
-            ilg.Emit(OpCodes.Brfalse_S, lblNonNull);
+            // test for empty map (empty type)
+            ilg.Emit(OpCodes.Ldloc, unpacker);
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekEmptyMap);
+            ilg.Emit(OpCodes.Brfalse_S, lblReadInner);
 
-            // null
+            // store null
+            ilg.MarkLabel(lblStoreNull);
+
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Initobj, nullableType);
-
             ilg.Emit(OpCodes.Br, lblExit);
 
-            ilg.MarkLabel(lblNonNull);
+            // non-null and non-empty
+            ilg.MarkLabel(lblReadInner);
 
-            // non-null
             var nonNullValue = ilg.DeclareLocal(valueType);
 
             if (!DeserialiserEmitter.TryEmitDeserialiseCode(ilg, throwBlocks, errors, name, targetType, nonNullValue, unpacker, context, contextLocal, unexpectedFieldBehaviour))

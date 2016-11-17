@@ -48,7 +48,8 @@ namespace Dasher
             new ReadOnlyDictionaryProvider(),
             new NullableValueProvider(),
             new TupleProvider(),
-            new UnionProvider()
+            new UnionProvider(),
+            new EmptyProvider()
         };
 
         private readonly ConcurrentDictionary<Type, Action<Packer, DasherContext, object>> _serialiseActionByType = new ConcurrentDictionary<Type, Action<Packer, DasherContext, object>>();
@@ -99,6 +100,16 @@ namespace Dasher
 
         internal void ValidateTopLevelType(Type type, ICollection<string> errors)
         {
+            if (type == typeof(Empty))
+                return;
+
+            var nullableInnerType = Nullable.GetUnderlyingType(type);
+            if (nullableInnerType != null)
+            {
+                ValidateTopLevelType(nullableInnerType, errors);
+                return;
+            }
+
             if (Union.IsUnionType(type))
             {
                 foreach (var memberType in Union.GetTypes(type))

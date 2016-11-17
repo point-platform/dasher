@@ -250,6 +250,12 @@ namespace Dasher.Tests
             TestNested(new UserScore("Foo", 123), packer => packer.PackMapHeader(2).Pack("Name").Pack("Foo").Pack("Score").Pack(123));
         }
 
+        [Fact]
+        public void SupportsNestedEmpty()
+        {
+            TestNested((Empty)null, packer => packer.PackMapHeader(0));
+        }
+
 
         [Fact]
         public void SupportsTopLevelClass()
@@ -262,6 +268,13 @@ namespace Dasher.Tests
         public void SupportsTopLevelStruct()
         {
             TestTopLevel(new UserScoreStruct("Foo", 123), packer => packer.PackMapHeader(2).Pack("Name").Pack("Foo").Pack("Score").Pack(123));
+        }
+
+        [Fact]
+        public void SupportsTopLevelNullableStruct()
+        {
+            TestTopLevel<UserScoreStruct?>(new UserScoreStruct("Foo", 123), packer => packer.PackMapHeader(2).Pack("Name").Pack("Foo").Pack("Score").Pack(123));
+            TestTopLevel<UserScoreStruct?>(null, packer => packer.PackNull());
         }
 
         [Fact]
@@ -282,6 +295,14 @@ namespace Dasher.Tests
                 packer => packer.PackArrayHeader(2).Pack("Dasher.Tests.UserScore").PackNull());
 
             TestTopLevel((Union<UserScore, UserScoreStruct>)null, packer => packer.PackNull());
+        }
+
+        [Fact]
+        public void SupportsTopLevelEmpty()
+        {
+            TestTopLevel(
+                (Empty)null,
+                packer => packer.PackMapHeader(0));
         }
 
         #region Helpers

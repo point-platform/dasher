@@ -51,6 +51,7 @@ namespace Dasher
         public static MethodInfo Unpacker_TryReadMapLength                      { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadMapLength));
         public static MethodInfo Unpacker_TryReadNull                           { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadNull));
         public static MethodInfo Unpacker_TryPeekFormat                         { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryPeekFormat));
+        public static MethodInfo Unpacker_TryPeekEmptyMap                       { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryPeekEmptyMap));
         public static MethodInfo Unpacker_TryReadSByte                          { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadSByte));
         public static MethodInfo Unpacker_TryReadByte                           { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadByte));
         public static MethodInfo Unpacker_TryReadInt16                          { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadInt16));
