@@ -115,7 +115,7 @@ namespace Dasher.Tests
         Bar = 2
     }
 
-    public sealed class TestDefaultParams
+    public sealed class ClassWithAllDefaults
     {
         public byte B { get; }
         public sbyte Sb { get; }
@@ -133,7 +133,7 @@ namespace Dasher.Tests
         public TestEnum E { get; }
         public UserScore Complex { get; }
 
-        public TestDefaultParams(
+        public ClassWithAllDefaults(
             sbyte sb = -12,
             byte b = 12,
             short s = -1234,

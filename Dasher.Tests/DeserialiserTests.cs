@@ -237,7 +237,7 @@ namespace Dasher.Tests
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(0));
 
-            var deserialiser = new Deserialiser<TestDefaultParams>();
+            var deserialiser = new Deserialiser<ClassWithAllDefaults>();
             var after = deserialiser.Deserialise(bytes);
 
             Assert.Equal(-12, after.Sb);

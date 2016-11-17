@@ -136,7 +136,7 @@ namespace Dasher.Tests
                 buildTime = Stopwatch.StartNew();
 
                 for (var i = 0; i < iterations; i++)
-                    new Deserialiser<TestDefaultParams>();
+                    new Deserialiser<ClassWithAllDefaults>();
 
                 buildTime.Stop();
             }
@@ -152,7 +152,7 @@ namespace Dasher.Tests
                 var context = new DasherContext();
 
                 for (var i = 0; i < iterations; i++)
-                    new Deserialiser<TestDefaultParams>(context: context);
+                    new Deserialiser<ClassWithAllDefaults>(context: context);
 
                 buildWithSharedContextTime.Stop();
             }
@@ -165,7 +165,7 @@ namespace Dasher.Tests
                 new Packer(stream).PackMapHeader(0);
                 var bytes = stream.ToArray();
 
-                var builtDeserialisers = Enumerable.Range(0, iterations).Select(i => new Deserialiser<TestDefaultParams>()).ToList();
+                var builtDeserialisers = Enumerable.Range(0, iterations).Select(i => new Deserialiser<ClassWithAllDefaults>()).ToList();
 
                 builtDeserialisers[0].Deserialise(bytes);
 
@@ -187,7 +187,7 @@ namespace Dasher.Tests
                 new Packer(stream).PackMapHeader(0);
                 var bytes = stream.ToArray();
 
-                var builtDeserialisers = Enumerable.Range(0, iterations).Select(i => new Deserialiser<TestDefaultParams>()).ToList();
+                var builtDeserialisers = Enumerable.Range(0, iterations).Select(i => new Deserialiser<ClassWithAllDefaults>()).ToList();
 
                 builtDeserialisers[0].Deserialise(bytes);
 
