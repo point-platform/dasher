@@ -291,6 +291,27 @@ And physically encoded as (the actual byte stream):
 \ map of two key/value pairs
 ```
 
+MsgPack specifies the encoding of types `sbyte`, `byte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `double`, `bool`, `string`, and `byte[]`.
+
+Dasher encodes the following types using the following MsgPack formats:
+
+* Array (other than `byte[]`) as array
+* `DateTime` as 64-bit integer
+* `DateTimeOffset` as two-element array of 64-bit integer (ticks) and 16-bit integer (offset)
+* `Decimal` as string
+* `Empty` as zero-sized map
+* `Enum` as string
+* `Guid` as byte array
+* `IntPtr` as 64-bit integer
+* `IReadOnlyDictionary<T, K>` as map from `T` to `K` (recur on this list)
+* `IReadOnlyList<T>` as array of `T` (recor on this list)
+* `Nullable<T>` as either null or `T` (recur on this list)
+* `TimeSpan` as 64-bit integer
+* `Tuple<>` as array of values (recur on this list)
+* `Union<>` as two-element array: type identifier as string, value (recur on this list)
+* `Version` as string
+* Finally, if none of the above apply, `class` and `struct` as heterogeneous MsgPack map from name to value
+
 ---
 
 # License
