@@ -35,6 +35,9 @@ namespace Dasher.Tests
 {
     public sealed class UnpackerTests
     {
+        private static readonly float[] _testFloats = {0.0f, 1.0f, 0.5f, -1.5f, (float)Math.PI, float.NaN, float.MinValue, float.MaxValue, float.PositiveInfinity, float.NegativeInfinity};
+        private static readonly double[] _testDoubles = {0.0d, 1.0d, 0.5d, -1.5d, Math.PI, double.NaN, double.MinValue, double.MaxValue, double.PositiveInfinity, double.NegativeInfinity};
+
         private readonly ITestOutputHelper _output;
 
         public UnpackerTests(ITestOutputHelper output)
@@ -176,9 +179,7 @@ namespace Dasher.Tests
         [Fact]
         public void TryReadSingle()
         {
-            var inputs = new[] {0.0f, 1.0f, 0.5f, -1.5f, float.NaN, float.MinValue, float.MaxValue, float.PositiveInfinity, float.NegativeInfinity};
-
-            foreach (var input in inputs)
+            foreach (var input in _testFloats)
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
@@ -191,9 +192,17 @@ namespace Dasher.Tests
         [Fact]
         public void TryReadDouble()
         {
-            var inputs = new[] {0.0d, 1.0d, 0.5d, -1.5d, double.NaN, double.MinValue, double.MaxValue, double.PositiveInfinity, double.NegativeInfinity};
+            foreach (var input in _testDoubles)
+            {
+                var unpacker = InitTest(p => p.Pack(input));
 
-            foreach (var input in inputs)
+                double value;
+                Assert.True(unpacker.TryReadDouble(out value), $"Processing {input}");
+                Assert.Equal(input, value);
+            }
+
+            // Float can be losslessly widened to double, by IEEE spec
+            foreach (var input in _testFloats)
             {
                 var unpacker = InitTest(p => p.Pack(input));
 

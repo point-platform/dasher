@@ -349,6 +349,21 @@ namespace Dasher
                 return true;
             }
 
+            // Float can be losslessly widened to Double
+            if (_nextByte == Float32PrefixByte)
+            {
+                // big-endian 32-bit IEEE 754 floating point
+#if UNSAFE
+                var bits = ReadUInt32();
+                value = *(float*)&bits;
+#else
+                Read(4, _buffer);
+                value = BitConverter.ToSingle(_buffer, 0);
+#endif
+                _nextByte = -1;
+                return true;
+            }
+
             value = default(double);
             return false;
         }
