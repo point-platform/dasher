@@ -122,19 +122,6 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Throw);
             };
 
-            Action loadPeekedFormatName = () =>
-            {
-                var format = ilg.DeclareLocal(typeof(Format));
-                ilg.Emit(OpCodes.Ldloc, unpacker);
-                ilg.Emit(OpCodes.Ldloca, format);
-                ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekFormat);
-                // Drop the return value: if false, 'format' will be 'Unknown' which is fine.
-                ilg.Emit(OpCodes.Pop);
-                ilg.Emit(OpCodes.Ldloc, format);
-                ilg.Emit(OpCodes.Box, typeof(Format));
-                ilg.Emit(OpCodes.Call, Methods.Format_ToString);
-            };
-
             #region Initialise locals for constructor args
 
             var valueLocals = new LocalBuilder[parameters.Length];
@@ -220,7 +207,7 @@ namespace Dasher.TypeProviders
                     throwException();
                     ilg.MarkLabel(lblNotEmpty);
                     ilg.Emit(OpCodes.Ldstr, "Message must be encoded as a MsgPack map, not \"{0}\".");
-                    loadPeekedFormatName();
+                    ilg.PeekFormatString(unpacker);
                     ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object);
                     throwException();
                 });
@@ -344,7 +331,7 @@ namespace Dasher.TypeProviders
                     {
                         ilg.Emit(OpCodes.Ldstr, "Encountered unexpected field \"{0}\" of MsgPack format \"{1}\" for CLR type \"{2}\".");
                         ilg.Emit(OpCodes.Ldloc, key);
-                        loadPeekedFormatName();
+                        ilg.PeekFormatString(unpacker);
                         ilg.Emit(OpCodes.Ldstr, targetType.Name);
                         ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object_Object);
                         throwException();

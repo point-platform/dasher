@@ -47,16 +47,9 @@ namespace Dasher.TypeProviders
                 // If the unpacker method failed (returned false), throw
                 throwBlocks.ThrowIfFalse(() =>
                 {
-                    var format = ilg.DeclareLocal(typeof(Format));
-                    ilg.Emit(OpCodes.Ldloc, unpacker);
-                    ilg.Emit(OpCodes.Ldloca, format);
-                    ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekFormat);
-                    ilg.Emit(OpCodes.Pop);
-
                     ilg.Emit(OpCodes.Ldstr, $"Unable to deserialise {nameof(Empty)} type for \"{{0}}\". Expected MsgPack format Null or Map, got {{1}}.");
                     ilg.Emit(OpCodes.Ldstr, name);
-                    ilg.Emit(OpCodes.Ldloc, format);
-                    ilg.Emit(OpCodes.Box, typeof(Format));
+                    ilg.PeekFormatString(unpacker);
                     ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object);
                     ilg.LoadType(targetType);
                     ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);

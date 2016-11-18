@@ -82,17 +82,10 @@ namespace Dasher.TypeProviders
             // If the unpacker method failed (returned false), throw
             throwBlocks.ThrowIfFalse(() =>
             {
-                var format = ilg.DeclareLocal(typeof(Format));
-                ilg.Emit(OpCodes.Ldloc, unpacker);
-                ilg.Emit(OpCodes.Ldloca, format);
-                ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekFormat);
-                ilg.Emit(OpCodes.Pop);
-
                 ilg.Emit(OpCodes.Ldstr, "Unexpected MsgPack format for \"{0}\". Expected {1}, got {2}.");
                 ilg.Emit(OpCodes.Ldstr, name);
                 ilg.Emit(OpCodes.Ldstr, value.LocalType.Name);
-                ilg.Emit(OpCodes.Ldloc, format);
-                ilg.Emit(OpCodes.Box, typeof(Format));
+                ilg.PeekFormatString(unpacker);
                 ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object_Object);
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);

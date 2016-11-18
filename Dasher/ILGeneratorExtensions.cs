@@ -36,6 +36,20 @@ namespace Dasher
             ilg.Emit(OpCodes.Call, typeof(Type).GetMethod(nameof(Type.GetTypeFromHandle)));
         }
 
+        public static void PeekFormatString(this ILGenerator ilg, LocalBuilder unpacker)
+        {
+            var format = ilg.DeclareLocal(typeof(Format));
+            ilg.Emit(OpCodes.Ldloc, unpacker);
+            ilg.Emit(OpCodes.Ldloca, format);
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekFormat);
+
+            // Drop the return value: if false, 'format' will be 'Unknown' which is fine.
+            ilg.Emit(OpCodes.Pop);
+            ilg.Emit(OpCodes.Ldloc, format);
+            ilg.Emit(OpCodes.Box, typeof(Format));
+            ilg.Emit(OpCodes.Call, Methods.Format_ToString);
+        }
+
         internal static void LoadConstant(this ILGenerator ilg, object value)
         {
             if (value == null)
