@@ -83,7 +83,7 @@ namespace Dasher
                 // to allow control over the order of registered type providers.
                 if (found != null)
                 {
-                    errors.Add($"Multiple type providers exist for type {type}.");
+                    errors.Add($"Multiple type providers exist for type \"{type}\".");
                     provider = null;
                     return false;
                 }
