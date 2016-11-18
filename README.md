@@ -180,7 +180,7 @@ Consider the payload to deserialise as:
 { "Name": "Prancer", "Position": 3 }
 ```
 
-No value is provided for `HasRedNose` in the message, however the constructor argument includes a default value of `false`. In such a case, Dasher uses the default value of a field when the field is omitted from the payload.
+No value is provided for `HasRedNose` in the message, however the constructor parameter includes a default value of `false`. In such a case, Dasher uses the default value of a field when the field is omitted from the payload.
 
 ```csharp
 // return new Reindeer("Prancer", 3, false)

@@ -51,7 +51,7 @@ namespace Dasher.TypeProviders
 
             if (constructors[0].GetParameters().Length == 0)
             {
-                errors.Add($"Complex type provider requires constructor to have at least one argument. Use \"{typeof(Empty).FullName}\" to model an empty type.");
+                errors.Add($"Complex type provider requires constructor to have at least one parameter. Use \"{typeof(Empty).FullName}\" to model an empty type.");
                 return false;
             }
 
