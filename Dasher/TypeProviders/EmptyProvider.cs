@@ -48,7 +48,7 @@ namespace Dasher.TypeProviders
                 throwBlocks.ThrowIfFalse(() =>
                 {
                     var format = ilg.DeclareLocal(typeof(Format));
-                    ilg.Emit(OpCodes.Ldarg_0);
+                    ilg.Emit(OpCodes.Ldloc, unpacker);
                     ilg.Emit(OpCodes.Ldloca, format);
                     ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekFormat);
                     ilg.Emit(OpCodes.Pop);
