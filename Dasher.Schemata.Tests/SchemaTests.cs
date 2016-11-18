@@ -274,7 +274,7 @@ namespace Dasher.Schemata.Tests
         [Fact]
         public void EmptySchema_ExactMatch()
         {
-            var read = Test<EmptyMessage, EmptyMessage>(
+            var read = Test<Empty, Empty>(
                 null,
                 null,
                 matchIfRelaxed: true,
@@ -287,7 +287,7 @@ namespace Dasher.Schemata.Tests
         [Fact]
         public void EmptySchema_Complex()
         {
-            var read = Test<Person, EmptyMessage>(
+            var read = Test<Person, Empty>(
                 new Person("Bob", 36),
                 null,
                 matchIfRelaxed: true,
@@ -300,7 +300,7 @@ namespace Dasher.Schemata.Tests
         [Fact]
         public void EmptySchema_Union()
         {
-            var read = Test<Union<int, string>, EmptyMessage>(
+            var read = Test<Union<int, string>, Empty>(
                 1,
                 null,
                 matchIfRelaxed: true,
@@ -701,14 +701,14 @@ namespace Dasher.Schemata.Tests
             Assert.Same(c.GetOrAddReadSchema(typeof(double)), c.GetOrAddWriteSchema(typeof(double)));
             Assert.Same(c.GetOrAddReadSchema(typeof(EnumAbc)), c.GetOrAddWriteSchema(typeof(EnumAbc)));
             Assert.Same(c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
-            Assert.Same(c.GetOrAddReadSchema(typeof(EmptyMessage)), c.GetOrAddWriteSchema(typeof(EmptyMessage)));
+            Assert.Same(c.GetOrAddReadSchema(typeof(Empty)), c.GetOrAddWriteSchema(typeof(Empty)));
 
             // NOTE for some types, read and write schema are equal (can this cause trouble?)
             Assert.Equal((object)c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
             Assert.Equal((object)c.GetOrAddReadSchema(typeof(double)), c.GetOrAddWriteSchema(typeof(double)));
             Assert.Equal((object)c.GetOrAddReadSchema(typeof(EnumAbc)), c.GetOrAddWriteSchema(typeof(EnumAbc)));
             Assert.Equal((object)c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
-            Assert.Equal((object)c.GetOrAddReadSchema(typeof(EmptyMessage)), c.GetOrAddWriteSchema(typeof(EmptyMessage)));
+            Assert.Equal((object)c.GetOrAddReadSchema(typeof(Empty)), c.GetOrAddWriteSchema(typeof(Empty)));
 
             var schemata = new object[]
             {

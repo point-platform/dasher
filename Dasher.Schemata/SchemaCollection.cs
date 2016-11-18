@@ -276,7 +276,7 @@ namespace Dasher.Schemata
 
         public IWriteSchema GetOrAddWriteSchema(Type type)
         {
-            if (type == typeof(EmptyMessage))
+            if (type == typeof(Empty))
                 return Intern(new EmptySchema());
             if (PrimitiveSchema.CanProcess(type))
                 return Intern(new PrimitiveSchema(type));
@@ -298,7 +298,7 @@ namespace Dasher.Schemata
 
         public IReadSchema GetOrAddReadSchema(Type type)
         {
-            if (type == typeof(EmptyMessage))
+            if (type == typeof(Empty))
                 return Intern(new EmptySchema());
             if (PrimitiveSchema.CanProcess(type))
                 return Intern(new PrimitiveSchema(type));
