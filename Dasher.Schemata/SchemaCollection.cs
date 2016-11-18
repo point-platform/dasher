@@ -22,7 +22,7 @@ namespace Dasher.Schemata
         {
             IReadSchema schema;
             if (!TryResolveReadSchema(str, out schema))
-                throw new Exception("String \"{str}\" cannot be resolved as a read schema within this collection.");
+                throw new Exception($"String \"{str}\" cannot be resolved as a read schema within this collection.");
             return schema;
         }
 
