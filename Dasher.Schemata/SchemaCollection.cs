@@ -10,9 +10,9 @@ namespace Dasher.Schemata
 {
     public sealed class SchemaCollection
     {
-        private readonly Dictionary<Schema, Schema> _schema = new Dictionary<Schema, Schema>();
+        private readonly List<Schema> _schema = new List<Schema>();
 
-        internal ICollection<Schema> Schema => _schema.Keys;
+        internal IReadOnlyCollection<Schema> Schema => _schema;
 
         #region Schema resolution
 
@@ -222,7 +222,6 @@ namespace Dasher.Schemata
         public static SchemaCollection FromXml(XElement element)
         {
             var bindActions = new List<Action>();
-            var unboundSchemata = new List<Schema>();
 
             var collection = new SchemaCollection();
 
@@ -257,17 +256,13 @@ namespace Dasher.Schemata
 
                 schema.Id = id;
 
-                // We can't add these to the collection until after bind actions execute
-                unboundSchemata.Add(schema);
+                collection._schema.Add(schema);
             }
 
             collection.AllowResolution = true;
 
             foreach (var bindAction in bindActions)
                 bindAction();
-
-            foreach (var schema in unboundSchemata)
-                collection.Intern(schema);
 
             return collection;
         }
@@ -322,11 +317,13 @@ namespace Dasher.Schemata
         {
             Debug.Assert(schema is ByRefSchema || schema is ByValueSchema, "schema is ByRefSchema || schema is ByValueSchema");
 
-            Schema existing;
-            if (_schema.TryGetValue(schema, out existing))
-                return (T)existing;
+            foreach (var existing in _schema)
+            {
+                if (existing.Equals(schema))
+                    return (T)existing;
+            }
 
-            _schema.Add(schema, schema);
+            _schema.Add(schema);
             return schema;
         }
     }
