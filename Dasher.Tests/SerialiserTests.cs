@@ -45,6 +45,13 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void DisallowsNestedObject()
+        {
+            var exception = Assert.Throws<SerialisationException>(() => new Serialiser<ValueWrapper<object>>());
+            Assert.Equal($"Cannot serialise type \"Dasher.Tests.ValueWrapper`1\": No type provider exists for type \"{typeof(object).FullName}\".", exception.Message);
+        }
+
+        [Fact]
         public void DisallowsTypeWithNoProperties()
         {
             var exception = Assert.Throws<SerialisationException>(() => new Serialiser<NoProperties>());

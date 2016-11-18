@@ -95,6 +95,10 @@ namespace Dasher
                 found = _complexTypeProvider;
 
             provider = found;
+
+            if (found == null)
+                errors.Add($"No type provider exists for type \"{type}\".");
+
             return found != null;
         }
 

@@ -122,7 +122,8 @@ namespace Dasher
                     ilg.MarkLabel(nonNull);
                 }
 
-                provider.TryEmitSerialiseCode(ilg, throwBlocks, errors, value, packer, contextLocal, context);
+                if (!provider.TryEmitSerialiseCode(ilg, throwBlocks, errors, value, packer, contextLocal, context))
+                    return false;
 
                 ilg.MarkLabel(end);
             }
