@@ -25,7 +25,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.IO;
 using MsgPack;
 using Xunit;
@@ -673,51 +672,219 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void TryWiden()
+        public void ValueConversions()
         {
-            // Widen to long
-            TryWiden<byte, long>(byte.MaxValue, (from, to) => from == to);
-            TryWiden<sbyte, long>(sbyte.MaxValue, (from, to) => from == to);
-            TryWiden<char, long>(char.MaxValue, (from, to) => from == to);
-            TryWiden<short, long>(short.MaxValue, (from, to) => from == to);
-            TryWiden<ushort, long>(ushort.MaxValue, (from, to) => from == to);
+            // bool
+            ConversionFails<byte,    bool>(byte.MaxValue);
+            ConversionFails<sbyte,   bool>(sbyte.MaxValue);
+            ConversionFails<char,    bool>(char.MaxValue);
+            ConversionFails<short,   bool>(short.MaxValue);
+            ConversionFails<ushort,  bool>(ushort.MaxValue);
+            ConversionFails<int,     bool>(int.MaxValue);
+            ConversionFails<uint,    bool>(uint.MaxValue);
+            ConversionFails<long,    bool>(long.MaxValue);
+            ConversionFails<ulong,   bool>(ulong.MaxValue);
+            ConversionFails<decimal, bool>(decimal.MaxValue);
+            ConversionFails<float,   bool>(float.MaxValue);
+            ConversionFails<double,  bool>(double.MaxValue);
 
-            TryWiden<int, long>(int.MaxValue, (from, to) => from == to);
-            TryWiden<uint, long>(uint.MaxValue, (from, to) => from == to);
+            // byte
+            ConversionFails<bool,    byte>(true);
+            ConversionFails<sbyte,   byte>(sbyte.MinValue);
+            ConversionFails<char,    byte>(char.MaxValue);
+            ConversionFails<short,   byte>(short.MaxValue);
+            ConversionFails<ushort,  byte>(ushort.MaxValue);
+            ConversionFails<int,     byte>(int.MaxValue);
+            ConversionFails<uint,    byte>(uint.MaxValue);
+            ConversionFails<long,    byte>(long.MaxValue);
+            ConversionFails<ulong,   byte>(ulong.MaxValue);
+            ConversionFails<decimal, byte>(decimal.MaxValue);
+            ConversionFails<float,   byte>(float.MaxValue);
+            ConversionFails<double,  byte>(double.MaxValue);
 
-            // Widen to int
+            // sbyte
+            ConversionFails<bool,    sbyte>(true);
+            ConversionFails<byte,    sbyte>(byte.MaxValue);
+            ConversionFails<char,    sbyte>(char.MaxValue);
+            ConversionFails<short,   sbyte>(short.MaxValue);
+            ConversionFails<ushort,  sbyte>(ushort.MaxValue);
+            ConversionFails<int,     sbyte>(int.MaxValue);
+            ConversionFails<uint,    sbyte>(uint.MaxValue);
+            ConversionFails<long,    sbyte>(long.MaxValue);
+            ConversionFails<ulong,   sbyte>(ulong.MaxValue);
+            ConversionFails<decimal, sbyte>(decimal.MaxValue);
+            ConversionFails<float,   sbyte>(float.MaxValue);
+            ConversionFails<double,  sbyte>(double.MaxValue);
 
-            TryWiden<byte, int>(byte.MaxValue, (from, to) => from == to);
-            TryWiden<sbyte, int>(sbyte.MaxValue, (from, to) => from == to);
-            TryWiden<char, int>(char.MaxValue, (from, to) => from == to);
-            TryWiden<short, int>(short.MaxValue, (from, to) => from == to);
-            TryWiden<ushort, int>(ushort.MaxValue, (from, to) => from == to);
+            // char
+            ConversionFails<bool,    char>(true);
+            ConversionFails<byte,    char>(byte.MaxValue);
+            ConversionFails<sbyte,   char>(sbyte.MaxValue);
+            ConversionFails<short,   char>(short.MaxValue);
+            ConversionFails<ushort,  char>(ushort.MaxValue);
+            ConversionFails<int,     char>(int.MaxValue);
+            ConversionFails<uint,    char>(uint.MaxValue);
+            ConversionFails<long,    char>(long.MaxValue);
+            ConversionFails<ulong,   char>(ulong.MaxValue);
+            ConversionFails<decimal, char>(decimal.MaxValue);
+            ConversionFails<float,   char>(float.MaxValue);
+            ConversionFails<double,  char>(double.MaxValue);
+
+            // short
+            ConversionFails<bool,    short>(true);
+            ConversionWorks<byte,    short>(byte.MaxValue);
+            ConversionWorks<sbyte,   short>(sbyte.MaxValue);
+            ConversionFails<char,    short>(char.MaxValue);
+            ConversionFails<ushort,  short>(ushort.MaxValue);
+            ConversionFails<int,     short>(int.MaxValue);
+            ConversionFails<uint,    short>(uint.MaxValue);
+            ConversionFails<long,    short>(long.MaxValue);
+            ConversionFails<ulong,   short>(ulong.MaxValue);
+            ConversionFails<decimal, short>(decimal.MaxValue);
+            ConversionFails<float,   short>(float.MaxValue);
+            ConversionFails<double,  short>(double.MaxValue);
+
+            // ushort
+            ConversionFails<bool,    ushort>(true);
+            ConversionWorks<byte,    ushort>(byte.MaxValue);
+            ConversionFails<sbyte,   ushort>(sbyte.MinValue);
+            ConversionFails<char,    ushort>(char.MaxValue);
+            ConversionFails<short,   ushort>(short.MaxValue);
+            ConversionFails<int,     ushort>(int.MaxValue);
+            ConversionFails<uint,    ushort>(uint.MaxValue);
+            ConversionFails<long,    ushort>(long.MaxValue);
+            ConversionFails<ulong,   ushort>(ulong.MaxValue);
+            ConversionFails<decimal, ushort>(decimal.MaxValue);
+            ConversionFails<float,   ushort>(float.MaxValue);
+            ConversionFails<double,  ushort>(double.MaxValue);
+
+            // int
+            ConversionFails<bool,    int>(true);
+            ConversionWorks<byte,    int>(byte.MaxValue);
+            ConversionWorks<sbyte,   int>(sbyte.MaxValue);
+            ConversionFails<char,    int>(char.MaxValue);
+            ConversionWorks<short,   int>(short.MaxValue);
+            ConversionWorks<ushort,  int>(ushort.MaxValue);
+            ConversionFails<uint,    int>(uint.MaxValue);
+            ConversionFails<long,    int>(long.MaxValue);
+            ConversionFails<ulong,   int>(ulong.MaxValue);
+            ConversionFails<decimal, int>(decimal.MaxValue);
+            ConversionFails<float,   int>(float.MaxValue);
+            ConversionFails<double,  int>(double.MaxValue);
+
+            // uint
+            ConversionFails<bool,    uint>(true);
+            ConversionWorks<byte,    uint>(byte.MaxValue);
+            ConversionFails<sbyte,   uint>(sbyte.MinValue);
+            ConversionFails<char,    uint>(char.MaxValue);
+            ConversionFails<short,   uint>(short.MaxValue);
+            ConversionWorks<ushort,  uint>(ushort.MaxValue);
+            ConversionFails<int,     uint>(int.MaxValue);
+            ConversionFails<long,    uint>(long.MaxValue);
+            ConversionFails<ulong,   uint>(ulong.MaxValue);
+            ConversionFails<decimal, uint>(decimal.MaxValue);
+            ConversionFails<float,   uint>(float.MaxValue);
+            ConversionFails<double,  uint>(double.MaxValue);
+
+            // long
+            ConversionFails<bool,    long>(true);
+            ConversionWorks<byte,    long>(byte.MaxValue);
+            ConversionWorks<sbyte,   long>(sbyte.MaxValue);
+            ConversionFails<char,    long>(char.MaxValue);
+            ConversionWorks<short,   long>(short.MaxValue);
+            ConversionWorks<ushort,  long>(ushort.MaxValue);
+            ConversionWorks<int,     long>(int.MaxValue);
+            ConversionWorks<uint,    long>(uint.MaxValue);
+            ConversionFails<ulong,   long>(ulong.MaxValue);
+            ConversionFails<decimal, long>(decimal.MaxValue);
+            ConversionFails<float,   long>(float.MaxValue);
+            ConversionFails<double,  long>(double.MaxValue);
+
+            // ulong
+            ConversionFails<bool,    ulong>(true);
+            ConversionWorks<byte,    ulong>(byte.MaxValue);
+            ConversionFails<sbyte,   ulong>(sbyte.MinValue);
+            ConversionFails<char,    ulong>(char.MaxValue);
+            ConversionFails<short,   ulong>(short.MaxValue);
+            ConversionWorks<ushort,  ulong>(ushort.MaxValue);
+            ConversionFails<int,     ulong>(int.MaxValue);
+            ConversionWorks<uint,    ulong>(uint.MaxValue);
+            ConversionFails<long,    ulong>(long.MaxValue);
+            ConversionFails<decimal, ulong>(decimal.MaxValue);
+            ConversionFails<float,   ulong>(float.MaxValue);
+            ConversionFails<double,  ulong>(double.MaxValue);
+
+            // decimal
+            ConversionFails<bool,    decimal>(true);
+            ConversionWorks<byte,    decimal>(byte.MaxValue);
+            ConversionWorks<sbyte,   decimal>(sbyte.MaxValue);
+            ConversionFails<char,    decimal>(char.MaxValue);
+            ConversionWorks<short,   decimal>(short.MaxValue);
+            ConversionWorks<ushort,  decimal>(ushort.MaxValue);
+            ConversionWorks<int,     decimal>(int.MaxValue);
+            ConversionWorks<uint,    decimal>(uint.MaxValue);
+            ConversionWorks<long,    decimal>(long.MaxValue);
+            ConversionWorks<ulong,   decimal>(ulong.MaxValue);
+            ConversionFails<float,   decimal>(float.MaxValue);
+            ConversionFails<double,  decimal>(double.MaxValue);
+
+            // TODO Make a decistion on commented code
+            // float
+            ConversionFails<bool,    float>(true);
+            //ConversionWorks<byte,    float>(byte.MaxValue, byte.MaxValue);
+            //ConversionWorks<sbyte,   float>(sbyte.MaxValue, sbyte.MaxValue);
+            ConversionFails<char,    float>(char.MaxValue);
+            //ConversionWorks<short,   float>(short.MaxValue, short.MaxValue);
+            //ConversionWorks<ushort,  float>(ushort.MaxValue, ushort.MaxValue);
+            ConversionFails<int,     float>(int.MaxValue);
+            ConversionFails<uint,    float>(uint.MaxValue);
+            ConversionFails<long,    float>(long.MaxValue);
+            ConversionFails<ulong,   float>(ulong.MaxValue);
+            ConversionFails<decimal, float>(decimal.MaxValue);
+            ConversionFails<double,  float>(char.MaxValue);
+
+            // double
+            ConversionFails<bool,    double>(true);
+            //ConversionWorks<byte,    double>(byte.MaxValue, byte.MaxValue);
+            //ConversionWorks<sbyte,   double>(sbyte.MaxValue, sbyte.MaxValue);
+            ConversionFails<char,    double>(char.MaxValue);
+            //ConversionWorks<short,   double>(short.MaxValue, short.MaxValue);
+            //ConversionWorks<ushort,  double>(ushort.MaxValue, ushort.MaxValue);
+            //ConversionWorks<int,     double>(int.MaxValue, int.MaxValue);
+            //ConversionWorks<uint,    double>(uint.MaxValue, uint.MaxValue);
+            ConversionFails<long,    double>(long.MaxValue);
+            ConversionFails<ulong,   double>(ulong.MaxValue);
+            ConversionFails<decimal, double>(decimal.MaxValue);
+            ConversionWorks<float,   double>(float.MaxValue);
         }
 
-        private static void TryWiden<TFrom, TTo>(TFrom from, Func<TFrom, TTo, bool> func)
+        private static void ConversionWorks<TFrom, TTo>(params TFrom[] values)
         {
-            var unpacker = InitTest(p => p.Pack(from));
-            var @switch = Switch(
-                Case((out long l) => unpacker.TryReadInt64(out l)),
-                Case((out int i) => unpacker.TryReadInt32(out i)));
+            var stream = new MemoryStream();
+            var serialiser = new Serialiser<ValueWrapper<TFrom>>();
+            var deserialiser = new Deserialiser<ValueWrapper<TTo>>();
 
-            var result = (ReadFunc<TTo>)@switch(default(TTo));
-            TTo toValue;
-            var canRead = result.Invoke(out toValue);
-            Assert.True(canRead, $"Processing {from} ({from.GetType()})");
-            Assert.True(func(from, toValue), $"can't widen from {from} ({from.GetType()}) to {toValue} ({toValue.GetType()})");
+            foreach (var val in values)
+            {
+                serialiser.Serialise(stream, new ValueWrapper<TFrom>(val));
+                stream.Position = 0;
+
+                var actual = deserialiser.Deserialise(stream).Value;
+                Assert.Equal(Convert.ChangeType(val, typeof(TTo)), actual);
+            }
+        }
+
+        private static void ConversionFails<TFrom, TTo>(TFrom from)
+        {
+            var stream = new MemoryStream();
+            var serialiser = new Serialiser<ValueWrapper<TFrom>>();
+            serialiser.Serialise(stream, new ValueWrapper<TFrom>(from));
+            stream.Position = 0;
+
+            Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<TTo>>().Deserialise(stream).Value);
         }
 
         #region Helper
-
-        private static Unpacker InitTest(Action<MsgPack.Packer> packerAction)
-        {
-            var stream = new MemoryStream();
-            packerAction(MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None));
-            stream.Position = 0;
-
-            return new Unpacker(stream);
-        }
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)
         {
@@ -726,18 +893,6 @@ namespace Dasher.Tests
             packAction(packer);
             stream.Position = 0;
             return stream.ToArray();
-        }
-
-        private delegate bool ReadFunc<TTo>(out TTo input);
-
-        private static Func<object, Delegate> Switch(params Func<object, Delegate>[] cases)
-        {
-            return o => { return cases.Select(f => f(o)).FirstOrDefault(a => a != null); };
-        }
-
-        private static Func<object, ReadFunc<T>> Case<T>(ReadFunc<T> readFunc)
-        {
-            return o => o is T ? readFunc : null as ReadFunc<T>;
         }
 
         #endregion
