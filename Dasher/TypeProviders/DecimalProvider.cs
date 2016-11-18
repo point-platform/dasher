@@ -54,16 +54,34 @@ namespace Dasher.TypeProviders
             ilg.Emit(OpCodes.Ldloca, s);
             ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadString);
 
+            // If the unpacker method failed, throw
+            throwBlocks.ThrowIfFalse(() =>
+            {
+                var format = ilg.DeclareLocal(typeof(Format));
+                ilg.Emit(OpCodes.Ldloc, unpacker);
+                ilg.Emit(OpCodes.Ldloca, format);
+                ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekFormat);
+                ilg.Emit(OpCodes.Pop);
+
+                ilg.Emit(OpCodes.Ldstr, "Unable to deserialise decimal value from MsgPack format {0}.");
+                ilg.Emit(OpCodes.Ldloc, format);
+                ilg.Emit(OpCodes.Box, typeof(Format));
+                ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object);
+                ilg.LoadType(targetType);
+                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
+                ilg.Emit(OpCodes.Throw);
+            });
+
             ilg.Emit(OpCodes.Ldloc, s);
             ilg.Emit(OpCodes.Ldloca, value);
             ilg.Emit(OpCodes.Call, Methods.Decimal_TryParse);
 
-            ilg.Emit(OpCodes.And);
-
-            // If the unpacker method failed (returned false), throw
+            // If parsing failed, throw
             throwBlocks.ThrowIfFalse(() =>
             {
-                ilg.Emit(OpCodes.Ldstr, "Unable to deserialise decimal value");
+                ilg.Emit(OpCodes.Ldstr, "Unable to deserialise string \"{0}\" as a decimal value.");
+                ilg.Emit(OpCodes.Ldloc, s);
+                ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object);
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);

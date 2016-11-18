@@ -433,7 +433,7 @@ namespace Dasher.Tests
                 .Pack(nameof(ValueWrapper<decimal>.Value)).Pack(1234));
 
             var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<decimal>>().Deserialise(bytes));
-            Assert.Equal("Unable to deserialise decimal value", ex.Message);
+            Assert.Equal("Unable to deserialise decimal value from MsgPack format Int16.", ex.Message);
         }
 
         [Fact]
@@ -443,7 +443,7 @@ namespace Dasher.Tests
                 .Pack(nameof(ValueWrapper<decimal>.Value)).Pack("NOTADECIMAL"));
 
             var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<decimal>>().Deserialise(bytes));
-            Assert.Equal("Unable to deserialise decimal value", ex.Message);
+            Assert.Equal("Unable to deserialise string \"NOTADECIMAL\" as a decimal value.", ex.Message);
         }
 
         [Fact]
