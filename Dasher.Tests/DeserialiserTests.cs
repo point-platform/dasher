@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.IO;
 using MsgPack;
 using Xunit;
@@ -649,7 +650,52 @@ namespace Dasher.Tests
             Assert.Null(o);
         }
 
+        [Fact]
+        public void TryWiden()
+        {
+            // Widen to long
+            TryWiden<byte, long>(byte.MaxValue, (from, to) => from == to);
+            TryWiden<sbyte, long>(sbyte.MaxValue, (from, to) => from == to);
+            TryWiden<char, long>(char.MaxValue, (from, to) => from == to);
+            TryWiden<short, long>(short.MaxValue, (from, to) => from == to);
+            TryWiden<ushort, long>(ushort.MaxValue, (from, to) => from == to);
+
+            TryWiden<int, long>(int.MaxValue, (from, to) => from == to);
+            TryWiden<uint, long>(uint.MaxValue, (from, to) => from == to);
+
+            // Widen to int
+
+            TryWiden<byte, int>(byte.MaxValue, (from, to) => from == to);
+            TryWiden<sbyte, int>(sbyte.MaxValue, (from, to) => from == to);
+            TryWiden<char, int>(char.MaxValue, (from, to) => from == to);
+            TryWiden<short, int>(short.MaxValue, (from, to) => from == to);
+            TryWiden<ushort, int>(ushort.MaxValue, (from, to) => from == to);
+        }
+
+        private static void TryWiden<TFrom, TTo>(TFrom from, Func<TFrom, TTo, bool> func)
+        {
+            var unpacker = InitTest(p => p.Pack(from));
+            var @switch = Switch(
+                Case((out long l) => unpacker.TryReadInt64(out l)),
+                Case((out int i) => unpacker.TryReadInt32(out i)));
+
+            var result = (ReadFunc<TTo>)@switch(default(TTo));
+            TTo toValue;
+            var canRead = result.Invoke(out toValue);
+            Assert.True(canRead, $"Processing {from} ({from.GetType()})");
+            Assert.True(func(from, toValue), $"can't widen from {from} ({from.GetType()}) to {toValue} ({toValue.GetType()})");
+        }
+
         #region Helper
+
+        private static Unpacker InitTest(Action<MsgPack.Packer> packerAction)
+        {
+            var stream = new MemoryStream();
+            packerAction(MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None));
+            stream.Position = 0;
+
+            return new Unpacker(stream);
+        }
 
         private static byte[] PackBytes(Action<MsgPack.Packer> packAction)
         {
@@ -658,6 +704,18 @@ namespace Dasher.Tests
             packAction(packer);
             stream.Position = 0;
             return stream.ToArray();
+        }
+
+        private delegate bool ReadFunc<TTo>(out TTo input);
+
+        private static Func<object, Delegate> Switch(params Func<object, Delegate>[] cases)
+        {
+            return o => { return cases.Select(f => f(o)).FirstOrDefault(a => a != null); };
+        }
+
+        private static Func<object, ReadFunc<T>> Case<T>(ReadFunc<T> readFunc)
+        {
+            return o => o is T ? readFunc : null as ReadFunc<T>;
         }
 
         #endregion
