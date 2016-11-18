@@ -32,8 +32,6 @@ using Xunit;
 
 namespace Dasher.Tests
 {
-    // TODO mismatch between ctor args and properties (?)
-
     [SuppressMessage("ReSharper", "RedundantArgumentDefaultValue")]
     public sealed class DeserialiserTests
     {
