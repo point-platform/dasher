@@ -24,6 +24,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Dasher.TypeProviders
@@ -47,47 +48,63 @@ namespace Dasher.TypeProviders
 
         public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
-            // Read value as a string
-            var s = ilg.DeclareLocal(typeof(string));
-
             ilg.Emit(OpCodes.Ldloc, unpacker);
-            ilg.Emit(OpCodes.Ldloca, s);
-            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadString);
-
-            // If the unpacker method failed, throw
-            throwBlocks.ThrowIfFalse(() =>
-            {
-                var format = ilg.DeclareLocal(typeof(Format));
-                ilg.Emit(OpCodes.Ldloc, unpacker);
-                ilg.Emit(OpCodes.Ldloca, format);
-                ilg.Emit(OpCodes.Call, Methods.Unpacker_TryPeekFormat);
-                ilg.Emit(OpCodes.Pop);
-
-                ilg.Emit(OpCodes.Ldstr, "Unable to deserialise decimal value from MsgPack format {0}.");
-                ilg.Emit(OpCodes.Ldloc, format);
-                ilg.Emit(OpCodes.Box, typeof(Format));
-                ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object);
-                ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
-                ilg.Emit(OpCodes.Throw);
-            });
-
-            ilg.Emit(OpCodes.Ldloc, s);
-            ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Call, Methods.Decimal_TryParse);
-
-            // If parsing failed, throw
-            throwBlocks.ThrowIfFalse(() =>
-            {
-                ilg.Emit(OpCodes.Ldstr, "Unable to deserialise string \"{0}\" as a decimal value.");
-                ilg.Emit(OpCodes.Ldloc, s);
-                ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object);
-                ilg.LoadType(targetType);
-                ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
-                ilg.Emit(OpCodes.Throw);
-            });
+            ilg.LoadType(targetType);
+            ilg.Emit(OpCodes.Ldstr, name);
+            ilg.Emit(OpCodes.Call, Methods.DecimalProvider_Parse);
+            ilg.Emit(OpCodes.Stloc, value);
 
             return true;
+        }
+
+        public static decimal Parse(Unpacker unpacker, Type targetType, string name)
+        {
+            Format format;
+            if (!unpacker.TryPeekFormat(out format))
+                throw new DeserialisationException($"Unable to determine MsgPack format for \"{name}\".", targetType);
+
+            switch (format)
+            {
+                case Format.Str8:
+                case Format.Str16:
+                case Format.Str32:
+                case Format.FixStr:
+                {
+                    string str;
+                    if (!unpacker.TryReadString(out str))
+                        throw new DeserialisationException($"Unable to read MsgPack string for decimal value \"{name}\".", targetType);
+
+                    decimal value;
+                    if (!decimal.TryParse(str, out value))
+                        throw new DeserialisationException($"Unable to parse string \"{str}\" as a decimal for \"{name}\".", targetType);
+
+                    return value;
+                }
+                case Format.NegativeFixInt:
+                case Format.Int8:
+                case Format.Int16:
+                case Format.Int32:
+                case Format.Int64:
+                {
+                    long value;
+                    if (!unpacker.TryReadInt64(out value))
+                        throw new DeserialisationException($"Unable to read MsgPack integer for decimal value \"{name}\".", targetType);
+                    return value;
+                }
+                case Format.PositiveFixInt:
+                case Format.UInt8:
+                case Format.UInt16:
+                case Format.UInt32:
+                case Format.UInt64:
+                {
+                    ulong value;
+                    if (!unpacker.TryReadUInt64(out value))
+                        throw new DeserialisationException($"Unable to read MsgPack unsigned integer for decimal value \"{name}\".", targetType);
+                    return value;
+                }
+                default:
+                    throw new DeserialisationException($"Unable to deserialise decimal value from MsgPack format {format}.", targetType);
+            }
         }
     }
 }

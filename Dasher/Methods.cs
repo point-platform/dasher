@@ -118,5 +118,7 @@ namespace Dasher
         public static MethodInfo IDisposable_Dispose                            { get; } = typeof(IDisposable).GetMethod(nameof(IDisposable.Dispose));
 
         public static MethodInfo Version_ToString                               { get; } = typeof(Version).GetMethod(nameof(Version.ToString), Type.EmptyTypes);
+
+        public static MethodInfo DecimalProvider_Parse                          { get; } = typeof(DecimalProvider).GetMethod(nameof(DecimalProvider.Parse), BindingFlags.Static | BindingFlags.Public);
     }
 }

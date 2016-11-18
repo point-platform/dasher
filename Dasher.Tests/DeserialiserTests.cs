@@ -428,10 +428,10 @@ namespace Dasher.Tests
         public void ThrowsWhenDecimalNotEncodedAsString()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
-                .Pack(nameof(ValueWrapper<decimal>.Value)).Pack(1234));
+                .Pack(nameof(ValueWrapper<decimal>.Value)).Pack(true));
 
             var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<decimal>>().Deserialise(bytes));
-            Assert.Equal("Unable to deserialise decimal value from MsgPack format Int16.", ex.Message);
+            Assert.Equal($"Unable to deserialise decimal value from MsgPack format {nameof(Format.True)}.", ex.Message);
         }
 
         [Fact]
@@ -441,7 +441,7 @@ namespace Dasher.Tests
                 .Pack(nameof(ValueWrapper<decimal>.Value)).Pack("NOTADECIMAL"));
 
             var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<decimal>>().Deserialise(bytes));
-            Assert.Equal("Unable to deserialise string \"NOTADECIMAL\" as a decimal value.", ex.Message);
+            Assert.Equal("Unable to parse string \"NOTADECIMAL\" as a decimal for \"value\".", ex.Message);
         }
 
         [Fact]
