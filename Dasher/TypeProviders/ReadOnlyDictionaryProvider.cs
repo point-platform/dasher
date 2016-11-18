@@ -150,7 +150,7 @@ namespace Dasher.TypeProviders
 
             // create a mutable dictionary to store key/values
             var dic = ilg.DeclareLocal(dicType);
-            ilg.Emit(OpCodes.Newobj, dicType.GetConstructor(new Type[0]));
+            ilg.Emit(OpCodes.Newobj, dicType.GetConstructor(Type.EmptyTypes));
             ilg.Emit(OpCodes.Stloc, dic);
 
             // begin loop

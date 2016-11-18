@@ -38,7 +38,7 @@ namespace Dasher
 
         public static ConstructorInfo DeserialisationException_Ctor_String_Type { get; } = typeof(DeserialisationException).GetConstructor(new[] {typeof(string), typeof(Type)});
 
-        public static MethodInfo Object_ToString                                { get; } = typeof(object).GetMethod(nameof(ToString), new Type[0]);
+        public static MethodInfo Object_ToString                                { get; } = typeof(object).GetMethod(nameof(ToString), Type.EmptyTypes);
 
         public static MethodInfo String_Equals_String_String                    { get; } = typeof(string).GetMethod(nameof(string.Equals), new[] {typeof(string), typeof(string)});
         public static MethodInfo String_Equals_String_StringComparison          { get; } = typeof(string).GetMethod(nameof(string.Equals), new[] {typeof(string), typeof(StringComparison)});
@@ -85,7 +85,7 @@ namespace Dasher
         public static MethodInfo DasherContext_GetOrCreateDeserialiseFunc       { get; } = typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateDeserialiseFunc), BindingFlags.Instance | BindingFlags.NonPublic);
         public static MethodInfo DasherContext_GetOrCreateSerialiseAction       { get; } = typeof(DasherContext).GetMethod(nameof(DasherContext.GetOrCreateSerialiseAction), BindingFlags.Instance | BindingFlags.NonPublic);
 
-        public static MethodInfo Format_ToString                                { get; } = typeof(Format).GetMethod(nameof(Format.ToString), new Type[0]);
+        public static MethodInfo Format_ToString                                { get; } = typeof(Format).GetMethod(nameof(Format.ToString), Type.EmptyTypes);
 
         public static MethodInfo DateTime_ToBinary                              { get; } = typeof(DateTime).GetMethod(nameof(DateTime.ToBinary));
         public static MethodInfo DateTime_FromBinary                            { get; } = typeof(DateTime).GetMethod(nameof(DateTime.FromBinary), BindingFlags.Static | BindingFlags.Public);
@@ -98,13 +98,13 @@ namespace Dasher
         public static MethodInfo TimeSpan_FromTicks                             { get; } = typeof(TimeSpan).GetMethod(nameof(TimeSpan.FromTicks), BindingFlags.Static | BindingFlags.Public);
         public static ConstructorInfo TimeSpan_Ctor_Int64                       { get; } = typeof(TimeSpan).GetConstructor(new[] {typeof(long)});
 
-        public static MethodInfo Decimal_ToString                               { get; } = typeof(decimal).GetMethod(nameof(decimal.ToString), new Type[0]);
+        public static MethodInfo Decimal_ToString                               { get; } = typeof(decimal).GetMethod(nameof(decimal.ToString), Type.EmptyTypes);
         public static MethodInfo Decimal_TryParse                               { get; } = typeof(decimal).GetMethod(nameof(decimal.TryParse), new[] {typeof(string), typeof(decimal).MakeByRefType()});
         public static ConstructorInfo Decimal_Ctor_IntArray                     { get; } = typeof(decimal).GetConstructor(new[] {typeof(int[])});
 
         public static MethodInfo Enum_TryParse_OpenGeneric                      { get; } = typeof(Enum).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(m => m.Name == nameof(Enum.TryParse) && m.GetParameters().Length == 3);
 
-        public static MethodInfo Guid_ToByteArray                               { get; } = typeof(Guid).GetMethod(nameof(Guid.ToByteArray), new Type[0]);
+        public static MethodInfo Guid_ToByteArray                               { get; } = typeof(Guid).GetMethod(nameof(Guid.ToByteArray), Type.EmptyTypes);
         public static ConstructorInfo Guid_Constructor_ByteArray                { get; } = typeof(Guid).GetConstructor(new[] {typeof(byte[])});
 
         public static MethodInfo IntPtr_ToInt64                                 { get; } = typeof(IntPtr).GetMethod(nameof(IntPtr.ToInt64));
@@ -114,6 +114,6 @@ namespace Dasher
 
         public static MethodInfo IDisposable_Dispose                            { get; } = typeof(IDisposable).GetMethod(nameof(IDisposable.Dispose));
 
-        public static MethodInfo Version_ToString                               { get; } = typeof(Version).GetMethod(nameof(Version.ToString), new Type[0]);
+        public static MethodInfo Version_ToString                               { get; } = typeof(Version).GetMethod(nameof(Version.ToString), Type.EmptyTypes);
     }
 }
