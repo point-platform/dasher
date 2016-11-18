@@ -44,13 +44,22 @@ public sealed class Holiday
 
 # Supported types
 
-Both serialiser and deserialiser support the core built-in types of `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `float`, `double`, `decimal`, `string`, as well as `DateTime`, `DateTimeOffset`, `TimeSpan`, `Guid`, `IntPtr`, `Version`, `Nullable<T>`, `IReadOnlyList<T>`, `IReadOnlyDictionary<TKey, TValue>`, `Tuple<...>` and enum types. Additionally, a `Union<...>` type exists which allows a given field to take on one of a fixed number of known types.
+Both serialiser and deserialiser support the core built-in types of `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`,
+`ulong`, `float`, `double`, `decimal`, `string`, as well as `DateTime`, `DateTimeOffset`, `TimeSpan`, `Guid`, `IntPtr`,
+`Version`, `Nullable<T>`, `IReadOnlyList<T>`, `IReadOnlyDictionary<TKey, TValue>`, `Tuple<...>` and enum types.
 
-Types may contain fields of further complex types, which are nested.
+Dasher also provides and supports types:
 
-Custom types are supported automatically if their public, readable properties match the single constructor's argument list.
+- `Dasher.Union<...>` allows a value to be one of a fixed number of known types
+- `Dasher.Empty` represents a value with no fields or state that may gracefully support addition of fields in future versions
 
-If custom treatment for specific types is required, the `ITypeProvider` interface allows bespoke code to be emitted for serialisation and deserialisation at runtime.
+More details on `Union` and `Empty` types can be found later in this document.
+
+Types not listed so far are treated as _complex types_. Complex types have their properties serialised, and are deserialised
+according to their constructor parameters.
+
+If custom treatment for specific types is required, the `ITypeProvider` interface allows bespoke code to be emitted for
+serialisation and deserialisation at runtime.
 
 ---
 
