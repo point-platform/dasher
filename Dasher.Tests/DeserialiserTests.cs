@@ -524,6 +524,30 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void ThrowsIfEmptyChar()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack(nameof(ValueWrapper<Union<int, string>>.Value))
+                .PackMapHeader(0));
+
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<char>>().Deserialise(bytes));
+
+            Assert.Equal("Unexpected MsgPack format for \"value\". Expected string, got FixMap.", ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsIfStringTooLongForChar()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack(nameof(ValueWrapper<Union<int, string>>.Value))
+                .PackString("Hello"));
+
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<char>>().Deserialise(bytes));
+
+            Assert.Equal("Unexpected string length for char value \"value\". Expected 1, got 5.", ex.Message);
+        }
+
+        [Fact]
         public void ThrowsIfUnionHasWrongNumberOfArrayElements()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)

@@ -45,6 +45,7 @@ namespace Dasher
         public static MethodInfo String_Format_String_Object                    { get; } = typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object)});
         public static MethodInfo String_Format_String_Object_Object             { get; } = typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)});
         public static MethodInfo String_Format_String_Object_Object_Object      { get; } = typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object), typeof(object)});
+        public static MethodInfo String_GetLength                               { get; } = typeof(string).GetProperty(nameof(string.Length)).GetMethod;
 
         public static MethodInfo Unpacker_TryReadString                         { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()});
         public static MethodInfo Unpacker_TryReadArrayLength                    { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadArrayLength));
@@ -101,6 +102,8 @@ namespace Dasher
         public static MethodInfo Decimal_ToString                               { get; } = typeof(decimal).GetMethod(nameof(decimal.ToString), Type.EmptyTypes);
         public static MethodInfo Decimal_TryParse                               { get; } = typeof(decimal).GetMethod(nameof(decimal.TryParse), new[] {typeof(string), typeof(decimal).MakeByRefType()});
         public static ConstructorInfo Decimal_Ctor_IntArray                     { get; } = typeof(decimal).GetConstructor(new[] {typeof(int[])});
+
+        public static MethodInfo Char_ToString                                  { get; } = typeof(char).GetMethod(nameof(char.ToString), Type.EmptyTypes);
 
         public static MethodInfo Enum_TryParse_OpenGeneric                      { get; } = typeof(Enum).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(m => m.Name == nameof(Enum.TryParse) && m.GetParameters().Length == 3);
 

@@ -36,6 +36,7 @@ namespace Dasher
         private static readonly IReadOnlyList<ITypeProvider> _defaultTypeProviders = new ITypeProvider[]
         {
             new MsgPackTypeProvider(),
+            new CharProvider(),
             new DecimalProvider(),
             new DateTimeProvider(),
             new DateTimeOffsetProvider(),

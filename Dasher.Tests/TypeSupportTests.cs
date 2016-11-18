@@ -62,6 +62,23 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void SupportsNestedChar()
+        {
+            TestNested('a', packer => packer.Pack("a"));
+            TestNested(' ', packer => packer.Pack(" "));
+            TestNested('\0', packer => packer.Pack("\0"));
+        }
+
+        [Fact]
+        public void SupportsNestedNullableChar()
+        {
+            TestNested((char?)'a', packer => packer.Pack("a"));
+            TestNested((char?)' ', packer => packer.Pack(" "));
+            TestNested((char?)'\0', packer => packer.Pack("\0"));
+            TestNested((char?)null, packer => packer.PackNull());
+        }
+
+        [Fact]
         public void SupportsNestedDecimal()
         {
             TestNested(123.4567m, packer => packer.Pack("123.4567"));
