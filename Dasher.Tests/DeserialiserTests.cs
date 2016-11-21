@@ -864,13 +864,14 @@ namespace Dasher.Tests
             var serialiser = new Serialiser<ValueWrapper<TFrom>>();
             var deserialiser = new Deserialiser<ValueWrapper<TTo>>();
 
-            foreach (var val in values)
+            foreach (var value in values)
             {
-                serialiser.Serialise(stream, new ValueWrapper<TFrom>(val));
                 stream.Position = 0;
+                serialiser.Serialise(stream, new ValueWrapper<TFrom>(value));
 
+                stream.Position = 0;
                 var actual = deserialiser.Deserialise(stream).Value;
-                Assert.Equal(Convert.ChangeType(val, typeof(TTo)), actual);
+                Assert.Equal(Convert.ChangeType(value, typeof(TTo)), actual);
             }
         }
 
