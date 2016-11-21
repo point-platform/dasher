@@ -675,18 +675,18 @@ namespace Dasher.Tests
         public void ValueConversions()
         {
             // bool
-            ConversionFails<byte,    bool>(byte.MaxValue);
-            ConversionFails<sbyte,   bool>(sbyte.MaxValue);
-            ConversionFails<char,    bool>(char.MaxValue);
-            ConversionFails<short,   bool>(short.MaxValue);
-            ConversionFails<ushort,  bool>(ushort.MaxValue);
-            ConversionFails<int,     bool>(int.MaxValue);
-            ConversionFails<uint,    bool>(uint.MaxValue);
-            ConversionFails<long,    bool>(long.MaxValue);
-            ConversionFails<ulong,   bool>(ulong.MaxValue);
-            ConversionFails<decimal, bool>(decimal.MaxValue);
-            ConversionFails<float,   bool>(float.MaxValue);
-            ConversionFails<double,  bool>(double.MaxValue);
+            ConversionFails<byte,    bool>(byte.MaxValue, byte.MinValue, default(byte));
+            ConversionFails<sbyte,   bool>(sbyte.MaxValue, sbyte.MinValue, default(sbyte));
+            ConversionFails<char,    bool>(char.MaxValue, char.MinValue, default(char));
+            ConversionFails<short,   bool>(short.MaxValue, short.MinValue, default(short));
+            ConversionFails<ushort,  bool>(ushort.MaxValue, ushort.MinValue, default(ushort));
+            ConversionFails<int,     bool>(int.MaxValue, int.MinValue, default(int));
+            ConversionFails<uint,    bool>(uint.MaxValue, uint.MinValue, default(uint));
+            ConversionFails<long,    bool>(long.MaxValue, long.MinValue, default(long));
+            ConversionFails<ulong,   bool>(ulong.MaxValue, ulong.MinValue, default(ulong));
+            ConversionFails<decimal, bool>(decimal.MaxValue, decimal.MinValue, default(decimal));
+            ConversionFails<float,   bool>(float.MaxValue, float.MinValue, default(float));
+            ConversionFails<double,  bool>(double.MaxValue, double.MinValue, default(double));
 
             // byte
             ConversionFails<bool,    byte>(true, false);
