@@ -689,7 +689,7 @@ namespace Dasher.Tests
             ConversionFails<double,  bool>(double.MaxValue);
 
             // byte
-            ConversionFails<bool,    byte>(true);
+            ConversionFails<bool,    byte>(true, false);
             ConversionFails<sbyte,   byte>(sbyte.MinValue);
             ConversionFails<char,    byte>(char.MaxValue);
             ConversionFails<short,   byte>(short.MaxValue);
@@ -874,14 +874,20 @@ namespace Dasher.Tests
             }
         }
 
-        private static void ConversionFails<TFrom, TTo>(TFrom from)
+        private static void ConversionFails<TFrom, TTo>(params TFrom[] values)
         {
             var stream = new MemoryStream();
             var serialiser = new Serialiser<ValueWrapper<TFrom>>();
-            serialiser.Serialise(stream, new ValueWrapper<TFrom>(from));
-            stream.Position = 0;
+            var deserialiser = new Deserialiser<ValueWrapper<TTo>>();
 
-            Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<TTo>>().Deserialise(stream).Value);
+            foreach (var value in values)
+            {
+                stream.Position = 0;
+                serialiser.Serialise(stream, new ValueWrapper<TFrom>(value));
+
+                stream.Position = 0;
+                Assert.Throws<DeserialisationException>(() => deserialiser.Deserialise(stream).Value);
+            }
         }
 
         #region Helper
