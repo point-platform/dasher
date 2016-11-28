@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace Dasher.Schemata.Utils
@@ -21,13 +20,16 @@ namespace Dasher.Schemata.Utils
             {
                 while (ae.MoveNext())
                 {
-                    var moved = be.MoveNext();
-                    Debug.Assert(moved);
+                    if (!be.MoveNext())
+                        return false;
+
                     if (!comparer(ae.Current, be.Current))
                         return false;
                 }
 
-                Debug.Assert(!be.MoveNext());
+                if (be.MoveNext())
+                    return false;
+
                 return true;
             }
         }
