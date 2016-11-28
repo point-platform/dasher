@@ -313,7 +313,7 @@ namespace Dasher.Schemata
             return Intern(new ComplexReadSchema(type, this));
         }
 
-        private T Intern<T>(T schema) where T : Schema
+        internal T Intern<T>(T schema) where T : Schema
         {
             Debug.Assert(schema is ByRefSchema || schema is ByValueSchema, "schema is ByRefSchema || schema is ByValueSchema");
 
@@ -325,6 +325,21 @@ namespace Dasher.Schemata
 
             _schema.Add(schema);
             return schema;
+        }
+
+        internal T GetOrCreate<T>(T schema, Func<T> func) where T : Schema
+        {
+            Debug.Assert(schema is ByRefSchema || schema is ByValueSchema, "schema is ByRefSchema || schema is ByValueSchema");
+
+            foreach (var existing in _schema)
+            {
+                if (existing.Equals(schema))
+                    return (T)existing;
+            }
+
+            var newSchema = func();
+            _schema.Add(newSchema);
+            return newSchema;
         }
     }
 }

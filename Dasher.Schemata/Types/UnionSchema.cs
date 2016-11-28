@@ -35,6 +35,11 @@ namespace Dasher.Schemata.Types
                 .ToArray();
         }
 
+        private UnionWriteSchema(IReadOnlyList<Member> members)
+        {
+            Members = members;
+        }
+
         public UnionWriteSchema(XElement element, Func<string, IWriteSchema> resolveSchema, ICollection<Action> bindActions)
         {
             var members = new List<Member>();
@@ -90,6 +95,11 @@ namespace Dasher.Schemata.Types
                     new XAttribute("Id", m.Id),
                     new XAttribute("Schema", m.Schema.ToReferenceString()))));
         }
+
+        public IWriteSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new UnionWriteSchema(Members.Select(m => new Member(m.Id, m.Schema.CopyTo(collection))).ToList()));
+        }
     }
 
     internal sealed class UnionReadSchema : ByRefSchema, IReadSchema
@@ -118,6 +128,11 @@ namespace Dasher.Schemata.Types
                 .Select(t => new Member(UnionEncoding.GetTypeName(t), schemaCollection.GetOrAddReadSchema(t)))
                 .OrderBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
+        }
+
+        private UnionReadSchema(IReadOnlyList<Member> members)
+        {
+            Members = members;
         }
 
         public UnionReadSchema(XElement element, Func<string, IReadSchema> resolveSchema, ICollection<Action> bindActions)
@@ -231,6 +246,11 @@ namespace Dasher.Schemata.Types
                 Members.Select(m => new XElement("Member",
                     new XAttribute("Id", m.Id),
                     new XAttribute("Schema", m.Schema.ToReferenceString()))));
+        }
+
+        public IReadSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new UnionReadSchema(Members.Select(m => new Member(m.Id, m.Schema.CopyTo(collection))).ToList()));
         }
     }
 }

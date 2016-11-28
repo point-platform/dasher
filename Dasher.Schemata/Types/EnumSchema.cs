@@ -63,5 +63,8 @@ namespace Dasher.Schemata.Types
                 new XAttribute("Id", Id),
                 MemberNames.Select(m => new XElement(m)));
         }
+
+        IReadSchema IReadSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);
+        IWriteSchema IWriteSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);
     }
 }

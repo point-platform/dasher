@@ -4,11 +4,25 @@ using System.Xml.Linq;
 namespace Dasher.Schemata
 {
     public interface IWriteSchema
-    { }
+    {
+        /// <summary>
+        /// Creates a deep copy of this schema within <paramref name="collection"/>.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <returns></returns>
+        IWriteSchema CopyTo(SchemaCollection collection);
+    }
 
     public interface IReadSchema
     {
         bool CanReadFrom(IWriteSchema writeSchema, bool strict);
+
+        /// <summary>
+        /// Creates a deep copy of this schema within <paramref name="collection"/>.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <returns></returns>
+        IReadSchema CopyTo(SchemaCollection collection);
     }
 
     public abstract class Schema

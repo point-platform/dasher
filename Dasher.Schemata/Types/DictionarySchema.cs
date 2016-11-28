@@ -46,6 +46,11 @@ namespace Dasher.Schemata.Types
         internal override IEnumerable<Schema> Children => new[] { (Schema)KeySchema, (Schema)ValueSchema };
 
         internal override string MarkupValue => $"{{dictionary {KeySchema.ToReferenceString()} {ValueSchema.ToReferenceString()}}}";
+
+        public IWriteSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new DictionaryWriteSchema(KeySchema.CopyTo(collection), ValueSchema.CopyTo(collection)));
+        }
     }
 
     internal sealed class DictionaryReadSchema : ByValueSchema, IReadSchema
@@ -98,5 +103,10 @@ namespace Dasher.Schemata.Types
         internal override IEnumerable<Schema> Children => new[] { (Schema)KeySchema, (Schema)ValueSchema };
 
         internal override string MarkupValue => $"{{dictionary {KeySchema.ToReferenceString()} {ValueSchema.ToReferenceString()}}}";
+
+        public IReadSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new DictionaryReadSchema(KeySchema.CopyTo(collection), ValueSchema.CopyTo(collection)));
+        }
     }
 }

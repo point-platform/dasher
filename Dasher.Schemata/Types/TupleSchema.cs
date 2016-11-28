@@ -55,6 +55,11 @@ namespace Dasher.Schemata.Types
         {
             get { return $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}"; }
         }
+
+        public IReadSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new TupleReadSchema(Items.Select(i => i.CopyTo(collection)).ToList()));
+        }
     }
 
     internal sealed class TupleWriteSchema : ByValueSchema, IWriteSchema
@@ -115,6 +120,11 @@ namespace Dasher.Schemata.Types
         internal override string MarkupValue
         {
             get { return $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}"; }
+        }
+
+        public IWriteSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new TupleWriteSchema(Items.Select(i => i.CopyTo(collection)).ToList()));
         }
     }
 }

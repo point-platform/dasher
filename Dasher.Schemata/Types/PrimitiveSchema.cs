@@ -71,5 +71,8 @@ namespace Dasher.Schemata.Types
         internal override IEnumerable<Schema> Children => EmptyArray<Schema>.Instance;
 
         internal override string MarkupValue => TypeName;
+
+        IWriteSchema IWriteSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);
+        IReadSchema IReadSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);
     }
 }

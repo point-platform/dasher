@@ -14,5 +14,8 @@ namespace Dasher.Schemata.Types
         internal override string MarkupValue => "{empty}";
 
         protected override int ComputeHashCode() => MarkupValue.GetHashCode();
+
+        IWriteSchema IWriteSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);
+        IReadSchema IReadSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);
     }
 }

@@ -1,6 +1,6 @@
 namespace Dasher.Schemata.Utils
 {
-    internal static class SchemaExtensions
+    public static class SchemaExtensions
     {
         public static string ToReferenceString(this IWriteSchema schema) => ToReferenceStringInternal(schema);
 

@@ -33,6 +33,11 @@ namespace Dasher.Schemata.Types
         internal override IEnumerable<Schema> Children => new[] { (Schema)Inner };
 
         internal override string MarkupValue => $"{{nullable {Inner.ToReferenceString()}}}";
+
+        public IWriteSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new NullableWriteSchema(Inner.CopyTo(collection)));
+        }
     }
 
     internal sealed class NullableReadSchema : ByValueSchema, IReadSchema
@@ -77,5 +82,10 @@ namespace Dasher.Schemata.Types
         internal override IEnumerable<Schema> Children => new[] { (Schema)Inner };
 
         internal override string MarkupValue => $"{{nullable {Inner.ToReferenceString()}}}";
+
+        public IReadSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new NullableReadSchema(Inner.CopyTo(collection)));
+        }
     }
 }

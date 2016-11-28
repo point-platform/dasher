@@ -32,6 +32,11 @@ namespace Dasher.Schemata.Types
             Fields = properties.Select(p => new Field(p.Name, schemaCollection.GetOrAddWriteSchema(p.PropertyType))).ToArray();
         }
 
+        private ComplexWriteSchema(IReadOnlyList<Field> fields)
+        {
+            Fields = fields;
+        }
+
         public ComplexWriteSchema(XElement element, Func<string, IWriteSchema> resolveSchema, ICollection<Action> bindActions)
         {
             var fields = new List<Field>();
@@ -88,6 +93,11 @@ namespace Dasher.Schemata.Types
                     new XAttribute("Name", f.Name),
                     new XAttribute("Schema", f.Schema.ToReferenceString()))));
         }
+
+        public IWriteSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new ComplexWriteSchema(Fields.Select(f => new Field(f.Name, f.Schema.CopyTo(collection))).ToList()));
+        }
     }
 
     internal sealed class ComplexReadSchema : ByRefSchema, IReadSchema
@@ -120,6 +130,11 @@ namespace Dasher.Schemata.Types
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
                 .Select(p => new Field(p.Name, schemaCollection.GetOrAddReadSchema(p.ParameterType), isRequired: !p.HasDefaultValue))
                 .ToList();
+        }
+
+        private ComplexReadSchema(IReadOnlyList<Field> fields)
+        {
+            Fields = fields;
         }
 
         public ComplexReadSchema(XElement element, Func<string, IReadSchema> resolveSchema, ICollection<Action> bindActions)
@@ -250,6 +265,11 @@ namespace Dasher.Schemata.Types
                     new XAttribute(nameof(Field.Name), f.Name),
                     new XAttribute(nameof(Field.Schema), f.Schema.ToReferenceString()),
                     new XAttribute(nameof(Field.IsRequired), f.IsRequired))));
+        }
+
+        public IReadSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new ComplexReadSchema(Fields.Select(f => new Field(f.Name, f.Schema.CopyTo(collection), f.IsRequired)).ToList()));
         }
     }
 }

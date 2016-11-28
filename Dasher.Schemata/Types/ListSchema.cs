@@ -35,6 +35,11 @@ namespace Dasher.Schemata.Types
         internal override IEnumerable<Schema> Children => new[] { (Schema)ItemSchema };
 
         internal override string MarkupValue => $"{{list {ItemSchema.ToReferenceString()}}}";
+
+        public IWriteSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new ListWriteSchema(ItemSchema.CopyTo(collection)));
+        }
     }
 
     internal sealed class ListReadSchema : ByValueSchema, IReadSchema
@@ -68,5 +73,10 @@ namespace Dasher.Schemata.Types
         internal override IEnumerable<Schema> Children => new[] { (Schema)ItemSchema };
 
         internal override string MarkupValue => $"{{list {ItemSchema.ToReferenceString()}}}";
+
+        public IReadSchema CopyTo(SchemaCollection collection)
+        {
+            return collection.GetOrCreate(this, () => new ListReadSchema(ItemSchema.CopyTo(collection)));
+        }
     }
 }
