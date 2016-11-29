@@ -49,7 +49,7 @@ namespace Dasher.Schemata
         [CanBeNull]
         internal string Id { get; set; }
         internal abstract XElement ToXml();
-        public override string ToString() => Id;
+        public override string ToString() => Id ?? GetType().Name;
     }
 
     /// <summary>For primitive, nullable, list, dictionary, tuple, empty.</summary>
