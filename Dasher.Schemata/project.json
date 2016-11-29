@@ -5,7 +5,8 @@
     "debugType": "portable"
   },
   "dependencies": {
-    "Dasher": "0.8.0-rc4"
+    "Dasher": "0.8.0-rc4",
+    "JetBrains.Annotations": "10.2.1"
   },
   "frameworks": {
     "netstandard1.3": {

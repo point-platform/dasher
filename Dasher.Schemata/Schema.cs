@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Xml.Linq;
+using JetBrains.Annotations;
 
 namespace Dasher.Schemata
 {
@@ -45,6 +46,7 @@ namespace Dasher.Schemata
     /// <summary>For complex, union and enum.</summary>
     public abstract class ByRefSchema : Schema
     {
+        [CanBeNull]
         internal string Id { get; set; }
         internal abstract XElement ToXml();
         public override string ToString() => Id;
