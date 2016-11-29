@@ -115,7 +115,7 @@ namespace Dasher.Schemata
         {
             IWriteSchema schema;
             if (!TryResolveWriteSchema(str, out schema))
-                throw new Exception("String \"{str}\" cannot be resolved as a write schema within this collection.");
+                throw new Exception($"String \"{str}\" cannot be resolved as a write schema within this collection.");
             return schema;
         }
 
