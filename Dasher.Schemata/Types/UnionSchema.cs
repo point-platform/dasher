@@ -89,6 +89,8 @@ namespace Dasher.Schemata.Types
 
         internal override XElement ToXml()
         {
+            if (Id == null)
+                throw new InvalidOperationException("\"Id\" property cannot be null.");
             return new XElement("UnionWrite",
                 new XAttribute("Id", Id),
                 Members.Select(m => new XElement("Member",
@@ -241,6 +243,8 @@ namespace Dasher.Schemata.Types
 
         internal override XElement ToXml()
         {
+            if (Id == null)
+                throw new InvalidOperationException("\"Id\" property cannot be null.");
             return new XElement("UnionRead",
                 new XAttribute("Id", Id),
                 Members.Select(m => new XElement("Member",

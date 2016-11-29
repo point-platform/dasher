@@ -87,6 +87,8 @@ namespace Dasher.Schemata.Types
 
         internal override XElement ToXml()
         {
+            if (Id == null)
+                throw new InvalidOperationException("\"Id\" property cannot be null.");
             return new XElement("ComplexWrite",
                 new XAttribute("Id", Id),
                 Fields.Select(f => new XElement("Field",
@@ -259,6 +261,8 @@ namespace Dasher.Schemata.Types
 
         internal override XElement ToXml()
         {
+            if (Id == null)
+                throw new InvalidOperationException("\"Id\" property cannot be null.");
             return new XElement("ComplexRead",
                 new XAttribute("Id", Id),
                 Fields.Select(f => new XElement(nameof(Field),

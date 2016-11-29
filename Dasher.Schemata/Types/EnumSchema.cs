@@ -59,6 +59,8 @@ namespace Dasher.Schemata.Types
 
         internal override XElement ToXml()
         {
+            if (Id == null)
+                throw new InvalidOperationException("\"Id\" property cannot be null.");
             return new XElement("Enum",
                 new XAttribute("Id", Id),
                 MemberNames.Select(m => new XElement(m)));
