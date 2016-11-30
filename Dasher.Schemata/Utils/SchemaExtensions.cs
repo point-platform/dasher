@@ -1,3 +1,5 @@
+using System;
+
 namespace Dasher.Schemata.Utils
 {
     public static class SchemaExtensions
@@ -9,9 +11,15 @@ namespace Dasher.Schemata.Utils
         private static string ToReferenceStringInternal(object schema)
         {
             var byRefSchema = schema as ByRefSchema;
-            return byRefSchema != null
-                ? '#' + byRefSchema.Id
-                : ((ByValueSchema)schema).MarkupValue;
+
+            if (byRefSchema != null)
+            {
+                if (string.IsNullOrWhiteSpace(byRefSchema.Id))
+                    throw new Exception("ByRefSchema must have an ID to produce a reference string.");
+                return '#' + byRefSchema.Id;
+            }
+
+            return ((ByValueSchema)schema).MarkupValue;
         }
     }
 }
