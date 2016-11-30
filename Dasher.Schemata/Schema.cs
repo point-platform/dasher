@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using JetBrains.Annotations;
@@ -46,8 +47,20 @@ namespace Dasher.Schemata
     /// <summary>For complex, union and enum.</summary>
     public abstract class ByRefSchema : Schema
     {
+        private string _id;
+
         [CanBeNull]
-        internal string Id { get; set; }
+        internal string Id
+        {
+            get { return _id; }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new ArgumentException("Must be non-blank string.");
+                _id = value;
+            }
+        }
+
         internal abstract XElement ToXml();
         public override string ToString() => Id ?? GetType().Name;
     }
