@@ -206,15 +206,18 @@ namespace Dasher.Schemata
 
         #endregion
 
-        #region To/From XML
-
-        public XElement ToXml()
+        public void UpdateByRefIds()
         {
             // TODO revisit how IDs are assigned
             var i = 0;
             foreach (var schema in Schema.OfType<ByRefSchema>())
                 schema.Id = $"Schema{i++}";
+        }
 
+        #region To/From XML
+
+        public XElement ToXml()
+        {
             return new XElement("Schema",
                 Schema.OfType<ByRefSchema>().Select(s => s.ToXml()));
         }

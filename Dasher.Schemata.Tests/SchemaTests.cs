@@ -576,6 +576,8 @@ namespace Dasher.Schemata.Tests
 
             Assert.Equal(8, before.Schema.OfType<ByRefSchema>().Count());
 
+            before.UpdateByRefIds();
+
             var xml = before.ToXml();
 
             const string expectedXml = @"<Schema>
