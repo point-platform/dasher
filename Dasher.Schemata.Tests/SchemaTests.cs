@@ -659,6 +659,41 @@ namespace Dasher.Schemata.Tests
 
         #endregion
 
+        #region SchemaCollection GarbageCollect
+
+        [Fact]
+        public void SchemaCollectionGarbageCollects()
+        {
+            var schemaCollection = new SchemaCollection();
+
+            var s1 = (Schema)schemaCollection.GetOrAddReadSchema(typeof(Person));
+            var s2 = (Schema)schemaCollection.GetOrAddReadSchema(typeof(Wrapper<Person>));
+
+            Assert.Equal(4, schemaCollection.Schema.Count);
+            Assert.True(schemaCollection.Schema.Contains(s1));
+            Assert.True(schemaCollection.Schema.Contains(s2));
+
+            schemaCollection.GarbageCollect(new[] { s2 });
+
+            Assert.Equal(4, schemaCollection.Schema.Count);
+            Assert.True(schemaCollection.Schema.Contains(s1));
+            Assert.True(schemaCollection.Schema.Contains(s2));
+
+            schemaCollection.GarbageCollect(new[] { s1 });
+
+            Assert.Equal(3, schemaCollection.Schema.Count);
+            Assert.True(schemaCollection.Schema.Contains(s1));
+            Assert.False(schemaCollection.Schema.Contains(s2));
+
+            schemaCollection.GarbageCollect(new Schema[0]);
+
+            Assert.Equal(0, schemaCollection.Schema.Count);
+            Assert.False(schemaCollection.Schema.Contains(s1));
+            Assert.False(schemaCollection.Schema.Contains(s2));
+        }
+
+        #endregion
+
         [Fact]
         public void SchemaEquality()
         {

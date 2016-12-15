@@ -1,13 +1,22 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using Dasher.Schemata.Types;
 using Dasher.Schemata.Utils;
 
 namespace Dasher.Schemata
 {
+    internal sealed class ReferenceEqualityComparer : IEqualityComparer, IEqualityComparer<object>
+    {
+        public static readonly ReferenceEqualityComparer Default = new ReferenceEqualityComparer();
+        public new bool Equals(object x, object y) => ReferenceEquals(x, y);
+        public int GetHashCode(object obj) => RuntimeHelpers.GetHashCode(obj);
+    }
+
     public sealed class SchemaCollection
     {
         private readonly List<Schema> _schema = new List<Schema>();
@@ -205,6 +214,29 @@ namespace Dasher.Schemata
         }
 
         #endregion
+
+        /// <summary>
+        /// Removes any unreachable schema given specified <paramref name="roots"/>.
+        /// </summary>
+        /// <param name="roots"></param>
+        /// <returns>The number of schema removed, or zero if nothing was removed.</returns>
+        public int GarbageCollect(IEnumerable<Schema> roots)
+        {
+            var explored = new HashSet<Schema>();
+            var frontier = new Queue<Schema>(roots);
+
+            while (frontier.Count != 0)
+            {
+                var item = frontier.Dequeue();
+                if (explored.Contains(item))
+                    continue;
+                explored.Add(item);
+                foreach (var child in item.Children)
+                    frontier.Enqueue(child);
+            }
+
+            return _schema.RemoveAll(s => !explored.Contains(s, ReferenceEqualityComparer.Default));
+        }
 
         public void UpdateByRefIds()
         {
