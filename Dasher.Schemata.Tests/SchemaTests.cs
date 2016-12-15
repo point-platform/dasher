@@ -581,40 +581,40 @@ namespace Dasher.Schemata.Tests
             var xml = before.ToXml();
 
             const string expectedXml = @"<Schema>
-  <ComplexRead Id=""Schema0"">
+  <ComplexRead Id=""Schema1"">
     <Field Name=""age"" Schema=""Int32"" IsRequired=""true"" />
     <Field Name=""name"" Schema=""String"" IsRequired=""true"" />
   </ComplexRead>
-  <ComplexWrite Id=""Schema1"">
+  <ComplexWrite Id=""Schema2"">
     <Field Name=""Age"" Schema=""Int32"" />
     <Field Name=""Name"" Schema=""String"" />
   </ComplexWrite>
-  <ComplexRead Id=""Schema2"">
-    <Field Name=""value"" Schema=""#Schema0"" IsRequired=""true"" />
+  <ComplexRead Id=""Schema3"">
+    <Field Name=""value"" Schema=""#Schema1"" IsRequired=""true"" />
   </ComplexRead>
-  <Enum Id=""Schema3"">
+  <Enum Id=""Schema4"">
     <Member Name=""A"" />
     <Member Name=""B"" />
     <Member Name=""C"" />
   </Enum>
-  <ComplexRead Id=""Schema4"">
-    <Field Name=""value"" Schema=""#Schema3"" IsRequired=""true"" />
+  <ComplexRead Id=""Schema5"">
+    <Field Name=""value"" Schema=""#Schema4"" IsRequired=""true"" />
   </ComplexRead>
-  <Enum Id=""Schema5"">
+  <Enum Id=""Schema6"">
     <Member Name=""A"" />
     <Member Name=""B"" />
     <Member Name=""C"" />
     <Member Name=""D"" />
   </Enum>
-  <UnionRead Id=""Schema6"">
-    <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema5"" />
-    <Member Id=""Dasher.Schemata.Tests.Person"" Schema=""#Schema0"" />
+  <UnionRead Id=""Schema7"">
+    <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema6"" />
+    <Member Id=""Dasher.Schemata.Tests.Person"" Schema=""#Schema1"" />
     <Member Id=""Int32"" Schema=""Int32"" />
     <Member Id=""String"" Schema=""String"" />
   </UnionRead>
-  <UnionWrite Id=""Schema7"">
-    <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema5"" />
-    <Member Id=""Dasher.Schemata.Tests.Person"" Schema=""#Schema1"" />
+  <UnionWrite Id=""Schema8"">
+    <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema6"" />
+    <Member Id=""Dasher.Schemata.Tests.Person"" Schema=""#Schema2"" />
     <Member Id=""Int32"" Schema=""Int32"" />
     <Member Id=""String"" Schema=""String"" />
   </UnionWrite>

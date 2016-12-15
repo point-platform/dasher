@@ -240,10 +240,17 @@ namespace Dasher.Schemata
 
         public void UpdateByRefIds()
         {
+            var existingIds = new HashSet<string>(Schema.OfType<ByRefSchema>().Where(s => s.Id != null).Select(s => s.Id));
+
             // TODO revisit how IDs are assigned
-            var i = 0;
-            foreach (var schema in Schema.OfType<ByRefSchema>())
-                schema.Id = $"Schema{i++}";
+            var i = 1;
+            foreach (var schema in Schema.OfType<ByRefSchema>().Where(s => s.Id == null))
+            {
+                string id = $"Schema{i++}";
+                while (existingIds.Contains(id))
+                    id = $"Schema{i++}";
+                schema.Id = id;
+            }
         }
 
         #region To/From XML
