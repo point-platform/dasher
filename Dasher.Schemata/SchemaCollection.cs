@@ -255,9 +255,9 @@ namespace Dasher.Schemata
 
         #region To/From XML
 
-        public XElement ToXml()
+        public XElement ToXml(string elementName = "Schema")
         {
-            return new XElement("Schema",
+            return new XElement(elementName,
                 Schema.OfType<ByRefSchema>().Select(s => s.ToXml()));
         }
 
