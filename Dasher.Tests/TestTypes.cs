@@ -324,4 +324,58 @@ namespace Dasher.Tests
     public sealed class NoProperties
     {
     }
+
+    [UnionTag("A")]
+    public sealed class TaggedA
+    {
+        public TaggedA(int number)
+        {
+            Number = number;
+        }
+
+        public int Number { get; }
+        
+        #region Equality & hashing
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+            if (ReferenceEquals(this, obj))
+                return true;
+            var a = obj as TaggedA;
+            return a != null && Number == a.Number;
+        }
+
+        public override int GetHashCode() => Number;
+
+        #endregion
+    }
+
+    [UnionTag("B")]
+    public sealed class TaggedB
+    {
+        public TaggedB(int number)
+        {
+            Number = number;
+        }
+
+        public int Number { get; }
+
+        #region Equality & hashing
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+                return false;
+            if (ReferenceEquals(this, obj))
+                return true;
+            var b = obj as TaggedB;
+            return b != null && Number == b.Number;
+        }
+
+        public override int GetHashCode() => Number;
+
+        #endregion
+    }
 }

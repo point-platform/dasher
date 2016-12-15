@@ -69,6 +69,10 @@ namespace Dasher.Tests
 
             Assert.Equal("(Int32=>[Boolean])", UnionEncoding.GetTypeName(typeof(IReadOnlyDictionary<int, IReadOnlyList<bool>>)));
             Assert.Equal("[(Int32=>Boolean)]", UnionEncoding.GetTypeName(typeof(IReadOnlyList<IReadOnlyDictionary<int, bool>>)));
+
+            // Use UnionTagAttribute
+            Assert.Equal("A", UnionEncoding.GetTypeName(typeof(TaggedA)));
+            Assert.Equal("B", UnionEncoding.GetTypeName(typeof(TaggedB)));
         }
     }
 }

@@ -245,7 +245,13 @@ namespace Dasher.TypeProviders
         /// <returns>The name used to identify the union member.</returns>
         public static string GetTypeName(Type type)
         {
-            if (!type.GetTypeInfo().IsGenericType)
+            var typeInfo = type.GetTypeInfo();
+
+            var tagAttribute = typeInfo.GetCustomAttribute<UnionTagAttribute>();
+            if (tagAttribute != null)
+                return tagAttribute.Tag;
+
+            if (!typeInfo.IsGenericType)
                 return type.Namespace == nameof(System) ? type.Name : type.FullName;
 
             var arguments = type.GetGenericArguments();

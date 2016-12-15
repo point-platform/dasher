@@ -253,6 +253,9 @@ namespace Dasher.Tests
             TestNested(Union<int, string>.Create("Hello"), packer => packer.PackArrayHeader(2).Pack("String").Pack("Hello"));
             TestNested(Union<int, string>.Create(null), packer => packer.PackArrayHeader(2).Pack("String").PackNull());
             TestNested((Union<int, string>)null, packer => packer.PackNull());
+
+            TestNested(Union<TaggedA, TaggedB>.Create(new TaggedA(123)), packer => packer.PackArrayHeader(2).Pack("A").PackMapHeader(1).Pack("Number").Pack(123));
+            TestNested(Union<TaggedA, TaggedB>.Create(new TaggedB(123)), packer => packer.PackArrayHeader(2).Pack("B").PackMapHeader(1).Pack("Number").Pack(123));
         }
 
         [Fact]
@@ -312,6 +315,9 @@ namespace Dasher.Tests
                 packer => packer.PackArrayHeader(2).Pack("Dasher.Tests.UserScore").PackNull());
 
             TestTopLevel((Union<UserScore, UserScoreStruct>)null, packer => packer.PackNull());
+
+            TestTopLevel(Union<TaggedA, TaggedB>.Create(new TaggedA(123)), packer => packer.PackArrayHeader(2).Pack("A").PackMapHeader(1).Pack("Number").Pack(123));
+            TestTopLevel(Union<TaggedA, TaggedB>.Create(new TaggedB(123)), packer => packer.PackArrayHeader(2).Pack("B").PackMapHeader(1).Pack("Number").Pack(123));
         }
 
         [Fact]
