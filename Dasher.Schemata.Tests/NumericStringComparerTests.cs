@@ -1,10 +1,11 @@
-﻿using Xunit;
+﻿using Dasher.Schemata.Utils;
+using Xunit;
 
 // ReSharper disable UnusedParameter.Local
 
 namespace Dasher.Schemata.Tests
 {
-    public class NumericStringComparerTests
+    public sealed class NumericStringComparerTests
     {
         [Fact]
         public void OrdersCorrectly()

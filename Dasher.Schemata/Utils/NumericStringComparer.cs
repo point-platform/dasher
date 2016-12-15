@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using JetBrains.Annotations;
 
-namespace Dasher.Schemata
+namespace Dasher.Schemata.Utils
 {
     internal sealed class NumericStringComparer : IComparer<string>
     {
