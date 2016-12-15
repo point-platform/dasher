@@ -258,7 +258,7 @@ namespace Dasher.Schemata
         public XElement ToXml(string elementName = "Schema")
         {
             return new XElement(elementName,
-                Schema.OfType<ByRefSchema>().Select(s => s.ToXml()));
+                Schema.OfType<ByRefSchema>().OrderBy(s => s.Id, NumericStringComparer.Default).Select(s => s.ToXml()));
         }
 
         public static SchemaCollection FromXml(XElement element)
