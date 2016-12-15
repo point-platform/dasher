@@ -85,7 +85,7 @@ namespace Dasher.Tests
             var wrapperTypes = types.Select(t => typeof(ValueWrapper<>).MakeGenericType(t)).ToList();
             var serialisers = wrapperTypes.Select(t => new Serialiser(t)).ToList();
             var deserialisers = wrapperTypes.Select(t => new Deserialiser(t)).ToList();
-            var wrapperCtors = wrapperTypes.Select(t => t.GetConstructors().Single()).ToList();
+            var wrapperCtors = wrapperTypes.Select(t => t.GetTypeInfo().GetConstructors().Single()).ToList();
 
             Func<bool, bool, ConversionResult> buildResult = (anyPassed, anyFailed) =>
             {
