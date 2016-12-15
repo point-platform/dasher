@@ -22,7 +22,7 @@ namespace Dasher.Schemata.Types
 
         public EnumSchema(XContainer element)
         {
-            MemberNames = new HashSet<string>(element.Elements().Select(e => e.Name.LocalName));
+            MemberNames = new HashSet<string>(element.Elements("Member").Select(e => e.Attribute("Name").Value));
         }
 
         public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
@@ -63,7 +63,7 @@ namespace Dasher.Schemata.Types
                 throw new InvalidOperationException("\"Id\" property cannot be null.");
             return new XElement("Enum",
                 new XAttribute("Id", Id),
-                MemberNames.Select(m => new XElement(m)));
+                MemberNames.Select(m => new XElement("Member", new XAttribute("Name", m))));
         }
 
         IReadSchema IReadSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);

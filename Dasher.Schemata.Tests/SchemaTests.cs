@@ -593,18 +593,18 @@ namespace Dasher.Schemata.Tests
     <Field Name=""value"" Schema=""#Schema0"" IsRequired=""true"" />
   </ComplexRead>
   <Enum Id=""Schema3"">
-    <A />
-    <B />
-    <C />
+    <Member Name=""A"" />
+    <Member Name=""B"" />
+    <Member Name=""C"" />
   </Enum>
   <ComplexRead Id=""Schema4"">
     <Field Name=""value"" Schema=""#Schema3"" IsRequired=""true"" />
   </ComplexRead>
   <Enum Id=""Schema5"">
-    <A />
-    <B />
-    <C />
-    <D />
+    <Member Name=""A"" />
+    <Member Name=""B"" />
+    <Member Name=""C"" />
+    <Member Name=""D"" />
   </Enum>
   <UnionRead Id=""Schema6"">
     <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema5"" />
