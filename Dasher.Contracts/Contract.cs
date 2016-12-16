@@ -3,41 +3,41 @@ using System.Collections.Generic;
 using System.Xml.Linq;
 using JetBrains.Annotations;
 
-namespace Dasher.Schemata
+namespace Dasher.Contracts
 {
-    public interface IWriteSchema
+    public interface IWriteContract
     {
         /// <summary>
-        /// Creates a deep copy of this schema within <paramref name="collection"/>.
+        /// Creates a deep copy of this contract within <paramref name="collection"/>.
         /// </summary>
         /// <param name="collection"></param>
         /// <returns></returns>
-        IWriteSchema CopyTo(SchemaCollection collection);
+        IWriteContract CopyTo(ContractCollection collection);
     }
 
-    public interface IReadSchema
+    public interface IReadContract
     {
-        bool CanReadFrom(IWriteSchema writeSchema, bool strict);
+        bool CanReadFrom(IWriteContract writeContract, bool strict);
 
         /// <summary>
-        /// Creates a deep copy of this schema within <paramref name="collection"/>.
+        /// Creates a deep copy of this contract within <paramref name="collection"/>.
         /// </summary>
         /// <param name="collection"></param>
         /// <returns></returns>
-        IReadSchema CopyTo(SchemaCollection collection);
+        IReadContract CopyTo(ContractCollection collection);
     }
 
-    public abstract class Schema
+    public abstract class Contract
     {
-        internal abstract IEnumerable<Schema> Children { get; }
+        internal abstract IEnumerable<Contract> Children { get; }
 
         public override bool Equals(object obj)
         {
-            var other = obj as Schema;
+            var other = obj as Contract;
             return other != null && Equals(other);
         }
 
-        public abstract bool Equals(Schema other);
+        public abstract bool Equals(Contract other);
 
         public override int GetHashCode() => ComputeHashCode();
 
@@ -45,7 +45,7 @@ namespace Dasher.Schemata
     }
 
     /// <summary>For complex, union and enum.</summary>
-    public abstract class ByRefSchema : Schema
+    public abstract class ByRefContract : Contract
     {
         private string _id;
 
@@ -66,7 +66,7 @@ namespace Dasher.Schemata
     }
 
     /// <summary>For primitive, nullable, list, dictionary, tuple, empty.</summary>
-    public abstract class ByValueSchema : Schema
+    public abstract class ByValueContract : Contract
     {
         internal abstract string MarkupValue { get; }
         public override string ToString() => MarkupValue;

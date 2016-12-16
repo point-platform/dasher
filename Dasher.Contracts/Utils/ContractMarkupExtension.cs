@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 
-namespace Dasher.Schemata.Utils
+namespace Dasher.Contracts.Utils
 {
-    internal static class SchemaMarkupExtension
+    internal static class ContractMarkupExtension
     {
         public static IEnumerable<string> Tokenize(string s)
         {
             if (s.Length == 0)
                 yield break;
             if (s[0] != '{')
-                throw new SchemaParseException("Schema markup extension must start with '{'.");
+                throw new ContractParseException("Contract markup extension must start with '{'.");
 
             var depth = 0;
             var tokenStart = 0;
@@ -33,11 +33,11 @@ namespace Dasher.Schemata.Utils
                         }
                         depth--;
                         if (depth < 0)
-                            throw new SchemaParseException($"Invalid schema markup extension \"{s}\".");
+                            throw new ContractParseException($"Invalid contract markup extension \"{s}\".");
                         break;
                     case ' ':
                         if (depth == 0)
-                            throw new SchemaParseException($"Invalid schema markup extension \"{s}\".");
+                            throw new ContractParseException($"Invalid contract markup extension \"{s}\".");
                         if (depth == 1)
                         {
                             if (i != tokenStart)
@@ -47,13 +47,13 @@ namespace Dasher.Schemata.Utils
                         break;
                     default:
                         if (depth == 0)
-                            throw new SchemaParseException($"Invalid schema markup extension \"{s}\".");
+                            throw new ContractParseException($"Invalid contract markup extension \"{s}\".");
                         break;
                 }
             }
 
             if (depth != 0)
-                throw new SchemaParseException($"Invalid schema markup extension \"{s}\".");
+                throw new ContractParseException($"Invalid contract markup extension \"{s}\".");
         }
     }
 }

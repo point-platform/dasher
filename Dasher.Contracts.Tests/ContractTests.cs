@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Dasher.Schemata.Utils;
+using Dasher.Contracts.Utils;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -11,9 +11,9 @@ using Xunit.Abstractions;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Dasher.Schemata.Tests
+namespace Dasher.Contracts.Tests
 {
-    // TODO better default names for schema (consider type name, though careful with generics...)
+    // TODO better default IDs for by-ref contracts (consider type name, though careful with generics...)
     // TODO support recursive types
     // TODO reflect integral conversions supported by dasher
     // TODO test writing empty message to complex with all-default values
@@ -90,7 +90,7 @@ namespace Dasher.Schemata.Tests
         public double Height { get; }
     }
 
-    public class SchemaTests
+    public class ContractTests
     {
         /// <summary>Required as Dasher won't serialise non-complex top-level types.</summary>
         public class Wrapper<T>
@@ -107,10 +107,10 @@ namespace Dasher.Schemata.Tests
         [SuppressMessage("ReSharper", "RedundantArgumentDefaultValue")]
         private static IReadOnlyList<TRead> Test<TWrite, TRead>(TWrite write, TRead read, bool matchIfRelaxed, bool matchIfStrict)
         {
-            var schemaCollection = new SchemaCollection();
+            var contractCollection = new ContractCollection();
 
-            var w = schemaCollection.GetOrAddWriteSchema(typeof(TWrite));
-            var r = schemaCollection.GetOrAddReadSchema(typeof(TRead));
+            var w = contractCollection.GetOrAddWriteContract(typeof(TWrite));
+            var r = contractCollection.GetOrAddReadContract(typeof(TRead));
 
             var actualMatchIfRelaxed = r.CanReadFrom(w, strict: false);
             var actualMatchIfStrict = r.CanReadFrom(w, strict: true);
@@ -144,7 +144,7 @@ namespace Dasher.Schemata.Tests
 
         private readonly ITestOutputHelper _output;
 
-        public SchemaTests(ITestOutputHelper output)
+        public ContractTests(ITestOutputHelper output)
         {
             _output = output;
         }
@@ -269,10 +269,10 @@ namespace Dasher.Schemata.Tests
 
         #endregion
 
-        #region Empty schema
+        #region Empty contract
 
         [Fact]
-        public void EmptySchema_ExactMatch()
+        public void EmptyContract_ExactMatch()
         {
             var read = Test<Empty, Empty>(
                 null,
@@ -285,7 +285,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void EmptySchema_Complex()
+        public void EmptyContract_Complex()
         {
             var read = Test<Person, Empty>(
                 new Person("Bob", 36),
@@ -298,7 +298,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void EmptySchema_Union()
+        public void EmptyContract_Union()
         {
             var read = Test<Union<int, string>, Empty>(
                 1,
@@ -315,7 +315,7 @@ namespace Dasher.Schemata.Tests
         #region Unions
 
         [Fact]
-        public void UnionSchema_ExactMatch()
+        public void UnionContract_ExactMatch()
         {
             var read = Test<Union<int, string>, Union<int, string>>(
                 1,
@@ -328,7 +328,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void UnionSchema_ExtraMember()
+        public void UnionContract_ExtraMember()
         {
             Test<Union<int, string, double>, Union<int, string>>(
                 1,
@@ -338,7 +338,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void UnionSchema_FewerMembers()
+        public void UnionContract_FewerMembers()
         {
             var read = Test<Union<int, string>, Union<int, string, double>>(
                 1,
@@ -355,7 +355,7 @@ namespace Dasher.Schemata.Tests
         #region Lists
 
         [Fact]
-        public void ListSchema_SameType()
+        public void ListContract_SameType()
         {
             var read = Test<IReadOnlyList<int>, IReadOnlyList<int>>(
                 new[] {1, 2, 3},
@@ -368,7 +368,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void ListSchema_CompatibleIfRelaxed()
+        public void ListContract_CompatibleIfRelaxed()
         {
             var read = Test<IReadOnlyList<PersonWithScore>, IReadOnlyList<Person>>(
                 new[] {new PersonWithScore("Bob", 36, 100.0) },
@@ -387,7 +387,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void ListSchema_IncompatibleTypes()
+        public void ListContract_IncompatibleTypes()
         {
             Test<IReadOnlyList<int>, IReadOnlyList<string>>(
                 new[] {1, 2, 3},
@@ -401,7 +401,7 @@ namespace Dasher.Schemata.Tests
         #region Dictionaries
 
         [Fact]
-        public void DictionarySchema_SameType()
+        public void DictionaryContract_SameType()
         {
             var read = Test<IReadOnlyDictionary<int, int>, IReadOnlyDictionary<int, int>>(
                 new Dictionary<int, int> {{1, 1}, {2, 2}},
@@ -418,7 +418,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void DictionarySchema_CompatibleIfRelaxed()
+        public void DictionaryContract_CompatibleIfRelaxed()
         {
             var read = Test<IReadOnlyDictionary<int, PersonWithScore>, IReadOnlyDictionary<int, Person>>(
                 new Dictionary<int, PersonWithScore> {{1, new PersonWithScore("Bob", 36, 100.0) } },
@@ -435,7 +435,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void DictionarySchema_IncompatibleTypes()
+        public void DictionaryContract_IncompatibleTypes()
         {
             Test<IReadOnlyDictionary<int, int>, IReadOnlyDictionary<string, int>>(
                 new Dictionary<int, int> {{1, 1}},
@@ -455,7 +455,7 @@ namespace Dasher.Schemata.Tests
         #region Tuples
 
         [Fact]
-        public void TupleSchema_ExactMatch()
+        public void TupleContract_ExactMatch()
         {
             var read = Test(
                 Tuple.Create(1, 2),
@@ -468,7 +468,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void TupleSchema_ExtraMember()
+        public void TupleContract_ExtraMember()
         {
             Test(
                 Tuple.Create(1, 2, 3),
@@ -478,7 +478,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void TupleSchema_FewerMembers()
+        public void TupleContract_FewerMembers()
         {
             Test(
                 Tuple.Create(1, 2),
@@ -492,7 +492,7 @@ namespace Dasher.Schemata.Tests
         #region Nullables
 
         [Fact]
-        public void NullableSchema_NonNullableToNullable()
+        public void NullableContract_NonNullableToNullable()
         {
             var read = Test(
                 1,
@@ -505,7 +505,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void NullableSchema_ExactMatch()
+        public void NullableContract_ExactMatch()
         {
             var read = Test(
                 (int?)1,
@@ -518,7 +518,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void NullableSchema_IncompatibleTypes()
+        public void NullableContract_IncompatibleTypes()
         {
             Test(
                 (double?)1,
@@ -528,7 +528,7 @@ namespace Dasher.Schemata.Tests
         }
 
         [Fact]
-        public void NullableSchema_NullableToNonNullable()
+        public void NullableContract_NullableToNonNullable()
         {
             Test(
                 (int?)1,
@@ -542,83 +542,83 @@ namespace Dasher.Schemata.Tests
         #region Consolidation
 
         [Fact]
-        public void SchemaCollection_ConsolidatesSchemata()
+        public void ContractCollection_ConsolidatesContracts()
         {
-            var schemaCollection = new SchemaCollection();
+            var contractCollection = new ContractCollection();
 
-            var s1 = schemaCollection.GetOrAddReadSchema(typeof(Person));
-            var s2 = schemaCollection.GetOrAddReadSchema(typeof(Person));
+            var s1 = contractCollection.GetOrAddReadContract(typeof(Person));
+            var s2 = contractCollection.GetOrAddReadContract(typeof(Person));
 
             Assert.Same(s1, s2);
 
-            var s3 = schemaCollection.GetOrAddReadSchema(typeof(Wrapper<Person>));
+            var s3 = contractCollection.GetOrAddReadContract(typeof(Wrapper<Person>));
 
-            Assert.Same(s2, ((Schema)s3).Children.Single());
+            Assert.Same(s2, ((Contract)s3).Children.Single());
         }
 
         #endregion
 
-        #region SchemaCollection XML Round Trip
+        #region ContractCollection XML Round Trip
 
         [Fact]
-        public void SchemaCollection_XmlRoundTrip()
+        public void ContractCollection_XmlRoundTrip()
         {
-            var before = new SchemaCollection();
+            var before = new ContractCollection();
 
-            before.GetOrAddReadSchema(typeof(Person));
-            before.GetOrAddWriteSchema(typeof(Person));
-            before.GetOrAddReadSchema(typeof(Wrapper<Person>));
-            before.GetOrAddReadSchema(typeof(EnumAbc));
-            before.GetOrAddWriteSchema(typeof(EnumAbc));
-            before.GetOrAddReadSchema(typeof(Wrapper<EnumAbc>));
-            before.GetOrAddReadSchema(typeof(Union<int, string, Person, EnumAbcd>));
-            before.GetOrAddWriteSchema(typeof(Union<int, string, Person, EnumAbcd>));
+            before.GetOrAddReadContract(typeof(Person));
+            before.GetOrAddWriteContract(typeof(Person));
+            before.GetOrAddReadContract(typeof(Wrapper<Person>));
+            before.GetOrAddReadContract(typeof(EnumAbc));
+            before.GetOrAddWriteContract(typeof(EnumAbc));
+            before.GetOrAddReadContract(typeof(Wrapper<EnumAbc>));
+            before.GetOrAddReadContract(typeof(Union<int, string, Person, EnumAbcd>));
+            before.GetOrAddWriteContract(typeof(Union<int, string, Person, EnumAbcd>));
 
-            Assert.Equal(8, before.Schema.OfType<ByRefSchema>().Count());
+            Assert.Equal(8, before.Contracts.OfType<ByRefContract>().Count());
 
             before.UpdateByRefIds();
 
             var xml = before.ToXml();
 
-            const string expectedXml = @"<Schema>
-  <ComplexRead Id=""Schema1"">
-    <Field Name=""age"" Schema=""Int32"" IsRequired=""true"" />
-    <Field Name=""name"" Schema=""String"" IsRequired=""true"" />
+            const string expectedXml = @"<Contract>
+  <ComplexRead Id=""Contract1"">
+    <Field Name=""age"" Contract=""Int32"" IsRequired=""true"" />
+    <Field Name=""name"" Contract=""String"" IsRequired=""true"" />
   </ComplexRead>
-  <ComplexWrite Id=""Schema2"">
-    <Field Name=""Age"" Schema=""Int32"" />
-    <Field Name=""Name"" Schema=""String"" />
+  <ComplexWrite Id=""Contract2"">
+    <Field Name=""Age"" Contract=""Int32"" />
+    <Field Name=""Name"" Contract=""String"" />
   </ComplexWrite>
-  <ComplexRead Id=""Schema3"">
-    <Field Name=""value"" Schema=""#Schema1"" IsRequired=""true"" />
+  <ComplexRead Id=""Contract3"">
+    <Field Name=""value"" Contract=""#Contract1"" IsRequired=""true"" />
   </ComplexRead>
-  <Enum Id=""Schema4"">
+  <Enum Id=""Contract4"">
     <Member Name=""A"" />
     <Member Name=""B"" />
     <Member Name=""C"" />
   </Enum>
-  <ComplexRead Id=""Schema5"">
-    <Field Name=""value"" Schema=""#Schema4"" IsRequired=""true"" />
+  <ComplexRead Id=""Contract5"">
+    <Field Name=""value"" Contract=""#Contract4"" IsRequired=""true"" />
   </ComplexRead>
-  <Enum Id=""Schema6"">
+  <Enum Id=""Contract6"">
     <Member Name=""A"" />
     <Member Name=""B"" />
     <Member Name=""C"" />
     <Member Name=""D"" />
   </Enum>
-  <UnionRead Id=""Schema7"">
-    <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema6"" />
-    <Member Id=""Dasher.Schemata.Tests.Person"" Schema=""#Schema1"" />
-    <Member Id=""Int32"" Schema=""Int32"" />
-    <Member Id=""String"" Schema=""String"" />
+  <UnionRead Id=""Contract7"">
+    <Member Id=""Dasher.Contracts.Tests.EnumAbcd"" Contract=""#Contract6"" />
+    <Member Id=""Dasher.Contracts.Tests.Person"" Contract=""#Contract1"" />
+    <Member Id=""Int32"" Contract=""Int32"" />
+    <Member Id=""String"" Contract=""String"" />
   </UnionRead>
-  <UnionWrite Id=""Schema8"">
-    <Member Id=""Dasher.Schemata.Tests.EnumAbcd"" Schema=""#Schema6"" />
-    <Member Id=""Dasher.Schemata.Tests.Person"" Schema=""#Schema2"" />
-    <Member Id=""Int32"" Schema=""Int32"" />
-    <Member Id=""String"" Schema=""String"" />
+  <UnionWrite Id=""Contract8"">
+    <Member Id=""Dasher.Contracts.Tests.EnumAbcd"" Contract=""#Contract6"" />
+    <Member Id=""Dasher.Contracts.Tests.Person"" Contract=""#Contract2"" />
+    <Member Id=""Int32"" Contract=""Int32"" />
+    <Member Id=""String"" Contract=""String"" />
   </UnionWrite>
-</Schema>";
+</Contract>";
 
             var actualXml = xml.ToString();
 
@@ -628,83 +628,83 @@ namespace Dasher.Schemata.Tests
 
             Assert.Equal(8, xml.Elements().Count());
 
-            var after = SchemaCollection.FromXml(xml);
+            var after = ContractCollection.FromXml(xml);
 
-            Assert.True(new HashSet<Schema>(before.Schema).SetEquals(new HashSet<Schema>(after.Schema)));
+            Assert.True(new HashSet<Contract>(before.Contracts).SetEquals(new HashSet<Contract>(after.Contracts)));
 
-            Assert.Equal(before.Schema.Count, after.Schema.Count);
+            Assert.Equal(before.Contracts.Count, after.Contracts.Count);
 
-            foreach (var b in before.Schema)
-                Assert.Equal(1, after.Schema.Count(s => s.Equals(b)));
-            foreach (var a in after.Schema)
-                Assert.Equal(1, before.Schema.Count(s => s.Equals(a)));
+            foreach (var b in before.Contracts)
+                Assert.Equal(1, after.Contracts.Count(s => s.Equals(b)));
+            foreach (var a in after.Contracts)
+                Assert.Equal(1, before.Contracts.Count(s => s.Equals(a)));
         }
 
         [Fact]
-        public void SchemaMarkupExtensionTokenizer()
+        public void ContractMarkupExtensionTokenizer()
         {
-            Assert.Equal(new[]{"empty"}, SchemaMarkupExtension.Tokenize("{empty}"));
-            Assert.Equal(new[]{"A", "B", "C"}, SchemaMarkupExtension.Tokenize("{A B C}"));
-            Assert.Equal(new[]{"A", "{B C}"}, SchemaMarkupExtension.Tokenize("{A {B C}}"));
+            Assert.Equal(new[]{"empty"}, ContractMarkupExtension.Tokenize("{empty}"));
+            Assert.Equal(new[]{"A", "B", "C"}, ContractMarkupExtension.Tokenize("{A B C}"));
+            Assert.Equal(new[]{"A", "{B C}"}, ContractMarkupExtension.Tokenize("{A {B C}}"));
 
-            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("}").ToList());
-            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("{}}").ToList());
-            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("{").ToList());
-            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("{{").ToList());
-            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("{a} ").ToList());
-            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("{a}b").ToList());
-            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize(" {a}").ToList());
-            Assert.Throws<SchemaParseException>(() => SchemaMarkupExtension.Tokenize("b{a}").ToList());
+            Assert.Throws<ContractParseException>(() => ContractMarkupExtension.Tokenize("}").ToList());
+            Assert.Throws<ContractParseException>(() => ContractMarkupExtension.Tokenize("{}}").ToList());
+            Assert.Throws<ContractParseException>(() => ContractMarkupExtension.Tokenize("{").ToList());
+            Assert.Throws<ContractParseException>(() => ContractMarkupExtension.Tokenize("{{").ToList());
+            Assert.Throws<ContractParseException>(() => ContractMarkupExtension.Tokenize("{a} ").ToList());
+            Assert.Throws<ContractParseException>(() => ContractMarkupExtension.Tokenize("{a}b").ToList());
+            Assert.Throws<ContractParseException>(() => ContractMarkupExtension.Tokenize(" {a}").ToList());
+            Assert.Throws<ContractParseException>(() => ContractMarkupExtension.Tokenize("b{a}").ToList());
         }
 
         #endregion
 
-        #region SchemaCollection GarbageCollect
+        #region ContractCollection GarbageCollect
 
         [Fact]
-        public void SchemaCollectionGarbageCollects()
+        public void ContractCollectionGarbageCollects()
         {
-            var schemaCollection = new SchemaCollection();
+            var contractCollection = new ContractCollection();
 
-            var s1 = (Schema)schemaCollection.GetOrAddReadSchema(typeof(Person));
-            var s2 = (Schema)schemaCollection.GetOrAddReadSchema(typeof(Wrapper<Person>));
+            var s1 = (Contract)contractCollection.GetOrAddReadContract(typeof(Person));
+            var s2 = (Contract)contractCollection.GetOrAddReadContract(typeof(Wrapper<Person>));
 
-            Assert.Equal(4, schemaCollection.Schema.Count);
-            Assert.True(schemaCollection.Schema.Contains(s1));
-            Assert.True(schemaCollection.Schema.Contains(s2));
+            Assert.Equal(4, contractCollection.Contracts.Count);
+            Assert.True(contractCollection.Contracts.Contains(s1));
+            Assert.True(contractCollection.Contracts.Contains(s2));
 
-            schemaCollection.GarbageCollect(new[] { s2 });
+            contractCollection.GarbageCollect(new[] { s2 });
 
-            Assert.Equal(4, schemaCollection.Schema.Count);
-            Assert.True(schemaCollection.Schema.Contains(s1));
-            Assert.True(schemaCollection.Schema.Contains(s2));
+            Assert.Equal(4, contractCollection.Contracts.Count);
+            Assert.True(contractCollection.Contracts.Contains(s1));
+            Assert.True(contractCollection.Contracts.Contains(s2));
 
-            schemaCollection.GarbageCollect(new[] { s1 });
+            contractCollection.GarbageCollect(new[] { s1 });
 
-            Assert.Equal(3, schemaCollection.Schema.Count);
-            Assert.True(schemaCollection.Schema.Contains(s1));
-            Assert.False(schemaCollection.Schema.Contains(s2));
+            Assert.Equal(3, contractCollection.Contracts.Count);
+            Assert.True(contractCollection.Contracts.Contains(s1));
+            Assert.False(contractCollection.Contracts.Contains(s2));
 
-            schemaCollection.GarbageCollect(new Schema[0]);
+            contractCollection.GarbageCollect(new Contract[0]);
 
-            Assert.Equal(0, schemaCollection.Schema.Count);
-            Assert.False(schemaCollection.Schema.Contains(s1));
-            Assert.False(schemaCollection.Schema.Contains(s2));
+            Assert.Equal(0, contractCollection.Contracts.Count);
+            Assert.False(contractCollection.Contracts.Contains(s1));
+            Assert.False(contractCollection.Contracts.Contains(s2));
         }
 
         #endregion
 
         [Fact]
-        public void SchemaEquality()
+        public void ContractEquality()
         {
             Action<Type> test = type =>
             {
-                var c1 = new SchemaCollection();
-                var c2 = new SchemaCollection();
-                var r1 = c1.GetOrAddReadSchema(type);
-                var r2 = c2.GetOrAddReadSchema(type);
-                var w1 = c1.GetOrAddWriteSchema(type);
-                var w2 = c2.GetOrAddWriteSchema(type);
+                var c1 = new ContractCollection();
+                var c2 = new ContractCollection();
+                var r1 = c1.GetOrAddReadContract(type);
+                var r2 = c2.GetOrAddReadContract(type);
+                var w1 = c1.GetOrAddWriteContract(type);
+                var w2 = c2.GetOrAddWriteContract(type);
 
                 Assert.Equal(r1, r2);
                 Assert.Equal(r2, r1);
@@ -728,42 +728,42 @@ namespace Dasher.Schemata.Tests
 
             //////
 
-            var c = new SchemaCollection();
+            var c = new ContractCollection();
 
             // Intern
-            Assert.Same(c.GetOrAddReadSchema(typeof(int)), c.GetOrAddReadSchema(typeof(int)));
+            Assert.Same(c.GetOrAddReadContract(typeof(int)), c.GetOrAddReadContract(typeof(int)));
 
             // Read and write same for some types
-            Assert.Same(c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
-            Assert.Same(c.GetOrAddReadSchema(typeof(double)), c.GetOrAddWriteSchema(typeof(double)));
-            Assert.Same(c.GetOrAddReadSchema(typeof(EnumAbc)), c.GetOrAddWriteSchema(typeof(EnumAbc)));
-            Assert.Same(c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
-            Assert.Same(c.GetOrAddReadSchema(typeof(Empty)), c.GetOrAddWriteSchema(typeof(Empty)));
+            Assert.Same(c.GetOrAddReadContract(typeof(int)), c.GetOrAddWriteContract(typeof(int)));
+            Assert.Same(c.GetOrAddReadContract(typeof(double)), c.GetOrAddWriteContract(typeof(double)));
+            Assert.Same(c.GetOrAddReadContract(typeof(EnumAbc)), c.GetOrAddWriteContract(typeof(EnumAbc)));
+            Assert.Same(c.GetOrAddReadContract(typeof(int)), c.GetOrAddWriteContract(typeof(int)));
+            Assert.Same(c.GetOrAddReadContract(typeof(Empty)), c.GetOrAddWriteContract(typeof(Empty)));
 
-            // NOTE for some types, read and write schema are equal (can this cause trouble?)
-            Assert.Equal((object)c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
-            Assert.Equal((object)c.GetOrAddReadSchema(typeof(double)), c.GetOrAddWriteSchema(typeof(double)));
-            Assert.Equal((object)c.GetOrAddReadSchema(typeof(EnumAbc)), c.GetOrAddWriteSchema(typeof(EnumAbc)));
-            Assert.Equal((object)c.GetOrAddReadSchema(typeof(int)), c.GetOrAddWriteSchema(typeof(int)));
-            Assert.Equal((object)c.GetOrAddReadSchema(typeof(Empty)), c.GetOrAddWriteSchema(typeof(Empty)));
+            // NOTE for some types, read and write contract are equal (can this cause trouble?)
+            Assert.Equal((object)c.GetOrAddReadContract(typeof(int)), c.GetOrAddWriteContract(typeof(int)));
+            Assert.Equal((object)c.GetOrAddReadContract(typeof(double)), c.GetOrAddWriteContract(typeof(double)));
+            Assert.Equal((object)c.GetOrAddReadContract(typeof(EnumAbc)), c.GetOrAddWriteContract(typeof(EnumAbc)));
+            Assert.Equal((object)c.GetOrAddReadContract(typeof(int)), c.GetOrAddWriteContract(typeof(int)));
+            Assert.Equal((object)c.GetOrAddReadContract(typeof(Empty)), c.GetOrAddWriteContract(typeof(Empty)));
 
-            var schemata = new object[]
+            var contracts = new object[]
             {
-                c.GetOrAddReadSchema(typeof(int)),
-                c.GetOrAddReadSchema(typeof(EnumAbc)),
-                c.GetOrAddReadSchema(typeof(EnumAbcd)),
-                c.GetOrAddReadSchema(typeof(double)),
+                c.GetOrAddReadContract(typeof(int)),
+                c.GetOrAddReadContract(typeof(EnumAbc)),
+                c.GetOrAddReadContract(typeof(EnumAbcd)),
+                c.GetOrAddReadContract(typeof(double)),
 
-                c.GetOrAddReadSchema(typeof(Person)),
-                c.GetOrAddWriteSchema(typeof(Person)),
-                c.GetOrAddReadSchema(typeof(Wrapper<double>)),
-                c.GetOrAddWriteSchema(typeof(Wrapper<double>))
+                c.GetOrAddReadContract(typeof(Person)),
+                c.GetOrAddWriteContract(typeof(Person)),
+                c.GetOrAddReadContract(typeof(Wrapper<double>)),
+                c.GetOrAddWriteContract(typeof(Wrapper<double>))
             };
 
-            foreach (var schema in schemata)
+            foreach (var contract in contracts)
             {
-                Assert.Equal(1, schemata.Count(s => s.Equals(schema)));
-                Assert.Equal(1, schemata.Count(s => s.GetHashCode().Equals(schema.GetHashCode())));
+                Assert.Equal(1, contracts.Count(s => s.Equals(contract)));
+                Assert.Equal(1, contracts.Count(s => s.GetHashCode().Equals(contract.GetHashCode())));
             }
         }
     }

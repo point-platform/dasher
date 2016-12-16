@@ -1,10 +1,11 @@
 {
+  "id": "Dasher.Contracts.Tests",
   "version": "1.0.0-*",
   "buildOptions": {
     "debugType": "portable"
   },
   "dependencies": {
-    "Dasher.Schemata": "*",
+    "Dasher.Contracts": "*",
     "System.Runtime.Serialization.Primitives": "4.1.1",
     "xunit": "2.1.0",
     "dotnet-test-xunit": "2.2.0-preview2-build1029"

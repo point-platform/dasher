@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Dasher.Schemata.Utils
+namespace Dasher.Contracts.Utils
 {
     internal static class EnumerableExtensions
     {

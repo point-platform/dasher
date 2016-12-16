@@ -1,9 +1,9 @@
-﻿using Dasher.Schemata.Utils;
+﻿using Dasher.Contracts.Utils;
 using Xunit;
 
 // ReSharper disable UnusedParameter.Local
 
-namespace Dasher.Schemata.Tests
+namespace Dasher.Contracts.Tests
 {
     public sealed class NumericStringComparerTests
     {

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Dasher.Schemata", "Dasher.Schemata\Dasher.Schemata.xproj", "{9B8EBFC3-0618-4567-9FFB-449B841C9858}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Dasher.Contracts", "Dasher.Contracts\Dasher.Contracts.xproj", "{9B8EBFC3-0618-4567-9FFB-449B841C9858}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Dasher.Schemata.Tests", "Dasher.Schemata.Tests\Dasher.Schemata.Tests.xproj", "{A85F58DF-4653-4562-B0B6-9368E7DC4695}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Dasher.Contracts.Tests", "Dasher.Contracts.Tests\Dasher.Contracts.Tests.xproj", "{A85F58DF-4653-4562-B0B6-9368E7DC4695}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

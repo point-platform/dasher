@@ -3,41 +3,41 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
-using Dasher.Schemata.Utils;
+using Dasher.Contracts.Utils;
 
-namespace Dasher.Schemata.Types
+namespace Dasher.Contracts.Types
 {
-    internal sealed class ComplexWriteSchema : ByRefSchema, IWriteSchema
+    internal sealed class ComplexWriteContract : ByRefContract, IWriteContract
     {
         public struct Field
         {
             public string Name { get; }
-            public IWriteSchema Schema { get; }
+            public IWriteContract Contract { get; }
 
-            public Field(string name, IWriteSchema schema)
+            public Field(string name, IWriteContract contract)
             {
                 Name = name;
-                Schema = schema;
+                Contract = contract;
             }
         }
 
         public IReadOnlyList<Field> Fields { get; }
 
-        public ComplexWriteSchema(Type type, SchemaCollection schemaCollection)
+        public ComplexWriteContract(Type type, ContractCollection contractCollection)
         {
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase);
             if (!properties.Any())
                 throw new ArgumentException($"Type {type} must have at least one public instance property.", nameof(type));
-            Fields = properties.Select(p => new Field(p.Name, schemaCollection.GetOrAddWriteSchema(p.PropertyType))).ToArray();
+            Fields = properties.Select(p => new Field(p.Name, contractCollection.GetOrAddWriteContract(p.PropertyType))).ToArray();
         }
 
-        private ComplexWriteSchema(IReadOnlyList<Field> fields)
+        private ComplexWriteContract(IReadOnlyList<Field> fields)
         {
             Fields = fields;
         }
 
-        public ComplexWriteSchema(XElement element, Func<string, IWriteSchema> resolveSchema, ICollection<Action> bindActions)
+        public ComplexWriteContract(XElement element, Func<string, IWriteContract> resolveContract, ICollection<Action> bindActions)
         {
             var fields = new List<Field>();
 
@@ -46,24 +46,24 @@ namespace Dasher.Schemata.Types
                 foreach (var field in element.Elements(nameof(Field)))
                 {
                     var name = field.Attribute(nameof(Field.Name))?.Value;
-                    var schema = field.Attribute(nameof(Field.Schema))?.Value;
+                    var contract = field.Attribute(nameof(Field.Contract))?.Value;
 
                     if (string.IsNullOrWhiteSpace(name))
-                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Name)}\" attribute.");
-                    if (string.IsNullOrWhiteSpace(schema))
-                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Schema)}\" attribute.");
+                        throw new ContractParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Name)}\" attribute.");
+                    if (string.IsNullOrWhiteSpace(contract))
+                        throw new ContractParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Contract)}\" attribute.");
 
-                    fields.Add(new Field(name, resolveSchema(schema)));
+                    fields.Add(new Field(name, resolveContract(contract)));
                 }
             });
 
             Fields = fields;
         }
 
-        public override bool Equals(Schema other)
+        public override bool Equals(Contract other)
         {
-            return (other as ComplexWriteSchema)?.Fields.SequenceEqual(Fields,
-                       (a, b) => a.Name == b.Name && a.Schema.Equals(b.Schema))
+            return (other as ComplexWriteContract)?.Fields.SequenceEqual(Fields,
+                       (a, b) => a.Name == b.Name && a.Contract.Equals(b.Contract))
                    ?? false;
         }
 
@@ -77,13 +77,13 @@ namespace Dasher.Schemata.Types
                     hash <<= 5;
                     hash ^= field.Name.GetHashCode();
                     hash <<= 3;
-                    hash ^= field.Schema.GetHashCode();
+                    hash ^= field.Contract.GetHashCode();
                 }
                 return hash;
             }
         }
 
-        internal override IEnumerable<Schema> Children => Fields.Select(f => f.Schema).Cast<Schema>();
+        internal override IEnumerable<Contract> Children => Fields.Select(f => f.Contract).Cast<Contract>();
 
         internal override XElement ToXml()
         {
@@ -93,34 +93,34 @@ namespace Dasher.Schemata.Types
                 new XAttribute("Id", Id),
                 Fields.Select(f => new XElement("Field",
                     new XAttribute("Name", f.Name),
-                    new XAttribute("Schema", f.Schema.ToReferenceString()))));
+                    new XAttribute("Contract", f.Contract.ToReferenceString()))));
         }
 
-        public IWriteSchema CopyTo(SchemaCollection collection)
+        public IWriteContract CopyTo(ContractCollection collection)
         {
-            return collection.GetOrCreate(this, () => new ComplexWriteSchema(Fields.Select(f => new Field(f.Name, f.Schema.CopyTo(collection))).ToList()));
+            return collection.GetOrCreate(this, () => new ComplexWriteContract(Fields.Select(f => new Field(f.Name, f.Contract.CopyTo(collection))).ToList()));
         }
     }
 
-    internal sealed class ComplexReadSchema : ByRefSchema, IReadSchema
+    internal sealed class ComplexReadContract : ByRefContract, IReadContract
     {
         private struct Field
         {
             public string Name { get; }
-            public IReadSchema Schema { get; }
+            public IReadContract Contract { get; }
             public bool IsRequired { get; }
 
-            public Field(string name, IReadSchema schema, bool isRequired)
+            public Field(string name, IReadContract contract, bool isRequired)
             {
                 Name = name;
-                Schema = schema;
+                Contract = contract;
                 IsRequired = isRequired;
             }
         }
 
         private IReadOnlyList<Field> Fields { get; }
 
-        public ComplexReadSchema(Type type, SchemaCollection schemaCollection)
+        public ComplexReadContract(Type type, ContractCollection contractCollection)
         {
             var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (constructors.Length != 1)
@@ -130,16 +130,16 @@ namespace Dasher.Schemata.Types
                 throw new ArgumentException($"Constructor for type {type} must have at least one argument.", nameof(type));
             Fields = parameters
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(p => new Field(p.Name, schemaCollection.GetOrAddReadSchema(p.ParameterType), isRequired: !p.HasDefaultValue))
+                .Select(p => new Field(p.Name, contractCollection.GetOrAddReadContract(p.ParameterType), isRequired: !p.HasDefaultValue))
                 .ToList();
         }
 
-        private ComplexReadSchema(IReadOnlyList<Field> fields)
+        private ComplexReadContract(IReadOnlyList<Field> fields)
         {
             Fields = fields;
         }
 
-        public ComplexReadSchema(XElement element, Func<string, IReadSchema> resolveSchema, ICollection<Action> bindActions)
+        public ComplexReadContract(XElement element, Func<string, IReadContract> resolveContract, ICollection<Action> bindActions)
         {
             var fields = new List<Field>();
 
@@ -148,31 +148,31 @@ namespace Dasher.Schemata.Types
                 foreach (var field in element.Elements(nameof(Field)))
                 {
                     var name = field.Attribute(nameof(Field.Name))?.Value;
-                    var schema = field.Attribute(nameof(Field.Schema))?.Value;
+                    var contract = field.Attribute(nameof(Field.Contract))?.Value;
                     var isRequiredStr = field.Attribute(nameof(Field.IsRequired))?.Value;
 
                     if (string.IsNullOrWhiteSpace(name))
-                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Name)}\" attribute.");
-                    if (string.IsNullOrWhiteSpace(schema))
-                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Schema)}\" attribute.");
+                        throw new ContractParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Name)}\" attribute.");
+                    if (string.IsNullOrWhiteSpace(contract))
+                        throw new ContractParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Contract)}\" attribute.");
                     bool isRequired;
                     if (!bool.TryParse(isRequiredStr, out isRequired))
-                        throw new SchemaParseException($"\"{element.Name}\" element must have a boolean \"{nameof(Field.IsRequired)}\" attribute.");
+                        throw new ContractParseException($"\"{element.Name}\" element must have a boolean \"{nameof(Field.IsRequired)}\" attribute.");
 
-                    fields.Add(new Field(name, resolveSchema(schema), isRequired));
+                    fields.Add(new Field(name, resolveContract(contract), isRequired));
                 }
             });
 
             Fields = fields;
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
+        public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
-            // TODO write EmptySchema test for this case and several others... (eg. tuple, union, ...)
-            if (writeSchema is EmptySchema)
+            // TODO write EmptyContract test for this case and several others... (eg. tuple, union, ...)
+            if (writeContract is EmptyContract)
                 return true;
 
-            var ws = writeSchema as ComplexWriteSchema;
+            var ws = writeContract as ComplexWriteContract;
             if (ws == null)
                 return false;
             var readFields = Fields;
@@ -202,7 +202,7 @@ namespace Dasher.Schemata.Types
                 if (cmp == 0)
                 {
                     // match
-                    if (!rf.Schema.CanReadFrom(wf.Schema, strict))
+                    if (!rf.Contract.CanReadFrom(wf.Contract, strict))
                         return false;
 
                     // step both forwards
@@ -232,10 +232,10 @@ namespace Dasher.Schemata.Types
             return true;
         }
 
-        public override bool Equals(Schema other)
+        public override bool Equals(Contract other)
         {
-            return (other as ComplexReadSchema)?.Fields.SequenceEqual(Fields,
-                       (a, b) => a.Name == b.Name && a.IsRequired == b.IsRequired && a.Schema.Equals(b.Schema))
+            return (other as ComplexReadContract)?.Fields.SequenceEqual(Fields,
+                       (a, b) => a.Name == b.Name && a.IsRequired == b.IsRequired && a.Contract.Equals(b.Contract))
                    ?? false;
         }
 
@@ -249,7 +249,7 @@ namespace Dasher.Schemata.Types
                     hash <<= 5;
                     hash ^= field.Name.GetHashCode();
                     hash <<= 3;
-                    hash ^= field.Schema.GetHashCode();
+                    hash ^= field.Contract.GetHashCode();
                     hash <<= 1;
                     hash |= field.IsRequired.GetHashCode();
                 }
@@ -257,7 +257,7 @@ namespace Dasher.Schemata.Types
             }
         }
 
-        internal override IEnumerable<Schema> Children => Fields.Select(f => f.Schema).Cast<Schema>();
+        internal override IEnumerable<Contract> Children => Fields.Select(f => f.Contract).Cast<Contract>();
 
         internal override XElement ToXml()
         {
@@ -267,13 +267,13 @@ namespace Dasher.Schemata.Types
                 new XAttribute("Id", Id),
                 Fields.Select(f => new XElement(nameof(Field),
                     new XAttribute(nameof(Field.Name), f.Name),
-                    new XAttribute(nameof(Field.Schema), f.Schema.ToReferenceString()),
+                    new XAttribute(nameof(Field.Contract), f.Contract.ToReferenceString()),
                     new XAttribute(nameof(Field.IsRequired), f.IsRequired))));
         }
 
-        public IReadSchema CopyTo(SchemaCollection collection)
+        public IReadContract CopyTo(ContractCollection collection)
         {
-            return collection.GetOrCreate(this, () => new ComplexReadSchema(Fields.Select(f => new Field(f.Name, f.Schema.CopyTo(collection), f.IsRequired)).ToList()));
+            return collection.GetOrCreate(this, () => new ComplexReadContract(Fields.Select(f => new Field(f.Name, f.Contract.CopyTo(collection), f.IsRequired)).ToList()));
         }
     }
 }

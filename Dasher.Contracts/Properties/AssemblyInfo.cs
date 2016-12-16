@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Dasher.Schemata")]
+[assembly: AssemblyTitle("Dasher.Contracts")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Dasher.Schemata")]
+[assembly: AssemblyProduct("Dasher.Contracts")]
 [assembly: AssemblyCopyright("Copyright © Drew Noakes 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -35,4 +35,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-[assembly: InternalsVisibleTo("Dasher.Schemata.Tests")]
+[assembly: InternalsVisibleTo("Dasher.Contracts.Tests")]

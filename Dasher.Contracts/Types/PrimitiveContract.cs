@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dasher.Schemata.Utils;
+using Dasher.Contracts.Utils;
 
-namespace Dasher.Schemata.Types
+namespace Dasher.Contracts.Types
 {
-    internal sealed class PrimitiveSchema : ByValueSchema, IWriteSchema, IReadSchema
+    internal sealed class PrimitiveContract : ByValueContract, IWriteContract, IReadContract
     {
         private static readonly Dictionary<Type, string> _nameByType;
         private static readonly Dictionary<string, Type> _typeByName;
 
-        static PrimitiveSchema()
+        static PrimitiveContract()
         {
             _nameByType = new Dictionary<Type, string>
             {
@@ -43,7 +43,7 @@ namespace Dasher.Schemata.Types
 
         private string TypeName { get; }
 
-        public PrimitiveSchema(Type type)
+        public PrimitiveContract(Type type)
         {
             string name;
             if (!_nameByType.TryGetValue(type, out name))
@@ -51,28 +51,28 @@ namespace Dasher.Schemata.Types
             TypeName = name;
         }
 
-        public PrimitiveSchema(string typeName)
+        public PrimitiveContract(string typeName)
         {
             if (!_typeByName.ContainsKey(typeName))
-                throw new SchemaParseException($"Invalid primitive schema name \"{typeName}\".");
+                throw new ContractParseException($"Invalid primitive contract name \"{typeName}\".");
             TypeName = typeName;
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool strict) => Equals(writeSchema);
+        public bool CanReadFrom(IWriteContract writeContract, bool strict) => Equals(writeContract);
 
-        public override bool Equals(Schema other)
+        public override bool Equals(Contract other)
         {
-            var schema = other as PrimitiveSchema;
-            return schema != null && schema.TypeName == TypeName;
+            var contract = other as PrimitiveContract;
+            return contract != null && contract.TypeName == TypeName;
         }
 
         protected override int ComputeHashCode() => TypeName.GetHashCode();
 
-        internal override IEnumerable<Schema> Children => EmptyArray<Schema>.Instance;
+        internal override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
 
         internal override string MarkupValue => TypeName;
 
-        IWriteSchema IWriteSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);
-        IReadSchema IReadSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);
+        IWriteContract IWriteContract.CopyTo(ContractCollection collection) => collection.Intern(this);
+        IReadContract IReadContract.CopyTo(ContractCollection collection) => collection.Intern(this);
     }
 }

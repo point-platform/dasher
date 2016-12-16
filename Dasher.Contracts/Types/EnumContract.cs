@@ -3,31 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
-using Dasher.Schemata.Utils;
+using Dasher.Contracts.Utils;
 
-namespace Dasher.Schemata.Types
+namespace Dasher.Contracts.Types
 {
-    internal sealed class EnumSchema : ByRefSchema, IWriteSchema, IReadSchema
+    internal sealed class EnumContract : ByRefContract, IWriteContract, IReadContract
     {
         public static bool CanProcess(Type type) => type.GetTypeInfo().IsEnum;
 
         private HashSet<string> MemberNames { get; }
 
-        public EnumSchema(Type type)
+        public EnumContract(Type type)
         {
             if (!CanProcess(type))
                 throw new ArgumentException("Must be an enum.", nameof(type));
             MemberNames = new HashSet<string>(Enum.GetNames(type), StringComparer.OrdinalIgnoreCase);
         }
 
-        public EnumSchema(XContainer element)
+        public EnumContract(XContainer element)
         {
             MemberNames = new HashSet<string>(element.Elements("Member").Select(e => e.Attribute("Name").Value));
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
+        public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
-            var that = writeSchema as EnumSchema;
+            var that = writeContract as EnumContract;
             if (that == null)
                 return false;
             return strict
@@ -35,11 +35,11 @@ namespace Dasher.Schemata.Types
                 : MemberNames.IsSupersetOf(that.MemberNames);
         }
 
-        internal override IEnumerable<Schema> Children => EmptyArray<Schema>.Instance;
+        internal override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
 
-        public override bool Equals(Schema other)
+        public override bool Equals(Contract other)
         {
-            var e = other as EnumSchema;
+            var e = other as EnumContract;
             return e != null && MemberNames.SetEquals(e.MemberNames);
         }
 
@@ -66,7 +66,7 @@ namespace Dasher.Schemata.Types
                 MemberNames.Select(m => new XElement("Member", new XAttribute("Name", m))));
         }
 
-        IReadSchema IReadSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);
-        IWriteSchema IWriteSchema.CopyTo(SchemaCollection collection) => collection.Intern(this);
+        IReadContract IReadContract.CopyTo(ContractCollection collection) => collection.Intern(this);
+        IWriteContract IWriteContract.CopyTo(ContractCollection collection) => collection.Intern(this);
     }
 }

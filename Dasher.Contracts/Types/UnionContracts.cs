@@ -2,45 +2,45 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using Dasher.Schemata.Utils;
+using Dasher.Contracts.Utils;
 using Dasher.TypeProviders;
 
-namespace Dasher.Schemata.Types
+namespace Dasher.Contracts.Types
 {
-    internal sealed class UnionWriteSchema : ByRefSchema, IWriteSchema
+    internal sealed class UnionWriteContract : ByRefContract, IWriteContract
     {
         public static bool CanProcess(Type type) => Union.IsUnionType(type);
 
         public struct Member
         {
             public string Id { get; }
-            public IWriteSchema Schema { get; }
+            public IWriteContract Contract { get; }
 
-            public Member(string id, IWriteSchema schema)
+            public Member(string id, IWriteContract contract)
             {
                 Id = id;
-                Schema = schema;
+                Contract = contract;
             }
         }
 
         public IReadOnlyList<Member> Members { get; }
 
-        public UnionWriteSchema(Type type, SchemaCollection schemaCollection)
+        public UnionWriteContract(Type type, ContractCollection contractCollection)
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be a union.", nameof(type));
             Members = Union.GetTypes(type)
-                .Select(t => new Member(UnionEncoding.GetTypeName(t), schemaCollection.GetOrAddWriteSchema(t)))
+                .Select(t => new Member(UnionEncoding.GetTypeName(t), contractCollection.GetOrAddWriteContract(t)))
                 .OrderBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
         }
 
-        private UnionWriteSchema(IReadOnlyList<Member> members)
+        private UnionWriteContract(IReadOnlyList<Member> members)
         {
             Members = members;
         }
 
-        public UnionWriteSchema(XElement element, Func<string, IWriteSchema> resolveSchema, ICollection<Action> bindActions)
+        public UnionWriteContract(XElement element, Func<string, IWriteContract> resolveContract, ICollection<Action> bindActions)
         {
             var members = new List<Member>();
 
@@ -49,24 +49,24 @@ namespace Dasher.Schemata.Types
                 foreach (var field in element.Elements(nameof(Member)))
                 {
                     var id = field.Attribute(nameof(Member.Id))?.Value;
-                    var schema = field.Attribute(nameof(Member.Schema))?.Value;
+                    var contract = field.Attribute(nameof(Member.Contract))?.Value;
 
                     if (string.IsNullOrWhiteSpace(id))
-                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Id)}\" attribute.");
-                    if (string.IsNullOrWhiteSpace(schema))
-                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Schema)}\" attribute.");
+                        throw new ContractParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Id)}\" attribute.");
+                    if (string.IsNullOrWhiteSpace(contract))
+                        throw new ContractParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Contract)}\" attribute.");
 
-                    members.Add(new Member(id, resolveSchema(schema)));
+                    members.Add(new Member(id, resolveContract(contract)));
                 }
             });
 
             Members = members;
         }
 
-        public override bool Equals(Schema other)
+        public override bool Equals(Contract other)
         {
-            var o = other as UnionWriteSchema;
-            return o != null && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Schema.Equals(b.Schema));
+            var o = other as UnionWriteContract;
+            return o != null && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Contract.Equals(b.Contract));
         }
 
         protected override int ComputeHashCode()
@@ -79,13 +79,13 @@ namespace Dasher.Schemata.Types
                     hash <<= 5;
                     hash ^= member.Id.GetHashCode();
                     hash <<= 3;
-                    hash ^= member.Schema.GetHashCode();
+                    hash ^= member.Contract.GetHashCode();
                 }
                 return hash;
             }
         }
 
-        internal override IEnumerable<Schema> Children => Members.Select(m => m.Schema).Cast<Schema>();
+        internal override IEnumerable<Contract> Children => Members.Select(m => m.Contract).Cast<Contract>();
 
         internal override XElement ToXml()
         {
@@ -95,49 +95,49 @@ namespace Dasher.Schemata.Types
                 new XAttribute("Id", Id),
                 Members.Select(m => new XElement("Member",
                     new XAttribute("Id", m.Id),
-                    new XAttribute("Schema", m.Schema.ToReferenceString()))));
+                    new XAttribute("Contract", m.Contract.ToReferenceString()))));
         }
 
-        public IWriteSchema CopyTo(SchemaCollection collection)
+        public IWriteContract CopyTo(ContractCollection collection)
         {
-            return collection.GetOrCreate(this, () => new UnionWriteSchema(Members.Select(m => new Member(m.Id, m.Schema.CopyTo(collection))).ToList()));
+            return collection.GetOrCreate(this, () => new UnionWriteContract(Members.Select(m => new Member(m.Id, m.Contract.CopyTo(collection))).ToList()));
         }
     }
 
-    internal sealed class UnionReadSchema : ByRefSchema, IReadSchema
+    internal sealed class UnionReadContract : ByRefContract, IReadContract
     {
-        public static bool CanProcess(Type type) => UnionWriteSchema.CanProcess(type);
+        public static bool CanProcess(Type type) => UnionWriteContract.CanProcess(type);
 
         private struct Member
         {
             public string Id { get; }
-            public IReadSchema Schema { get; }
+            public IReadContract Contract { get; }
 
-            public Member(string id, IReadSchema schema)
+            public Member(string id, IReadContract contract)
             {
                 Id = id;
-                Schema = schema;
+                Contract = contract;
             }
         }
 
         private IReadOnlyList<Member> Members { get; }
 
-        public UnionReadSchema(Type type, SchemaCollection schemaCollection)
+        public UnionReadContract(Type type, ContractCollection contractCollection)
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be a union.", nameof(type));
             Members = Union.GetTypes(type)
-                .Select(t => new Member(UnionEncoding.GetTypeName(t), schemaCollection.GetOrAddReadSchema(t)))
+                .Select(t => new Member(UnionEncoding.GetTypeName(t), contractCollection.GetOrAddReadContract(t)))
                 .OrderBy(m => m.Id, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
         }
 
-        private UnionReadSchema(IReadOnlyList<Member> members)
+        private UnionReadContract(IReadOnlyList<Member> members)
         {
             Members = members;
         }
 
-        public UnionReadSchema(XElement element, Func<string, IReadSchema> resolveSchema, ICollection<Action> bindActions)
+        public UnionReadContract(XElement element, Func<string, IReadContract> resolveContract, ICollection<Action> bindActions)
         {
             var members = new List<Member>();
 
@@ -146,27 +146,27 @@ namespace Dasher.Schemata.Types
                 foreach (var field in element.Elements(nameof(Member)))
                 {
                     var id = field.Attribute(nameof(Member.Id))?.Value;
-                    var schema = field.Attribute(nameof(Member.Schema))?.Value;
+                    var contract = field.Attribute(nameof(Member.Contract))?.Value;
 
                     if (string.IsNullOrWhiteSpace(id))
-                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Id)}\" attribute.");
-                    if (string.IsNullOrWhiteSpace(schema))
-                        throw new SchemaParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Schema)}\" attribute.");
+                        throw new ContractParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Id)}\" attribute.");
+                    if (string.IsNullOrWhiteSpace(contract))
+                        throw new ContractParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Member.Contract)}\" attribute.");
 
-                    members.Add(new Member(id, resolveSchema(schema)));
+                    members.Add(new Member(id, resolveContract(contract)));
                 }
             });
 
             Members = members;
         }
 
-        public bool CanReadFrom(IWriteSchema writeSchema, bool strict)
+        public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
-            // TODO write EmptySchema test for this case
-            if (writeSchema is EmptySchema)
+            // TODO write EmptyContract test for this case
+            if (writeContract is EmptyContract)
                 return true;
 
-            var ws = writeSchema as UnionWriteSchema;
+            var ws = writeContract as UnionWriteContract;
 
             if (ws == null)
                 return false;
@@ -190,7 +190,7 @@ namespace Dasher.Schemata.Types
                 if (cmp == 0)
                 {
                     // match
-                    if (!rm.Schema.CanReadFrom(wm.Schema, strict))
+                    if (!rm.Contract.CanReadFrom(wm.Contract, strict))
                         return false;
 
                     // step both forwards
@@ -217,10 +217,10 @@ namespace Dasher.Schemata.Types
             return true;
         }
 
-        public override bool Equals(Schema other)
+        public override bool Equals(Contract other)
         {
-            var o = other as UnionReadSchema;
-            return o != null && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Schema.Equals(b.Schema));
+            var o = other as UnionReadContract;
+            return o != null && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Contract.Equals(b.Contract));
         }
 
         protected override int ComputeHashCode()
@@ -233,13 +233,13 @@ namespace Dasher.Schemata.Types
                     hash <<= 5;
                     hash ^= member.Id.GetHashCode();
                     hash <<= 3;
-                    hash ^= member.Schema.GetHashCode();
+                    hash ^= member.Contract.GetHashCode();
                 }
                 return hash;
             }
         }
 
-        internal override IEnumerable<Schema> Children => Members.Select(m => m.Schema).Cast<Schema>();
+        internal override IEnumerable<Contract> Children => Members.Select(m => m.Contract).Cast<Contract>();
 
         internal override XElement ToXml()
         {
@@ -249,12 +249,12 @@ namespace Dasher.Schemata.Types
                 new XAttribute("Id", Id),
                 Members.Select(m => new XElement("Member",
                     new XAttribute("Id", m.Id),
-                    new XAttribute("Schema", m.Schema.ToReferenceString()))));
+                    new XAttribute("Contract", m.Contract.ToReferenceString()))));
         }
 
-        public IReadSchema CopyTo(SchemaCollection collection)
+        public IReadContract CopyTo(ContractCollection collection)
         {
-            return collection.GetOrCreate(this, () => new UnionReadSchema(Members.Select(m => new Member(m.Id, m.Schema.CopyTo(collection))).ToList()));
+            return collection.GetOrCreate(this, () => new UnionReadContract(Members.Select(m => new Member(m.Id, m.Contract.CopyTo(collection))).ToList()));
         }
     }
 }
