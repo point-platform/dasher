@@ -1,22 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using Dasher.Contracts.Types;
 using Dasher.Contracts.Utils;
 
 namespace Dasher.Contracts
 {
-    internal sealed class ReferenceEqualityComparer : IEqualityComparer, IEqualityComparer<object>
-    {
-        public static readonly ReferenceEqualityComparer Default = new ReferenceEqualityComparer();
-        public new bool Equals(object x, object y) => ReferenceEquals(x, y);
-        public int GetHashCode(object obj) => RuntimeHelpers.GetHashCode(obj);
-    }
-
     public sealed class ContractCollection
     {
         private readonly List<Contract> _contracts = new List<Contract>();
