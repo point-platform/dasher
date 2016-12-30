@@ -6,11 +6,11 @@
 
 Dasher is a fast, lightweight, cross-platform serialisation tool.
 
-Use it to get data objects from one application to another, and to reliably control behaviour as schema evolve independently.
+Use it to get data objects from one application to another, and to reliably control behaviour as contracts evolve independently.
 
 ---
 
-In inter-application communication, message schema evolve and problematic incompatibilities can arise.
+In inter-application communication, message contracts evolve and problematic incompatibilities can arise.
 In the worst case, these failures are silent and untracked.
 Dasher gives you control over what happens as versions change, in a way that's very natural to C# developers.
 You can be very strict about what you receive, or lenient.
@@ -64,9 +64,9 @@ serialisation and deserialisation at runtime.
 
 ---
 
-# Schema Evolution
+# Contract Evolution
 
-Over time, the serialiser and/or deserialiser may need to modify the schema of the messages they exchange.
+Over time, the serialiser and/or deserialiser may need to modify the contracts of the messages they exchange.
 
 Dasher gives the receiver the final say in whether it will accept a given message or not.
 Therefore, Dasher's `Deserialiser` class governs, through user configuration, how different messages are interpreted.
@@ -75,7 +75,7 @@ Let's look at some examples.
 
 ## Handing unexpected fields
 
-The most common modifications to schema are the addition and removal of fields.
+The most common modifications to contracts are the addition and removal of fields.
 In this example, the serialised message contains a field that the deserialiser does not expect.
 
 This may be because the serialiser added the field, or because the deserialiser removed it. In practice, both situations are the same.
@@ -158,7 +158,7 @@ new Deserialiser<Reindeer>().Deserialise(...);
 
 ### Missing an optional field
 
-Often it's desirable to make a field optional by providing a default value to use when no value is specified. This enables backwards-compatible modifications to schema, allowing serialisers to be updated independently of deserialisers, at some later time.
+Often it's desirable to make a field optional by providing a default value to use when no value is specified. This enables backwards-compatible modifications to contracts, allowing serialisers to be updated independently of deserialisers, at some later time.
 
 ```csharp
 public sealed class Reindeer
@@ -192,7 +192,7 @@ new Deserialiser<Reindeer>(UnexpectedFieldBehaviour.Ignore).Deserialise(...);
 
 # Union Types
 
-Dasher is strict about the types it deals with. This allows great control over message schema versions, but sometime you don't know exactly which type you will need. Union types allow flexibility, but in a controlled fashion.
+Dasher is strict about the types it deals with. This allows great control over message contract versions, but sometime you don't know exactly which type you will need. Union types allow flexibility, but in a controlled fashion.
 
 Dasher provides a `Union<T1,T2,...>` type. This allows a given field's type to be one of a set of known types.
 

@@ -4,7 +4,7 @@
   "version": "0.9.0-*",
   "copyright": "Copyright Drew Noakes 2015-2016",
   "authors": [ "Drew Noakes" ],
-  "description": "A fast, lightweight, cross-platform serialisation tool with support for safe schema evolution.",
+  "description": "A fast, lightweight, cross-platform serialisation tool with support for safe contract evolution.",
 
   "buildOptions": {
     "debugType": "portable",
@@ -22,7 +22,7 @@
     "projectUrl": "https://github.com/drewnoakes/dasher",
     "requireLicenseAcceptance": false,
     "tags": [ "Serialisation", "Serialization", "MsgPack", "Communication", "Formatting", "DTO" ],
-    "summary": "A fast, lightweight, cross-platform serialisation tool with support for safe schema evolution.",
+    "summary": "A fast, lightweight, cross-platform serialisation tool with support for safe contract evolution.",
     "repository": {
       "type": "git",
       "url": "https://github.com/drewnoakes/dasher.git"
