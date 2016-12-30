@@ -3,13 +3,12 @@ Release/
 bin/
 obj/
 _ReSharper*/
+/.idea/
+/.vs/
+/packages/
 *.suo
 *.user
 *.ReSharper
 *.DotSettings.user
 *.nupkg
-packages/
-.vs
-
 *.lock.json
-/.idea/
