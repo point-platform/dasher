@@ -29,6 +29,9 @@ using JetBrains.Annotations;
 
 namespace Dasher.Contracts
 {
+    /// <summary>
+    /// Defines a contract that represents how data is serialised.
+    /// </summary>
     public interface IWriteContract
     {
         /// <summary>
@@ -39,8 +42,18 @@ namespace Dasher.Contracts
         IWriteContract CopyTo(ContractCollection collection);
     }
 
+    /// <summary>
+    /// Defines a contract that represents how data is deserialised.
+    /// </summary>
     public interface IReadContract
     {
+        /// <summary>
+        /// Compute whether data written according to <paramref name="writeContract"/> may be
+        /// read under this contract.
+        /// </summary>
+        /// <param name="writeContract">The contract to test compatibility against.</param>
+        /// <param name="strict">Whether the comparison allows any leniency or not.</param>
+        /// <returns><c>true</c> if the contracts are compatible, otherwise <c>false</c>.</returns>
         bool CanReadFrom(IWriteContract writeContract, bool strict);
 
         /// <summary>
@@ -51,24 +64,47 @@ namespace Dasher.Contracts
         IReadContract CopyTo(ContractCollection collection);
     }
 
+    /// <summary>
+    /// Base class for all contracts.
+    /// </summary>
+    /// <remarks>
+    /// Additionally, contract classes must derive from either <see cref="ByRefContract"/> or
+    /// <see cref="ByValueContract"/> and implement one or both of <see cref="IWriteContract"/>
+    /// and <see cref="IReadContract"/>.
+    /// </remarks>
     public abstract class Contract
     {
         internal abstract IEnumerable<Contract> Children { get; }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             var other = obj as Contract;
             return other != null && Equals(other);
         }
 
+        /// <summary>
+        /// Determines whether the specified contract is equal to this one.
+        /// Equality means that they have identical specifications in every way.
+        /// </summary>
+        /// <param name="other">The contract to compare against.</param>
+        /// <returns><c>true</c> if contracts are equal, otherwise <c>false</c>.</returns>
         public abstract bool Equals(Contract other);
 
-        public override int GetHashCode() => ComputeHashCode();
+        /// <inheritdoc />
+        public sealed override int GetHashCode() => ComputeHashCode();
 
+        /// <summary>
+        /// Computes a hash code for the contract.
+        /// </summary>
+        /// <returns>The hash code for this contract.</returns>
         protected abstract int ComputeHashCode();
     }
 
-    /// <summary>For complex, union and enum.</summary>
+    /// <summary>
+    /// Base class of contracts that are annotated by reference.
+    /// </summary>
+    /// <remarks>For complex, union and enum.</remarks>
     public abstract class ByRefContract : Contract
     {
         private string _id;
@@ -86,13 +122,20 @@ namespace Dasher.Contracts
         }
 
         internal abstract XElement ToXml();
+
+        /// <inheritdoc />
         public override string ToString() => Id ?? GetType().Name;
     }
 
-    /// <summary>For primitive, nullable, list, dictionary, tuple, empty.</summary>
+    /// <summary>
+    /// Base class of contracts that are annotated by value.
+    /// </summary>
+    /// <remarks>For primitive, nullable, list, dictionary, tuple, empty.</remarks>
     public abstract class ByValueContract : Contract
     {
         internal abstract string MarkupValue { get; }
+
+        /// <inheritdoc />
         public override string ToString() => MarkupValue;
     }
 }
