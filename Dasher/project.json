@@ -10,7 +10,6 @@
     "debugType": "portable",
     "xmlDoc": true,
     "optimize": true,
-    "nowarn": [ 1591 ],
     "define": [ "UNSAFE" ],
     "allowUnsafe": true
   },
