@@ -30,6 +30,10 @@
   },
 
   "dependencies": {
+    "JetBrains.Annotations": {
+      "version": "10.2.1",
+      "type": "build"
+    }
   },
 
   "frameworks": {
@@ -42,6 +46,11 @@
       }
     },
 
-    "net45": {}
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Xml": "",
+        "System.Xml.Linq": ""
+      }
+    }
   }
 }

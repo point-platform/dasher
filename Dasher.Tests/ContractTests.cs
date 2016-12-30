@@ -1,9 +1,33 @@
+#region License
+//
+// Dasher
+//
+// Copyright 2015-2016 Drew Noakes
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//
+//        http://www.apache.org/licenses/LICENSE-2.0
+//
+//    Unless required by applicable law or agreed to in writing, software
+//    distributed under the License is distributed on an "AS IS" BASIS,
+//    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//    See the License for the specific language governing permissions and
+//    limitations under the License.
+//
+// More information about this project is available at:
+//
+//    https://github.com/drewnoakes/dasher
+//
+#endregion
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using Dasher.Contracts.Utils;
+using Dasher.Contracts;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -11,12 +35,14 @@ using Xunit.Abstractions;
 // ReSharper disable MemberCanBePrivate.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
-namespace Dasher.Contracts.Tests
+namespace Dasher.Tests
 {
     // TODO better default IDs for by-ref contracts (consider type name, though careful with generics...)
     // TODO support recursive types
     // TODO reflect integral conversions supported by dasher
     // TODO test writing empty message to complex with all-default values
+    // TODO divorce to/from XML from class hierarchy, allowing other serialisation formats
+    // TODO consider integrating contract types with ITypeProvider
 
 /*
     [Flags]
@@ -32,6 +58,8 @@ namespace Dasher.Contracts.Tests
         Lenient // = AllowExtraFieldsOnComplex | AllowFewerMembersInEnum | AllowFewerMembersInUnion | AllowLosslessTypeConversion
     }
 */
+
+    #region Test types
 
     public enum EnumAbc { A, B, C }
     public enum EnumAbcd { A, B, C, D }
@@ -89,20 +117,21 @@ namespace Dasher.Contracts.Tests
         public int Age { get; }
         public double Height { get; }
     }
-
-    public class ContractTests
+    /// <summary>Required as Dasher won't serialise non-complex top-level types.</summary>
+    public class Wrapper<T>
     {
-        /// <summary>Required as Dasher won't serialise non-complex top-level types.</summary>
-        public class Wrapper<T>
+        public T Value { get; }
+
+        public Wrapper(T value)
         {
-            public T Value { get; }
-
-            public Wrapper(T value)
-            {
-                Value = value;
-            }
+            Value = value;
         }
+    }
 
+    #endregion
+
+    public sealed class ContractTests
+    {
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         [SuppressMessage("ReSharper", "RedundantArgumentDefaultValue")]
         private static IReadOnlyList<TRead> Test<TWrite, TRead>(TWrite write, TRead read, bool matchIfRelaxed, bool matchIfStrict)
@@ -580,7 +609,7 @@ namespace Dasher.Contracts.Tests
 
             var xml = before.ToXml();
 
-            const string expectedXml = @"<Contract>
+            const string expectedXml = @"<Contracts>
   <ComplexRead Id=""Contract1"">
     <Field Name=""age"" Contract=""Int32"" IsRequired=""true"" />
     <Field Name=""name"" Contract=""String"" IsRequired=""true"" />
@@ -607,18 +636,18 @@ namespace Dasher.Contracts.Tests
     <Member Name=""D"" />
   </Enum>
   <UnionRead Id=""Contract7"">
-    <Member Id=""Dasher.Contracts.Tests.EnumAbcd"" Contract=""#Contract6"" />
-    <Member Id=""Dasher.Contracts.Tests.Person"" Contract=""#Contract1"" />
+    <Member Id=""Dasher.Tests.EnumAbcd"" Contract=""#Contract6"" />
+    <Member Id=""Dasher.Tests.Person"" Contract=""#Contract1"" />
     <Member Id=""Int32"" Contract=""Int32"" />
     <Member Id=""String"" Contract=""String"" />
   </UnionRead>
   <UnionWrite Id=""Contract8"">
-    <Member Id=""Dasher.Contracts.Tests.EnumAbcd"" Contract=""#Contract6"" />
-    <Member Id=""Dasher.Contracts.Tests.Person"" Contract=""#Contract2"" />
+    <Member Id=""Dasher.Tests.EnumAbcd"" Contract=""#Contract6"" />
+    <Member Id=""Dasher.Tests.Person"" Contract=""#Contract2"" />
     <Member Id=""Int32"" Contract=""Int32"" />
     <Member Id=""String"" Contract=""String"" />
   </UnionWrite>
-</Contract>";
+</Contracts>";
 
             var actualXml = xml.ToString();
 
