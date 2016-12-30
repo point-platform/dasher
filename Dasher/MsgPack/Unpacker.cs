@@ -30,6 +30,9 @@ using static Dasher.MsgPackConstants;
 
 namespace Dasher
 {
+    /// <summary>
+    /// Unpacks MsgPack data from a stream.
+    /// </summary>
     public sealed
 #if UNSAFE
         unsafe
@@ -43,11 +46,18 @@ namespace Dasher
 
         private int _nextByte = -1;
 
+        /// <summary>
+        /// Initialise the MsgPack unpacker.
+        /// </summary>
+        /// <param name="stream">The stream to unpack values from.</param>
         public Unpacker(Stream stream)
         {
             _stream = stream;
         }
 
+        /// <summary>
+        /// Gets whether the underlying stream has ended or not.
+        /// </summary>
         public bool HasStreamEnded
         {
             get
@@ -73,6 +83,11 @@ namespace Dasher
 
         #region TryRead integral types
 
+        /// <summary>
+        /// Attempt to unpack a byte value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadByte(out byte value)
         {
             PrepareNextByte();
@@ -95,6 +110,11 @@ namespace Dasher
             return false;
         }
 
+        /// <summary>
+        /// Attempt to unpack a short value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadInt16(out short value)
         {
             PrepareNextByte();
@@ -128,6 +148,11 @@ namespace Dasher
             return true;
         }
 
+        /// <summary>
+        /// Attempt to unpack an int value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadInt32(out int value)
         {
             PrepareNextByte();
@@ -163,6 +188,11 @@ namespace Dasher
             return true;
         }
 
+        /// <summary>
+        /// Attempt to unpack a long value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadInt64(out long value)
         {
             PrepareNextByte();
@@ -200,6 +230,11 @@ namespace Dasher
             return true;
         }
 
+        /// <summary>
+        /// Attempt to unpack a signed byte value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadSByte(out sbyte value)
         {
             PrepareNextByte();
@@ -229,6 +264,11 @@ namespace Dasher
             return false;
         }
 
+        /// <summary>
+        /// Attempt to unpack an unsigned short value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadUInt16(out ushort value)
         {
             PrepareNextByte();
@@ -254,6 +294,11 @@ namespace Dasher
             return true;
         }
 
+        /// <summary>
+        /// Attempt to unpack an unsigned int value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadUInt32(out uint value)
         {
             PrepareNextByte();
@@ -280,6 +325,11 @@ namespace Dasher
             return true;
         }
 
+        /// <summary>
+        /// Attempt to unpack an unsigned long value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadUInt64(out ulong value)
         {
             PrepareNextByte();
@@ -309,6 +359,11 @@ namespace Dasher
 
         #endregion
 
+        /// <summary>
+        /// Attempt to unpack a float value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadSingle(out float value)
         {
             PrepareNextByte();
@@ -331,6 +386,11 @@ namespace Dasher
             return false;
         }
 
+        /// <summary>
+        /// Attempt to unpack a double value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadDouble(out double value)
         {
             PrepareNextByte();
@@ -368,6 +428,11 @@ namespace Dasher
             return false;
         }
 
+        /// <summary>
+        /// Attempt to unpack a boolean value.
+        /// </summary>
+        /// <param name="value">The unpacked value, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadBoolean(out bool value)
         {
             PrepareNextByte();
@@ -390,6 +455,10 @@ namespace Dasher
             return false;
         }
 
+        /// <summary>
+        /// Attempt to unpack a null value.
+        /// </summary>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadNull()
         {
             PrepareNextByte();
@@ -401,6 +470,12 @@ namespace Dasher
             return true;
         }
 
+        /// <summary>
+        /// Attempt to unpack an array header.
+        /// </summary>
+        /// <param name="value">The unpacked array length, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
+        /// <exception cref="Exception">The observed array length exceeds the maximum .NET array length of <see cref="int.MaxValue"/>.</exception>
         public bool TryReadArrayLength(out int value)
         {
             PrepareNextByte();
@@ -436,6 +511,12 @@ namespace Dasher
             return false;
         }
 
+        /// <summary>
+        /// Attempt to unpack a map header.
+        /// </summary>
+        /// <param name="value">The unpacked map key/value pair count, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
+        /// <exception cref="Exception">The observed map size exceeds <see cref="int.MaxValue"/>.</exception>
         public bool TryReadMapLength(out int value)
         {
             PrepareNextByte();
@@ -471,6 +552,12 @@ namespace Dasher
             return false;
         }
 
+        /// <summary>
+        /// Attempt to read binary data.
+        /// </summary>
+        /// <param name="value">The unpacked byte array length, or zero if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
+        /// <exception cref="Exception">The observed array length exceeds the maximum .NET array length of <see cref="int.MaxValue"/>.</exception>
         public bool TryReadBinary(out byte[] value)
         {
             PrepareNextByte();
@@ -510,6 +597,17 @@ namespace Dasher
             return false;
         }
 
+        /// <summary>
+        /// Attempt to peek the <see cref="FormatFamily"/> of the next value in the stream.
+        /// </summary>
+        /// <remarks>
+        /// Peeking doesn't move the stream's position.
+        /// <para />
+        /// This method only fails if the next byte in the stream does not map to a MsgPack type identifier,
+        /// which would indicate invalid MsgPack data.
+        /// </remarks>
+        /// <param name="family">The peeked format family, or <see cref="FormatFamily.Unknown"/> if peeking failed.</param>
+        /// <returns><c>true</c> if peeking succeeded, otherwise <c>false</c>.</returns>
         public bool TryPeekFormatFamily(out FormatFamily family)
         {
             PrepareNextByte();
@@ -569,6 +667,17 @@ namespace Dasher
             return false;
         }
 
+        /// <summary>
+        /// Attempt to peek the <see cref="Format"/> of the next value in the stream.
+        /// </summary>
+        /// <remarks>
+        /// Peeking doesn't move the stream's position.
+        /// <para />
+        /// This method only fails if the next byte in the stream does not map to a MsgPack type identifier,
+        /// which would indicate invalid MsgPack data.
+        /// </remarks>
+        /// <param name="format">The peeked format, or <see cref="Format.Unknown"/> if peeking failed.</param>
+        /// <returns><c>true</c> if peeking succeeded, otherwise <c>false</c>.</returns>
         public bool TryPeekFormat(out Format format)
         {
             PrepareNextByte();
@@ -577,6 +686,10 @@ namespace Dasher
             return format != Format.Unknown;
         }
 
+        /// <summary>
+        /// Gets whether the next MsgPack value in the stream is an empty map or not.
+        /// </summary>
+        /// <returns><c>true</c> if the next value in the stream is an empty MsgPack map.</returns>
         public bool TryPeekEmptyMap()
         {
             PrepareNextByte();
@@ -638,6 +751,10 @@ namespace Dasher
 
         #region Skip value
 
+        /// <summary>
+        /// Skips the next MsgPack value in the stream.
+        /// </summary>
+        /// <exception cref="Exception">The type of the next MsgPack value cannot be determined.</exception>
         public void SkipValue()
         {
             PrepareNextByte();
@@ -763,11 +880,23 @@ namespace Dasher
 
         #region Reading strings
 
+        /// <summary>
+        /// Attempt to unpack a string, using <see cref="Encoding.UTF8"/> encoding.
+        /// </summary>
+        /// <param name="value">The unpacked string, or <c>null</c> if unpacking failed.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         public bool TryReadString(out string value)
         {
             return TryReadString(out value, Encoding.UTF8);
         }
 
+        /// <summary>
+        /// Attempt to unpack a string, using the specified <paramref name="encoding"/>.
+        /// </summary>
+        /// <param name="value">The unpacked string, or <c>null</c> if unpacking failed.</param>
+        /// <param name="encoding">The encoding to use when composing the string.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
+        /// <exception cref="Exception">The observed string length exceeds <see cref="int.MaxValue"/>.</exception>
         public bool TryReadString(out string value, Encoding encoding)
         {
             PrepareNextByte();

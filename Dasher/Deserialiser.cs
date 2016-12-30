@@ -27,17 +27,36 @@ using System.IO;
 
 namespace Dasher
 {
+    /// <summary>
+    /// Deserialises Dasher encoded data to type <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T">The type to deserialise to.</typeparam>
     public sealed class Deserialiser<T>
     {
         private readonly Func<Unpacker, DasherContext, object> _func;
         private readonly DasherContext _context;
 
+        /// <summary>
+        /// Initialises an instance of the deserialiser.
+        /// </summary>
+        /// <remarks>
+        /// This constructor attempts to retrieve generated deserialisation code from <paramref name="context"/>.
+        /// If unavailable, it will generate the relevant deserialisation code and cache it in <paramref name="context"/> for future use.
+        /// </remarks>
+        /// <param name="unexpectedFieldBehaviour">Controls how deserialisation behaves when unexpected data is received. Default is <see cref="UnexpectedFieldBehaviour.Throw"/>.</param>
+        /// <param name="context">An optional context for deserialisation. If none is provided, a new context will be created for use by this deserialiser alone.</param>
         public Deserialiser(UnexpectedFieldBehaviour unexpectedFieldBehaviour = UnexpectedFieldBehaviour.Throw, DasherContext context = null)
         {
             _context = context ?? new DasherContext();
             _func = _context.GetOrCreateDeserialiseFunc(typeof(T), unexpectedFieldBehaviour);
         }
 
+        /// <summary>
+        /// Deserialises an object from <paramref name="bytes"/>.
+        /// </summary>
+        /// <param name="bytes">The byte array to deserialise from.</param>
+        /// <returns>The deserialised object.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="bytes"/> is <c>null</c>.</exception>
         public T Deserialise(byte[] bytes)
         {
             if (bytes == null)
@@ -45,6 +64,12 @@ namespace Dasher
             return Deserialise(new Unpacker(new MemoryStream(bytes)));
         }
 
+        /// <summary>
+        /// Deserialises an object from <paramref name="stream"/>.
+        /// </summary>
+        /// <param name="stream">The stream to deserialise from.</param>
+        /// <returns>The deserialised object.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
         public T Deserialise(Stream stream)
         {
             if (stream == null)
@@ -52,6 +77,12 @@ namespace Dasher
             return Deserialise(new Unpacker(stream));
         }
 
+        /// <summary>
+        /// Deserialises an object from <paramref name="unpacker"/>.
+        /// </summary>
+        /// <param name="unpacker">The unpacker to deserialise from.</param>
+        /// <returns>The deserialised object.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="unpacker"/> is <c>null</c>.</exception>
         public T Deserialise(Unpacker unpacker)
         {
             if (unpacker == null)
@@ -60,17 +91,36 @@ namespace Dasher
         }
     }
 
+    /// <summary>
+    /// Deserialises Dasher encoded data to the type provided to the constructor.
+    /// </summary>
     public sealed class Deserialiser
     {
         private readonly Func<Unpacker, DasherContext, object> _func;
         private readonly DasherContext _context;
 
+        /// <summary>
+        /// Initialises an instance of the deserialiser.
+        /// </summary>
+        /// <remarks>
+        /// This constructor attempts to retrieve generated deserialisation code from <paramref name="context"/>.
+        /// If unavailable, it will generate the relevant deserialisation code and cache it in <paramref name="context"/> for future use.
+        /// </remarks>
+        /// <param name="type">The type to generate deserialisation code for.</param>
+        /// <param name="unexpectedFieldBehaviour">Controls how deserialisation behaves when unexpected data is received. Default is <see cref="UnexpectedFieldBehaviour.Throw"/>.</param>
+        /// <param name="context">An optional context for deserialisation. If none is provided, a new context will be created for use by this deserialiser alone.</param>
         public Deserialiser(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour = UnexpectedFieldBehaviour.Throw, DasherContext context = null)
         {
             _context = context ?? new DasherContext();
             _func = _context.GetOrCreateDeserialiseFunc(type, unexpectedFieldBehaviour);
         }
 
+        /// <summary>
+        /// Deserialises an object from <paramref name="bytes"/>.
+        /// </summary>
+        /// <param name="bytes">The byte array to deserialise from.</param>
+        /// <returns>The deserialised object.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="bytes"/> is <c>null</c>.</exception>
         public object Deserialise(byte[] bytes)
         {
             if (bytes == null)
@@ -78,6 +128,12 @@ namespace Dasher
             return Deserialise(new Unpacker(new MemoryStream(bytes)));
         }
 
+        /// <summary>
+        /// Deserialises an object from <paramref name="stream"/>.
+        /// </summary>
+        /// <param name="stream">The stream to deserialise from.</param>
+        /// <returns>The deserialised object.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="stream"/> is <c>null</c>.</exception>
         public object Deserialise(Stream stream)
         {
             if (stream == null)
@@ -85,6 +141,12 @@ namespace Dasher
             return Deserialise(new Unpacker(stream));
         }
 
+        /// <summary>
+        /// Deserialises an object from <paramref name="unpacker"/>.
+        /// </summary>
+        /// <param name="unpacker">The unpacker to deserialise from.</param>
+        /// <returns>The deserialised object.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="unpacker"/> is <c>null</c>.</exception>
         public object Deserialise(Unpacker unpacker)
         {
             if (unpacker == null)

@@ -30,6 +30,17 @@ using Dasher.TypeProviders;
 
 namespace Dasher
 {
+    /// <summary>
+    /// Contains metadata specific to a set of Dasher operations.
+    /// </summary>
+    /// <remarks>
+    /// The context models the set of <see cref="ITypeProvider"/> instances used during serialisation
+    /// and deserialisation.
+    /// <para />
+    /// It also caches code generated during the creation of <see cref="Serialiser"/> and <see cref="Deserialiser"/>
+    /// (and their generic counterparts), allowing reuse which reduces memory consumption and time waiting for
+    /// code generation/JIT compilation to complete.
+    /// </remarks>
     public sealed class DasherContext
     {
         private static readonly ComplexTypeProvider _complexTypeProvider = new ComplexTypeProvider();
@@ -57,6 +68,15 @@ namespace Dasher
         private readonly ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>> _deserialiseFuncByType = new ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>>();
         private readonly IReadOnlyList<ITypeProvider> _typeProviders;
 
+        /// <summary>
+        /// Initialises a new Dasher context.
+        /// </summary>
+        /// <remarks>
+        /// The caller may optionally provide one or more <see cref="ITypeProvider"/> instances to
+        /// be included in the context. Any providers are prepended to the default set, allowing
+        /// them to override built-in behaviour for one or more types.
+        /// </remarks>
+        /// <param name="typeProviders">Optional set of type providers, or <c>null</c>.</param>
         public DasherContext(IEnumerable<ITypeProvider> typeProviders = null)
         {
             _typeProviders = typeProviders?.Concat(_defaultTypeProviders).ToList() ?? _defaultTypeProviders;
@@ -130,6 +150,15 @@ namespace Dasher
             }
         }
 
+        /// <summary>
+        /// Get whether <paramref name="type"/> is valid as a top-level type for serialisation and deserialisation.
+        /// </summary>
+        /// <remarks>
+        /// Dasher imposes some restrictions upon top-level types to allow contracts to evolve over time.
+        /// Top-level types must be complex (classes, structs or nullable structs), or a <c>Union</c> type.
+        /// </remarks>
+        /// <param name="type">The type to test.</param>
+        /// <returns><c>true</c> if <paramref name="type"/> is a valid top-level type, otherwise <c>false</c>.</returns>
         public bool IsValidTopLevelType(Type type)
         {
             var errors = new List<string>(capacity: 0);

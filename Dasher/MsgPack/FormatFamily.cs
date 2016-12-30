@@ -24,8 +24,17 @@
 
 namespace Dasher
 {
+    /// <summary>
+    /// Enumeration of MsgPack value format families.
+    /// </summary>
+    /// <remarks>
+    /// Each <see cref="FormatFamily"/> member (mostly) represent
+    /// multiple <see cref="Format"/> members.
+    /// </remarks>
     public enum FormatFamily
     {
+        #pragma warning disable 1591
+
         Unknown = 0,
         Null,
         Boolean,

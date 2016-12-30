@@ -46,6 +46,8 @@ namespace Dasher
             _ilg = ilg;
         }
 
+        #pragma warning disable 1591
+
         public void ThrowIfTrue    (Action throwBlock) => BranchToThrowBlock(OpCodes.Brtrue,  throwBlock);
         public void ThrowIfFalse   (Action throwBlock) => BranchToThrowBlock(OpCodes.Brfalse, throwBlock);
         public void ThrowIfEqual   (Action throwBlock) => BranchToThrowBlock(OpCodes.Beq,     throwBlock);
@@ -67,6 +69,8 @@ namespace Dasher
                 throwBlock();
             });
         }
+
+        #pragma warning restore 1591
 
         internal void Flush() => _blocks.ForEach(b => b());
     }

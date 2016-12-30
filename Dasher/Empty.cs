@@ -27,6 +27,23 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Dasher
 {
+    /// <summary>
+    /// Commonly used to signify an empty message.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Empty"/> is mainly used with generic wrapper types. Consider
+    /// a message envelope such as <c>Envelope&lt;T&gt;</c> for which header
+    /// fields apply, but no body is required. In such a case you can serialise
+    /// and deserialise <c>Envelope&lt;Empty&gt;</c> successfully.
+    /// <para />
+    /// On the wire, <c>Empty</c> is serialised as a MsgPack map with zero elements.
+    /// Conceptually this is a complex type with no fields.
+    /// <para />
+    /// A serialised <c>Empty</c> value can be deserialised as a complex type if
+    /// all parameters have default values, allowing versioning of contracts over time.
+    /// <para />
+    /// This class may not be instantiated.
+    /// </remarks>
     [SuppressMessage("ReSharper", "ConvertToStaticClass")]
     public sealed class Empty
     {

@@ -42,14 +42,28 @@ namespace Dasher
 {
     // NOTE this file is generated
 
+    /// <summary>
+    /// Static helper methods for working with unions.
+    /// </summary>
     public static class Union
     {
+        /// <summary>
+        /// Gets whether <paramref name="type"/> is one of the family of generic union types.
+        /// </summary>
+        /// <param name="type">The type to inspect.</param>
+        /// <returns><c>true</c> if <paramref name="type"/> is a union type, otherwise <c>false</c>.</returns>
         public static bool IsUnionType(Type type)
         {
             return type.FullName.StartsWith("Dasher.Union`", StringComparison.Ordinal)
                 && ReferenceEquals(type.GetTypeInfo().Assembly, typeof(Union).GetTypeInfo().Assembly);
         }
 
+        /// <summary>
+        /// Gets the member types of the union represented by <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The union type to inspect.</param>
+        /// <returns>The list of member types within the union.</returns>
+        /// <exception cref="ArgumentException"><paramref name="type"/> is not a union type.</exception>
         public static IReadOnlyList<Type> GetTypes(Type type)
         {
             if (!IsUnionType(type))
@@ -71,15 +85,62 @@ for (var level = 2; level <= 16; level++)
     /// </summary>
     public abstract class <#= unionName #>
     {
-        public abstract T Match<T>(<#=funcMatchArgs#>);
-        public abstract void Match(<#=actionMatchArgs#>);
-        public abstract object Value { get; }
-        public abstract Type Type { get; }
-
+        /// <summary>
+        /// Applies the contained value to one of <#= level #> functions, based upon the type.
+        /// </summary>
+        /// <remarks>
+        /// Only one of the provided functions will be invoked.
+        /// </remarks>
 <# for (var i = 1; i <= level; i++) { #>
+        /// <param name="func<#=i#>">A function from <typeparamref name="T<#=i#>"/> to <typeparamref name="T"/>.</param>
+<# } #>
+        /// <typeparam name="T">The value returned from all functions.</typeparam>
+        /// <returns>The result of the invoked function.</returns>
+        public abstract T Match<T>(<#=funcMatchArgs#>);
+
+        /// <summary>
+        /// Invokes one of <#= level #> actions, based upon the contained member type.
+        /// </summary>
+        /// <remarks>
+        /// Only one of the provided actions will be invoked.
+        /// </remarks>
+<# for (var i = 1; i <= level; i++) { #>
+        /// <param name="action<#=i#>">An action accepting <typeparamref name="T<#=i#>"/>.</param>
+<# } #>
+        public abstract void Match(<#=actionMatchArgs#>);
+
+        /// <summary>
+        /// Gets the contained member as <see cref="object"/>.
+        /// </summary>
+        public abstract object Value { get; }
+
+        /// <summary>
+        /// Gets the contained value's type.
+        /// </summary>
+		/// <remarks>
+		/// This type will be one of the union's generic member types.
+		/// </remarks>
+        public abstract Type Type { get; }
+<# for (var i = 1; i <= level; i++) { #>
+
+        /// <summary>
+        /// Instantiates an instance of this union from a value of type <typeparamref name="T<#=i#>"/>.
+        /// </summary>
+        /// <param name="value">The value of the returned union.</param>
+        /// <returns>A union containing <paramref name="value" /> of type <typeparamref name="T<#=i#>"/>.</returns>
         public static <#= unionName #> Create(T<#=i#> value) => new Type<#=i#>(value);
 <# } #>
 
+        /// <summary>
+        /// Attempts to instantiate an instance of this union from <paramref name="value" />.
+        /// </summary>
+		/// <remarks>
+		/// If the type of <paramref name="value" /> is not one of the union's member types,
+		/// instantiation will fail.
+		/// </remarks>
+        /// <param name="value">The value to attempt instantiation with.</param>
+        /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
+        /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
         public static bool TryCreate(object value, out <#= unionName #> union)
         {
 <# for (var i = 1; i <= level; i++) { #>
@@ -90,12 +151,25 @@ for (var level = 2; level <= 16; level++)
         }
 
         private Union() {}
-
 <# for (var i = 1; i <= level; i++) { #>
+
+        /// <summary>
+        /// Implicitly converts values of type <typeparamref name="T<#=i#>"/> to an instance of this union.
+        /// </summary>
+        /// <param name="value">The type to implicitly convert.</param>
+        /// <returns>The resulting union value.</returns>
         public static implicit operator <#= unionName #>(T<#=i#> value) => new Type<#=i#>(value);
 <# } #>
-
 <# for (var i = 1; i <= level; i++) { #>
+
+        /// <summary>
+        /// Attempts to cast the union's inner value to member type <typeparamref name="T<#=i#>"/>.
+        /// </summary>
+		/// <remarks>
+		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+		/// </remarks>
+        /// <param name="union">The union to cast.</param>
+        /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T<#=i#>"/>.</exception>
         public static explicit operator T<#=i#>(<#= unionName #> union) => (T<#=i#>)union.Value;
 <# } #>
 <# for (var i = 1; i <= level; i++) { #>

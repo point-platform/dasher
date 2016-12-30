@@ -30,14 +30,27 @@ namespace Dasher
 {
     public sealed class DeserialisationException : Exception
     {
+        /// <summary>
+        /// The type to which the deserialisation exception relates.
+        /// </summary>
         public Type TargetType { get; }
 
+        /// <summary>
+        /// Initialises a new deserialisation exception.
+        /// </summary>
+        /// <param name="message">A message explaining the cause of the exception.</param>
+        /// <param name="targetType">The type to which the deserialisation exception relates.</param>
         public DeserialisationException(string message, Type targetType)
             : base(message)
         {
             TargetType = targetType;
         }
 
+        /// <summary>
+        /// Initialises a new deserialisation exception.
+        /// </summary>
+        /// <param name="errors">Messages explaining the causes of the exception.</param>
+        /// <param name="targetType">The type to which the deserialisation exception relates.</param>
         public DeserialisationException(IReadOnlyList<string> errors, Type targetType)
             : this(DasherExceptionUtil.CreateMessageFromErrors("Cannot deserialise type", errors, targetType), targetType)
         {}
@@ -45,14 +58,27 @@ namespace Dasher
 
     public sealed class SerialisationException : Exception
     {
+        /// <summary>
+        /// The type to which the serialisation exception relates.
+        /// </summary>
         public Type TargetType { get; }
 
+        /// <summary>
+        /// Initialises a new serialisation exception.
+        /// </summary>
+        /// <param name="message">A message explaining the cause of the exception.</param>
+        /// <param name="targetType">The type to which the serialisation exception relates.</param>
         public SerialisationException(string message, Type targetType)
             : base(message)
         {
             TargetType = targetType;
         }
 
+        /// <summary>
+        /// Initialises a new serialisation exception.
+        /// </summary>
+        /// <param name="errors">Messages explaining the causes of the exception.</param>
+        /// <param name="targetType">The type to which the serialisation exception relates.</param>
         public SerialisationException(IReadOnlyList<string> errors, Type targetType)
             : this(DasherExceptionUtil.CreateMessageFromErrors("Cannot serialise type", errors, targetType), targetType)
         {}

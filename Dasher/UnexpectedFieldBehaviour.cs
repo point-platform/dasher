@@ -25,11 +25,19 @@
 namespace Dasher
 {
     /// <summary>
-    /// An enum whose members define how deserialisers behave when they encounter unexpected fields.
+    /// An enum whose members define how deserialisers behave when they encounter unexpected fields on complex types,
+    /// or unexpected members in unions and enums.
     /// </summary>
     public enum UnexpectedFieldBehaviour
     {
+        /// <summary>
+        /// Unexpected fields/members raise exceptions.
+        /// </summary>
         Throw,
+
+        /// <summary>
+        /// Unexpected fields/members are ignored.
+        /// </summary>
         Ignore
     }
 }

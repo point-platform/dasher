@@ -24,8 +24,13 @@
 
 namespace Dasher
 {
+    /// <summary>
+    /// Enumeration of MsgPack value formats.
+    /// </summary>
     public enum Format
     {
+        #pragma warning disable 1591
+
         Unknown = 0,
         PositiveFixInt,
         FixMap,
