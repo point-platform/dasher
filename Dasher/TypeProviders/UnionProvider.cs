@@ -31,7 +31,7 @@ using System.Text.RegularExpressions;
 
 namespace Dasher.TypeProviders
 {
-    public sealed class UnionProvider : ITypeProvider
+    internal sealed class UnionProvider : ITypeProvider
     {
         // Union types are serialised as an array of two values:
         //   The string name of the type, including namespace and any generic type parameters
