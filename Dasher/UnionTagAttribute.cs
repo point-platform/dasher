@@ -54,7 +54,7 @@ namespace Dasher
         public UnionTagAttribute(string tag)
         {
             if (string.IsNullOrWhiteSpace(tag))
-                throw new ArgumentException("Cannot be null or whitespace.", nameof(tag));
+                throw new ArgumentException("Cannot be null or white space.", nameof(tag));
 
             Tag = tag;
         }
