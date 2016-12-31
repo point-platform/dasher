@@ -28,7 +28,7 @@ namespace Dasher.Tests
 {
     internal static class TestUtils
     {
-        internal static void CleanUpForPerfTest()
+        public static void CleanUpForPerfTest()
         {
             GC.Collect(2, GCCollectionMode.Forced);
 
