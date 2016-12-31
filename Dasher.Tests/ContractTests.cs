@@ -653,7 +653,7 @@ namespace Dasher.Tests
 
             _output.WriteLine(actualXml);
 
-            Assert.Equal(expectedXml, actualXml);
+            Assert.Equal(expectedXml, actualXml, new SelectiveStringComparer());
 
             Assert.Equal(8, xml.Elements().Count());
 
