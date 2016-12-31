@@ -26,8 +26,15 @@ using System;
 
 namespace Dasher.Contracts
 {
+    /// <summary>
+    /// Raised for parse errors by <see cref="ContractCollection.FromXml"/>.
+    /// </summary>
     public sealed class ContractParseException : Exception
     {
+        /// <summary>
+        /// Initialise the exception with specified message.
+        /// </summary>
+        /// <param name="message">A message explaining the cause of the exception.</param>
         public ContractParseException(string message) : base(message)
         {
         }

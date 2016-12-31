@@ -26,10 +26,29 @@ using System;
 
 namespace Dasher.Contracts
 {
+    /// <summary>
+    /// Extension methods for contract types.
+    /// </summary>
     public static class ContractExtensions
     {
+        /// <summary>
+        /// Produced a reference string for <paramref name="contract"/>.
+        /// </summary>
+        /// <remarks>
+        /// For more information on monikers, read the documentation of <see cref="ContractCollection"/>.
+        /// </remarks>
+        /// <param name="contract">The contract to return a reference string for.</param>
+        /// <returns>The reference string.</returns>
         public static string ToReferenceString(this IWriteContract contract) => ToReferenceStringInternal(contract);
 
+        /// <summary>
+        /// Produced a reference string for <paramref name="contract"/>.
+        /// </summary>
+        /// <remarks>
+        /// For more information on monikers, read the documentation of <see cref="ContractCollection"/>.
+        /// </remarks>
+        /// <param name="contract">The contract to return a reference string for.</param>
+        /// <returns>The reference string.</returns>
         public static string ToReferenceString(this IReadContract contract) => ToReferenceStringInternal(contract);
 
         private static string ToReferenceStringInternal(object contract)

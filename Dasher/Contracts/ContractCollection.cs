@@ -29,9 +29,32 @@ using System.Linq;
 using System.Xml.Linq;
 using Dasher.Contracts.Types;
 using Dasher.Utils;
+using JetBrains.Annotations;
 
 namespace Dasher.Contracts
 {
+    /// <summary>
+    /// Models a set of related contracts.
+    /// </summary>
+    /// <remarks>
+    /// One contract will commonly contain other contracts. These related contracts will
+    /// all be contained in a collection.
+    /// <para />
+    /// Serialising and deserialising contracts is best performed at the level of
+    /// the collection, so that references may be resolved.
+    /// <para />
+    /// Contracts are referenced via monikers. Examples include:
+    /// <list type="bullet">
+    ///   <item><c>#MySchema</c> - the <c>#</c> character denotes the remainder of the symbol is a <see cref="ByRefContract"/> ID</item>
+    ///   <item><c>String</c>, <c>Int32</c>, ... - a built in <see cref="ByValueContract"/></item>
+    ///   <item><c>{empty}</c> - the <see cref="Empty"/> contract</item>
+    ///   <item><c>{nullable Int32}</c> - a nullable value matching the specified contract</item>
+    ///   <item><c>{list Int32}</c> - a list whose elements match the specified contract</item>
+    ///   <item><c>{dictionary Int32 String}</c> - a dictionary whose keys and values match the specified contracts, respectively</item>
+    ///   <item><c>{tuple Int32 String}</c> - a tuple whose items match the specified contracts</item>
+    /// </list>
+    /// These monikers are composable. For example: <c>{list {tuple {nullable #MyStructContract} #MyOtherContract}}</c>
+    /// </remarks>
     public sealed class ContractCollection
     {
         private readonly List<Contract> _contracts = new List<Contract>();
@@ -42,6 +65,18 @@ namespace Dasher.Contracts
 
         private bool AllowResolution { get; set; } = true;
 
+        /// <summary>
+        /// Resolve a read contract by its string moniker.
+        /// </summary>
+        /// <remarks>
+        /// If the contract cannot be resolved, an exception is thrown. To avoid exceptions, use <see cref="TryResolveReadContract"/> instead.
+        /// <para />
+        /// For more information on monikers, read the documentation of <see cref="ContractCollection"/>.
+        /// </remarks>
+        /// <param name="str">The contract's moniker.</param>
+        /// <returns>The resolved read contract.</returns>
+        /// <exception cref="Exception">The contract moniker could not be resolved.</exception>
+        [PublicAPI]
         public IReadContract ResolveReadContract(string str)
         {
             IReadContract contract;
@@ -50,6 +85,16 @@ namespace Dasher.Contracts
             return contract;
         }
 
+        /// <summary>
+        /// Attempt to resolve a read contract by its string moniker.
+        /// </summary>
+        /// <remarks>
+        /// For more information on monikers, read the documentation of <see cref="ContractCollection"/>.
+        /// </remarks>
+        /// <param name="str">The contract's moniker.</param>
+        /// <param name="readContract">The resolved read contract.</param>
+        /// <returns><c>true</c> if the contract was resolved, otherwise <c>false</c>.</returns>
+        [PublicAPI]
         public bool TryResolveReadContract(string str, out IReadContract readContract)
         {
             if (!AllowResolution)
@@ -135,6 +180,18 @@ namespace Dasher.Contracts
             return true;
         }
 
+        /// <summary>
+        /// Resolve a write contract by its string moniker.
+        /// </summary>
+        /// <remarks>
+        /// If the contract cannot be resolved, an exception is thrown. To avoid exceptions, use <see cref="TryResolveWriteContract"/> instead.
+        /// <para />
+        /// For more information on monikers, read the documentation of <see cref="ContractCollection"/>.
+        /// </remarks>
+        /// <param name="str">The contract's moniker.</param>
+        /// <returns>The resolved write contract.</returns>
+        /// <exception cref="Exception">The contract moniker could not be resolved.</exception>
+        [PublicAPI]
         public IWriteContract ResolveWriteContract(string str)
         {
             IWriteContract contract;
@@ -143,6 +200,16 @@ namespace Dasher.Contracts
             return contract;
         }
 
+        /// <summary>
+        /// Attempt to resolve a write contract by its string moniker.
+        /// </summary>
+        /// <remarks>
+        /// For more information on monikers, read the documentation of <see cref="ContractCollection"/>.
+        /// </remarks>
+        /// <param name="str">The contract's moniker.</param>
+        /// <param name="writeContract">The resolved write contract.</param>
+        /// <returns><c>true</c> if the contract was resolved, otherwise <c>false</c>.</returns>
+        [PublicAPI]
         public bool TryResolveWriteContract(string str, out IWriteContract writeContract)
         {
             if (!AllowResolution)
@@ -233,7 +300,7 @@ namespace Dasher.Contracts
         /// <summary>
         /// Removes any unreachable contract given specified <paramref name="roots"/>.
         /// </summary>
-        /// <param name="roots"></param>
+        /// <param name="roots">Root contracts for the purposes of garbage collection.</param>
         /// <returns>The number of contract removed, or zero if nothing was removed.</returns>
         public int GarbageCollect(IEnumerable<Contract> roots)
         {
@@ -253,6 +320,9 @@ namespace Dasher.Contracts
             return _contracts.RemoveAll(s => !explored.Contains(s, ReferenceEqualityComparer.Default));
         }
 
+        /// <summary>
+        /// Assign all <see cref="ByRefContract"/> sequential IDs, overwriting existing values.
+        /// </summary>
         public void UpdateByRefIds()
         {
             var existingIds = new HashSet<string>(Contracts.OfType<ByRefContract>().Where(s => s.Id != null).Select(s => s.Id));
@@ -270,12 +340,23 @@ namespace Dasher.Contracts
 
         #region To/From XML
 
+        /// <summary>
+        /// Get an XML representation of all contracts in this collection.
+        /// </summary>
+        /// <param name="elementName">The root XML element's name. Defaults to <c>"Contracts"</c>.</param>
+        /// <returns>An XML representation of all contracts in this collection.</returns>
         public XElement ToXml(string elementName = "Contracts")
         {
             return new XElement(elementName,
                 Contracts.OfType<ByRefContract>().OrderBy(s => s.Id, NumericStringComparer.Default).Select(s => s.ToXml()));
         }
 
+        /// <summary>
+        /// Produce a <see cref="ContractCollection"/> containing all contracts found in the provided XML <paramref name="element"/>.
+        /// </summary>
+        /// <param name="element">The XML element to parse.</param>
+        /// <returns>A contract collection containing the contracts found in the XML element.</returns>
+        /// <exception cref="ContractParseException">Parsing failed.</exception>
         public static ContractCollection FromXml(XElement element)
         {
             var bindActions = new List<Action>();
@@ -326,6 +407,11 @@ namespace Dasher.Contracts
 
         #endregion
 
+        /// <summary>
+        /// Get or create a write contract for <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The type to get or create a write contract for.</param>
+        /// <returns>The write contract corresponding to <paramref name="type"/>.</returns>
         public IWriteContract GetOrAddWriteContract(Type type)
         {
             if (type == typeof(Empty))
@@ -348,6 +434,11 @@ namespace Dasher.Contracts
             return Intern(new ComplexWriteContract(type, this));
         }
 
+        /// <summary>
+        /// Get or create a read contract for <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The type to get or create a read contract for.</param>
+        /// <returns>The read contract corresponding to <paramref name="type"/>.</returns>
         public IReadContract GetOrAddReadContract(Type type)
         {
             if (type == typeof(Empty))
