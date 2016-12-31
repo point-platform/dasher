@@ -28,6 +28,53 @@ using System.Text;
 
 namespace Dasher
 {
+    /// <summary>
+    /// Raised for errors during the generation of a deserialiser.
+    /// </summary>
+    public sealed class DeserialiserGenerationException : Exception
+    {
+        /// <summary>
+        /// The type to which the deserialiser generation exception relates.
+        /// </summary>
+        public Type TargetType { get; }
+
+        /// <summary>
+        /// Initialises a new deserialiser generation exception.
+        /// </summary>
+        /// <param name="errors">Messages explaining the causes of the exception.</param>
+        /// <param name="targetType">The type to which the deserialiser generation exception relates.</param>
+        public DeserialiserGenerationException(IReadOnlyList<string> errors, Type targetType)
+            : base(DasherExceptionUtil.CreateMessageFromErrors("Cannot generate deserialiser for type", errors, targetType))
+        {
+            TargetType = targetType;
+        }
+    }
+
+    /// <summary>
+    /// Raised for errors during the generation of a serialiser.
+    /// </summary>
+    public sealed class SerialiserGenerationException : Exception
+    {
+        /// <summary>
+        /// The type to which the serialiser generation exception relates.
+        /// </summary>
+        public Type TargetType { get; }
+
+        /// <summary>
+        /// Initialises a new serialiser generation exception.
+        /// </summary>
+        /// <param name="errors">Messages explaining the causes of the exception.</param>
+        /// <param name="targetType">The type to which the serialiser generation exception relates.</param>
+        public SerialiserGenerationException(IReadOnlyList<string> errors, Type targetType)
+            : base(DasherExceptionUtil.CreateMessageFromErrors("Cannot generate serialiser for type", errors, targetType))
+        {
+            TargetType = targetType;
+        }
+    }
+
+    /// <summary>
+    /// Raised for errors during deserialisation.
+    /// </summary>
     public sealed class DeserialisationException : Exception
     {
         /// <summary>
@@ -45,17 +92,11 @@ namespace Dasher
         {
             TargetType = targetType;
         }
-
-        /// <summary>
-        /// Initialises a new deserialisation exception.
-        /// </summary>
-        /// <param name="errors">Messages explaining the causes of the exception.</param>
-        /// <param name="targetType">The type to which the deserialisation exception relates.</param>
-        public DeserialisationException(IReadOnlyList<string> errors, Type targetType)
-            : this(DasherExceptionUtil.CreateMessageFromErrors("Cannot deserialise type", errors, targetType), targetType)
-        {}
     }
 
+    /// <summary>
+    /// Raised for errors during serialisation.
+    /// </summary>
     public sealed class SerialisationException : Exception
     {
         /// <summary>
@@ -73,15 +114,6 @@ namespace Dasher
         {
             TargetType = targetType;
         }
-
-        /// <summary>
-        /// Initialises a new serialisation exception.
-        /// </summary>
-        /// <param name="errors">Messages explaining the causes of the exception.</param>
-        /// <param name="targetType">The type to which the serialisation exception relates.</param>
-        public SerialisationException(IReadOnlyList<string> errors, Type targetType)
-            : this(DasherExceptionUtil.CreateMessageFromErrors("Cannot serialise type", errors, targetType), targetType)
-        {}
     }
 
     internal static class DasherExceptionUtil

@@ -50,8 +50,8 @@ namespace Dasher.Tests
         [Fact]
         public void DisallowsPrimitiveTypes()
         {
-            var exception = Assert.Throws<DeserialisationException>(() => new Deserialiser<int>());
-            Assert.Equal("Cannot deserialise type \"System.Int32\": Top level types must be complex to support future versioning.", exception.Message);
+            var exception = Assert.Throws<DeserialiserGenerationException>(() => new Deserialiser<int>());
+            Assert.Equal("Cannot generate deserialiser for type \"System.Int32\": Top level types must be complex to support future versioning.", exception.Message);
         }
 
         [Fact]
@@ -260,17 +260,17 @@ namespace Dasher.Tests
         [Fact]
         public void ThrowsOnMultipleConstructors()
         {
-            var ex = Assert.Throws<DeserialisationException>(
-                () => new Deserialiser<MultipleConstructors>());
-            Assert.Equal($"Cannot deserialise type \"{typeof(MultipleConstructors).FullName}\": Complex type provider requires a 1 public constructor, not 2.", ex.Message);
+            var ex = Assert.Throws<DeserialiserGenerationException>(() => new Deserialiser<MultipleConstructors>());
+
+            Assert.Equal($"Cannot generate deserialiser for type \"{typeof(MultipleConstructors).FullName}\": Complex type provider requires a 1 public constructor, not 2.", ex.Message);
         }
 
         [Fact]
         public void ThrowsNoPublicConstructors()
         {
-            var ex = Assert.Throws<DeserialisationException>(
-                () => new Deserialiser<NoPublicConstructors>());
-            Assert.Equal($"Cannot deserialise type \"{typeof(NoPublicConstructors).FullName}\": Complex type provider requires a public constructor.", ex.Message);
+            var ex = Assert.Throws<DeserialiserGenerationException>(() => new Deserialiser<NoPublicConstructors>());
+
+            Assert.Equal($"Cannot generate deserialiser for type \"{typeof(NoPublicConstructors).FullName}\": Complex type provider requires a public constructor.", ex.Message);
         }
 
         [Fact]

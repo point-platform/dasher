@@ -44,7 +44,7 @@ namespace Dasher
 
             // Throw if there were any errors
             if (errors.Any())
-                throw new SerialisationException(errors, type);
+                throw new SerialiserGenerationException(errors, type);
 
             // Initialise code gen
             var method = new DynamicMethod(
@@ -74,7 +74,7 @@ namespace Dasher
             if (!TryEmitSerialiseCode(ilg, throwBlocks, errors, value, packer, context, contextLocal, isRoot: true))
             {
                 Debug.Assert(errors.Any());
-                throw new SerialisationException(errors, type);
+                throw new SerialiserGenerationException(errors, type);
             }
 
             // Return the newly constructed object!

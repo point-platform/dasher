@@ -44,7 +44,7 @@ namespace Dasher
 
             // Throw if there were any errors
             if (errors.Any())
-                throw new DeserialisationException(errors, type);
+                throw new DeserialiserGenerationException(errors, type);
 
             // Initialise code gen
             var method = new DynamicMethod(
@@ -71,7 +71,7 @@ namespace Dasher
             if (!TryEmitDeserialiseCode(ilg, throwBlocks, errors, "<root>", type, valueLocal, unpacker, context, contextLocal, unexpectedFieldBehaviour, isRoot: true))
             {
                 Debug.Assert(errors.Any());
-                throw new DeserialisationException(errors, type);
+                throw new DeserialiserGenerationException(errors, type);
             }
 
             ilg.Emit(OpCodes.Ldloc, valueLocal);

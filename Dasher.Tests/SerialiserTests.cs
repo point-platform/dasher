@@ -33,29 +33,29 @@ namespace Dasher.Tests
         [Fact]
         public void DisallowsPrimitiveTypes()
         {
-            var exception = Assert.Throws<SerialisationException>(() => new Serialiser<int>());
-            Assert.Equal("Cannot serialise type \"System.Int32\": Top level types must be complex to support future versioning.", exception.Message);
+            var exception = Assert.Throws<SerialiserGenerationException>(() => new Serialiser<int>());
+            Assert.Equal("Cannot generate serialiser for type \"System.Int32\": Top level types must be complex to support future versioning.", exception.Message);
         }
 
         [Fact]
         public void DisallowsObject()
         {
-            var exception = Assert.Throws<SerialisationException>(() => new Serialiser<object>());
-            Assert.Equal($"Cannot serialise type \"System.Object\": Complex type provider requires constructor to have at least one parameter. Use \"{typeof(Empty).FullName}\" to model an empty type.", exception.Message);
+            var exception = Assert.Throws<SerialiserGenerationException>(() => new Serialiser<object>());
+            Assert.Equal($"Cannot generate serialiser for type \"System.Object\": Complex type provider requires constructor to have at least one parameter. Use \"{typeof(Empty).FullName}\" to model an empty type.", exception.Message);
         }
 
         [Fact]
         public void DisallowsNestedObject()
         {
-            var exception = Assert.Throws<SerialisationException>(() => new Serialiser<ValueWrapper<object>>());
-            Assert.Equal($"Cannot serialise type \"Dasher.Tests.ValueWrapper`1\": No type provider exists for type \"{typeof(object).FullName}\".", exception.Message);
+            var exception = Assert.Throws<SerialiserGenerationException>(() => new Serialiser<ValueWrapper<object>>());
+            Assert.Equal($"Cannot generate serialiser for type \"Dasher.Tests.ValueWrapper`1\": No type provider exists for type \"{typeof(object).FullName}\".", exception.Message);
         }
 
         [Fact]
         public void DisallowsTypeWithNoProperties()
         {
-            var exception = Assert.Throws<SerialisationException>(() => new Serialiser<NoProperties>());
-            Assert.Equal($"Cannot serialise type \"Dasher.Tests.NoProperties\": Complex type provider requires constructor to have at least one parameter. Use \"{typeof(Empty).FullName}\" to model an empty type.", exception.Message);
+            var exception = Assert.Throws<SerialiserGenerationException>(() => new Serialiser<NoProperties>());
+            Assert.Equal($"Cannot generate serialiser for type \"Dasher.Tests.NoProperties\": Complex type provider requires constructor to have at least one parameter. Use \"{typeof(Empty).FullName}\" to model an empty type.", exception.Message);
         }
 
         [Fact]
