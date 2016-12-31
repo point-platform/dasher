@@ -40,7 +40,7 @@ namespace Dasher.Contracts
 
         #region Contract resolution
 
-        private bool AllowResolution { get; set; }
+        private bool AllowResolution { get; set; } = true;
 
         public IReadContract ResolveReadContract(string str)
         {
@@ -280,7 +280,7 @@ namespace Dasher.Contracts
         {
             var bindActions = new List<Action>();
 
-            var collection = new ContractCollection();
+            var collection = new ContractCollection {AllowResolution = false};
 
             foreach (var el in element.Elements())
             {
