@@ -46,7 +46,7 @@ namespace Dasher.Tests
 
 /*
     [Flags]
-    internal enum CompatabilityLevel
+    internal enum CompatibilityLevel
     {
         Strict,
         AllowExtraFieldsOnComplex,
