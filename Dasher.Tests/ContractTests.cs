@@ -28,6 +28,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Dasher.Contracts;
+using JetBrains.Annotations;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -119,6 +120,21 @@ namespace Dasher.Tests
         public int Age { get; }
         public double Height { get; }
     }
+
+    public class TreeNode<T>
+    {
+        public TreeNode(T value, [CanBeNull] TreeNode<T> left, [CanBeNull] TreeNode<T> right)
+        {
+            Value = value;
+            Left = left;
+            Right = right;
+        }
+
+        public T Value { get; }
+        [CanBeNull] public TreeNode<T> Left { get; }
+        [CanBeNull] public TreeNode<T> Right { get; }
+    }
+
     /// <summary>Required as Dasher won't serialise non-complex top-level types.</summary>
     public class Wrapper<T>
     {
@@ -255,6 +271,29 @@ namespace Dasher.Tests
                 Assert.Equal("Bob", person.Name);
                 Assert.Equal(36, person.Age);
                 Assert.Equal(double.NaN, person.Height);
+            }
+        }
+
+        [Fact]
+        public void ComplexTypes_RecursiveType()
+        {
+            var read = Test(
+                new TreeNode<int>(1, new TreeNode<int>(2, null, null), new TreeNode<int>(3, null, null)),
+                new TreeNode<int>(1, new TreeNode<int>(2, null, null), new TreeNode<int>(3, null, null)),
+                matchIfRelaxed: true,
+                matchIfStrict: true);
+
+            foreach (var root in read)
+            {
+                Assert.Equal(1, root.Value);
+                Assert.NotNull(root.Left);
+                Assert.NotNull(root.Right);
+                Assert.Equal(2, root.Left.Value);
+                Assert.Equal(3, root.Right.Value);
+                Assert.Null(root.Left.Left);
+                Assert.Null(root.Left.Right);
+                Assert.Null(root.Right.Left);
+                Assert.Null(root.Right.Right);
             }
         }
 

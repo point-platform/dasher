@@ -51,7 +51,10 @@ namespace Dasher.Contracts.Types
         {
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase);
-            Fields = properties.Select(p => new Field(p.Name, contractCollection.GetOrAddWriteContract(p.PropertyType))).ToArray();
+            Fields = properties.Select(p => new Field(p.Name,
+                p.PropertyType == type
+                    ? this
+                    : contractCollection.GetOrAddWriteContract(p.PropertyType))).ToArray();
             if (!Fields.Any())
                 throw new ArgumentException($"Type {type} must have at least one public instance property.", nameof(type));
         }
@@ -154,7 +157,12 @@ namespace Dasher.Contracts.Types
                 throw new ArgumentException($"Constructor for type {type} must have at least one argument.", nameof(type));
             Fields = parameters
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
-                .Select(p => new Field(p.Name, contractCollection.GetOrAddReadContract(p.ParameterType), isRequired: !p.HasDefaultValue))
+                .Select(p => new Field(
+                    p.Name,
+                    p.ParameterType == type
+                        ? this
+                        : contractCollection.GetOrAddReadContract(p.ParameterType),
+                    isRequired: !p.HasDefaultValue))
                 .ToList();
         }
 
@@ -226,8 +234,13 @@ namespace Dasher.Contracts.Types
                 if (cmp == 0)
                 {
                     // match
-                    if (!rf.Contract.CanReadFrom(wf.Contract, strict))
-                        return false;
+
+                    // prevent single-level recursive type causing stack overflow
+                    if (!Equals(rf.Contract, this) && !Equals(wf.Contract, writeContract))
+                    {
+                        if (!rf.Contract.CanReadFrom(wf.Contract, strict))
+                            return false;
+                    }
 
                     // step both forwards
                     ir++;
