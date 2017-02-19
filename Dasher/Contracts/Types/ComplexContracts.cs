@@ -51,9 +51,9 @@ namespace Dasher.Contracts.Types
         {
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase);
-            if (!properties.Any())
-                throw new ArgumentException($"Type {type} must have at least one public instance property.", nameof(type));
             Fields = properties.Select(p => new Field(p.Name, contractCollection.GetOrAddWriteContract(p.PropertyType))).ToArray();
+            if (!Fields.Any())
+                throw new ArgumentException($"Type {type} must have at least one public instance property.", nameof(type));
         }
 
         private ComplexWriteContract(IReadOnlyList<Field> fields)
