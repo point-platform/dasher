@@ -37,8 +37,10 @@ using Xunit.Abstractions;
 
 namespace Dasher.Tests
 {
+    // TODO move test types into TestTypes.cs
     // TODO better default IDs for by-ref contracts (consider type name, though careful with generics...)
     // TODO support recursive types
+    // TODO support mutually dependent types
     // TODO reflect integral conversions supported by dasher
     // TODO test writing empty message to complex with all-default values
     // TODO divorce to/from XML from class hierarchy, allowing other serialisation formats
