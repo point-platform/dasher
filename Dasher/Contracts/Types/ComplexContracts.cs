@@ -112,7 +112,7 @@ namespace Dasher.Contracts.Types
         internal override XElement ToXml()
         {
             if (Id == null)
-                throw new InvalidOperationException("\"Id\" property cannot be null.");
+                throw new InvalidOperationException($"\"{nameof(Id)}\" property cannot be null.");
             return new XElement("ComplexWrite",
                 new XAttribute("Id", Id),
                 Fields.Select(f => new XElement("Field",
