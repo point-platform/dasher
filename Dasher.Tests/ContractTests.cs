@@ -357,14 +357,32 @@ namespace Dasher.Tests
         [Fact]
         public void EmptyContract_Complex()
         {
-            var read = Test<Person, Empty>(
+            // Receiving non-empty as empty is okay only if relaxed
+            var read1 = Test<Person, Empty>(
                 new Person("Bob", 36),
                 null,
                 matchIfRelaxed: true,
                 matchIfStrict: false);
 
-            foreach (var v in read)
+            foreach (var v in read1)
                 Assert.Null(v);
+
+            // Receiving empty as non-empty is never okay when ctor parameters exist without default values
+            Test<Empty, Person>(
+                null,
+                new Person("Bob", 36),
+                matchIfRelaxed: false,
+                matchIfStrict: false);
+
+            // Receiving empty as non-empty is okay if relaxed and all ctor parameters have default values
+            var read2 = Test<Empty, ClassWithAllDefaults>(
+                null,
+                new ClassWithAllDefaults(),
+                matchIfRelaxed: true,
+                matchIfStrict: false);
+
+            foreach (var v in read2)
+                v.AssertHasDefaultValues();
         }
 
         [Fact]

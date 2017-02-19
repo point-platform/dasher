@@ -200,15 +200,14 @@ namespace Dasher.Contracts.Types
 
         public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
-            // TODO write EmptyContract test for this case and several others... (eg. tuple, union, ...)
-            if (writeContract is EmptyContract)
-                return true;
-
+            var isEmpty = writeContract is EmptyContract;
+            if (strict && isEmpty)
+                return false;
             var ws = writeContract as ComplexWriteContract;
-            if (ws == null)
+            if (ws == null && !isEmpty)
                 return false;
             var readFields = Fields;
-            var writeFields = ws.Fields;
+            var writeFields = isEmpty ? EmptyArray<ComplexWriteContract.Field>.Instance : ws.Fields;
 
             var ir = 0;
             var iw = 0;
