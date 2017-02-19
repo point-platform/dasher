@@ -15,7 +15,7 @@
       A fast, lightweight, cross-platform serialisation tool.
     </description>
 <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
-    <copyright>Copyright Drew Noakes 2015-2016</copyright>
+    <copyright>Copyright Drew Noakes 2015-2017</copyright>
     <tags>DTO Serialisation Serialization MsgPack Communication Formatting</tags>
   </metadata>
   <files>

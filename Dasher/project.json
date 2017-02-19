@@ -2,7 +2,7 @@
   "id": "Dasher",
   "title": "Dasher",
   "version": "0.9.0-*",
-  "copyright": "Copyright Drew Noakes 2015-2016",
+  "copyright": "Copyright Drew Noakes 2015-2017",
   "authors": [ "Drew Noakes" ],
   "description": "A fast, lightweight, cross-platform serialisation tool with support for safe contract evolution.",
 

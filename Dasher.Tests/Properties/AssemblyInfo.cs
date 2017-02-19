@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Dasher.Tests")]
-[assembly: AssemblyCopyright("Copyright © Drew Noakes 2016")]
+[assembly: AssemblyCopyright("Copyright © Drew Noakes 2015-2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
