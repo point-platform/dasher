@@ -17,7 +17,7 @@
   "packOptions": {
     "owners": [ "Drew Noakes" ],
     "iconUrl": "https://raw.githubusercontent.com/drewnoakes/dasher/master/Resources/logo-128x128.png",
-    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
+    "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0.html",
     "projectUrl": "https://github.com/drewnoakes/dasher",
     "requireLicenseAcceptance": false,
     "tags": [ "Serialisation", "Serialization", "MsgPack", "Communication", "Formatting", "DTO" ],
