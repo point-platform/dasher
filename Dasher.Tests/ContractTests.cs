@@ -256,7 +256,7 @@ namespace Dasher.Tests
             }
         }
 
-            #endregion
+        #endregion
 
         #region Enums
 
