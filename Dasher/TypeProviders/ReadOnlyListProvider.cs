@@ -111,18 +111,30 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Throw);
             });
 
-            // create an array to store values
-            ilg.Emit(OpCodes.Ldloc, count);
-            ilg.Emit(OpCodes.Newarr, elementType);
-
             var array = ilg.DeclareLocal(elementType.MakeArrayType());
-            ilg.Emit(OpCodes.Stloc, array);
 
-            // begin loop
+            var nonZeroLength = ilg.DefineLabel();
             var loopStart = ilg.DefineLabel();
             var loopTest = ilg.DefineLabel();
             var loopEnd = ilg.DefineLabel();
 
+            // if zero-length, return singleton empty array
+            ilg.Emit(OpCodes.Ldloc, count);
+            ilg.Emit(OpCodes.Brtrue, nonZeroLength);
+            ilg.Emit(OpCodes.Call, Methods.EmptyArrayInstanceGetter(elementType));
+            ilg.Emit(OpCodes.Stloc, array);
+
+            ilg.Emit(OpCodes.Br, loopEnd);
+
+            ilg.MarkLabel(nonZeroLength);
+
+            // create an array to store values
+            ilg.Emit(OpCodes.Ldloc, count);
+            ilg.Emit(OpCodes.Newarr, elementType);
+
+            ilg.Emit(OpCodes.Stloc, array);
+
+            // begin loop
             var i = ilg.DeclareLocal(typeof(int));
             ilg.Emit(OpCodes.Ldc_I4_0);
             ilg.Emit(OpCodes.Stloc, i);

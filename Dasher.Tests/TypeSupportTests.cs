@@ -25,6 +25,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Dasher.Utils;
 using MsgPack;
 using Xunit;
 
@@ -186,8 +187,12 @@ namespace Dasher.Tests
         public void SupportsNestedReadOnlyList()
         {
             TestNested<IReadOnlyList<int>>(new[] {1, 2, 3}, packer => packer.PackArrayHeader(3).Pack(1).Pack(2).Pack(3));
-            TestNested<IReadOnlyList<int>>(new int[0], packer => packer.PackArrayHeader(0));
             TestNested<IReadOnlyList<int>>(null, packer => packer.PackNull());
+
+            var list = TestNested<IReadOnlyList<int>>(new int[0], packer => packer.PackArrayHeader(0));
+
+            Assert.Same(EmptyArray<int>.Instance, EmptyArray<int>.Instance);
+            Assert.Same(EmptyArray<int>.Instance, list);
         }
 
         [Fact]

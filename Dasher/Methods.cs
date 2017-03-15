@@ -28,6 +28,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using Dasher.TypeProviders;
+using Dasher.Utils;
 
 namespace Dasher
 {
@@ -120,5 +121,7 @@ namespace Dasher
         public static MethodInfo Version_ToString                               { get; } = typeof(Version).GetMethod(nameof(Version.ToString), Type.EmptyTypes);
 
         public static MethodInfo DecimalProvider_Parse                          { get; } = typeof(DecimalProvider).GetMethod(nameof(DecimalProvider.Parse), BindingFlags.Static | BindingFlags.Public);
+
+        public static MethodInfo EmptyArrayInstanceGetter(Type elementType)     => typeof(EmptyArray<>).MakeGenericType(elementType).GetProperty(nameof(EmptyArray<byte>.Instance)).GetMethod;
     }
 }
