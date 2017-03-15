@@ -151,7 +151,7 @@ namespace Dasher.Contracts.Types
         {
             var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (constructors.Length != 1)
-                throw new ArgumentException($"Type {type} have a single constructor.", nameof(type));
+                throw new ArgumentException($"Type {type} must have one constructor, not {constructors.Length}.", nameof(type));
             var parameters = constructors[0].GetParameters();
             if (parameters.Length == 0)
                 throw new ArgumentException($"Constructor for type {type} must have at least one argument.", nameof(type));
