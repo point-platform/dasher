@@ -13,4 +13,4 @@ test:
   assemblies:
     - Dasher.Tests.dll
 test_script:
-  - dotnet test .\Dasher.Tests\Dasher.Tests.csproj --configuration Release --no-build
+  - dotnet test .\Dasher.Tests\Dasher.Tests.csproj --no-build
