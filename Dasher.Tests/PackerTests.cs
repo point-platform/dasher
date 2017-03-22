@@ -308,6 +308,38 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void PacksByteArraySegment()
+        {
+            var inputs = new[]
+            {
+                new ArraySegment<byte>(new byte[0]),
+                new ArraySegment<byte>(new byte[0xFF]),
+                new ArraySegment<byte>(new byte[0xFFFF]),
+                new ArraySegment<byte>(new byte[0x10000]),
+                new ArraySegment<byte>(new byte[0x10000], 100, 100),
+                new ArraySegment<byte>(new byte[0x10000], 100, 0),
+                new ArraySegment<byte>(new byte[] {1, 2, 3}),
+                new ArraySegment<byte>(new byte[] {1, 2, 3}, 1, 2),
+                new ArraySegment<byte>(new byte[] {1, 2, 3}, 1, 1),
+                new ArraySegment<byte>(new byte[] {1, 2, 3}, 1, 0),
+                new ArraySegment<byte>(new byte[] {1, 2, 3}, 2, 1),
+            };
+
+            foreach (var i in inputs)
+            {
+                _stream.Position = 0;
+
+                _packer.Pack(i);
+                _packer.Flush();
+
+                _stream.Position = 0;
+
+                Assert.True(_unpacker.ReadBinary(out byte[] result));
+                Assert.Equal(i.ToArray(), result);
+            }
+        }
+
+        [Fact]
         public void PacksArrayHeader()
         {
             var inputs = new uint[] {0, 1, 255, 256, ushort.MaxValue, ushort.MaxValue + 1, int.MaxValue};

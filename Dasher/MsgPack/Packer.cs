@@ -24,6 +24,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using JetBrains.Annotations;
 using static Dasher.MsgPackConstants;
@@ -86,25 +87,28 @@ namespace Dasher
                 Flush();
         }
 
-        private void Append(byte[] bytes)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Append(byte[] bytes) => Append(bytes, 0, bytes.Length);
+
+        private void Append(byte[] bytes, int offset, int count)
         {
-            if (_offset + bytes.Length <= _buffer.Length)
+            if (_offset + count <= _buffer.Length)
             {
                 // copy to buffer
-                Array.Copy(bytes, 0, _buffer, _offset, bytes.Length);
-                _offset += bytes.Length;
+                Array.Copy(bytes, offset, _buffer, _offset, count);
+                _offset += count;
             }
             else
             {
                 // buffer will spill
                 Flush();
-//                if (bytes.Length < 20)
+//                if (length < 20)
 //                {
 //                     // TODO copy short string to buffer
 //                }
 //                else
 //                {
-                    _stream.Write(bytes, 0, bytes.Length);
+                    _stream.Write(bytes, offset, count);
 //                }
             }
         }
@@ -332,6 +336,74 @@ namespace Dasher
                 _buffer[_offset++] = (byte)length;
 #endif
                 Append(bytes);
+            }
+        }
+
+        /// <summary>
+        /// Pack a byte array segment.
+        /// </summary>
+        /// <param name="bytes">The byte array segment to pack.</param>
+        public void Pack(ArraySegment<byte> bytes)
+        {
+            CheckBuffer(5);
+
+            var length = bytes.Count;
+
+            if (length <= byte.MaxValue)
+            {
+#if UNSAFE
+                fixed (byte* b = _buffer)
+                {
+                    var p = b + _offset;
+                    *p++ = Bin8PrefixByte;
+                    *p = (byte)length;
+                    _offset += 2;
+                }
+#else
+                _buffer[_offset++] = Bin8PrefixByte;
+                _buffer[_offset++] = (byte)length;
+#endif
+                Append(bytes.Array, bytes.Offset, bytes.Count);
+            }
+            else if (length <= ushort.MaxValue)
+            {
+#if UNSAFE
+                fixed (byte* b = _buffer)
+                {
+                    var p = b + _offset;
+                    *p++ = Bin16PrefixByte;
+                    *p++ = (byte)(length >> 8);
+                    *p   = (byte)length;
+                    _offset += 3;
+                }
+#else
+                _buffer[_offset++] = Bin16PrefixByte;
+                _buffer[_offset++] = (byte)(length >> 8);
+                _buffer[_offset++] = (byte)length;
+#endif
+                Append(bytes.Array, bytes.Offset, bytes.Count);
+            }
+            else
+            {
+#if UNSAFE
+                fixed (byte* b = _buffer)
+                {
+                    var p = b + _offset;
+                    *p++ = Bin32PrefixByte;
+                    *p++ = (byte)(length >> 24);
+                    *p++ = (byte)(length >> 16);
+                    *p++ = (byte)(length >> 8);
+                    *p   = (byte)length;
+                    _offset += 5;
+                }
+#else
+                _buffer[_offset++] = Bin32PrefixByte;
+                _buffer[_offset++] = (byte)(length >> 24);
+                _buffer[_offset++] = (byte)(length >> 16);
+                _buffer[_offset++] = (byte)(length >> 8);
+                _buffer[_offset++] = (byte)length;
+#endif
+                Append(bytes.Array, bytes.Offset, bytes.Count);
             }
         }
 
