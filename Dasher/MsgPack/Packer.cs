@@ -55,12 +55,10 @@ namespace Dasher
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="bufferSize"/> is less than 1024.</exception>
         public Packer(Stream stream, int bufferSize = 4096)
         {
-            if (stream == null)
-                throw new ArgumentNullException(nameof(stream));
             if (bufferSize < 1024)
                 throw new ArgumentOutOfRangeException(nameof(bufferSize), bufferSize, "Must be 1024 or greater.");
 
-            _stream = stream;
+            _stream = stream ?? throw new ArgumentNullException(nameof(stream));
             _buffer = new byte[bufferSize];
         }
 
