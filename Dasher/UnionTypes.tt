@@ -117,9 +117,9 @@ for (var level = 2; level <= 16; level++)
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 <# for (var i = 1; i <= level; i++) { #>
 
@@ -134,10 +134,10 @@ for (var level = 2; level <= 16; level++)
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -165,9 +165,9 @@ for (var level = 2; level <= 16; level++)
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T<#=i#>"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T<#=i#>"/>.</exception>
         public static explicit operator T<#=i#>(<#= unionName #> union) => (T<#=i#>)union.Value;

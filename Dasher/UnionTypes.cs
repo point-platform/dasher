@@ -103,9 +103,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -125,10 +125,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -159,9 +159,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2> union) => (T1)union.Value;
@@ -169,9 +169,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2> union) => (T2)union.Value;
@@ -240,9 +240,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -269,10 +269,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -311,9 +311,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3> union) => (T1)union.Value;
@@ -321,9 +321,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3> union) => (T2)union.Value;
@@ -331,9 +331,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3> union) => (T3)union.Value;
@@ -417,9 +417,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -453,10 +453,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -503,9 +503,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4> union) => (T1)union.Value;
@@ -513,9 +513,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4> union) => (T2)union.Value;
@@ -523,9 +523,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4> union) => (T3)union.Value;
@@ -533,9 +533,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4> union) => (T4)union.Value;
@@ -634,9 +634,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -677,10 +677,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -735,9 +735,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5> union) => (T1)union.Value;
@@ -745,9 +745,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5> union) => (T2)union.Value;
@@ -755,9 +755,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5> union) => (T3)union.Value;
@@ -765,9 +765,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5> union) => (T4)union.Value;
@@ -775,9 +775,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5> union) => (T5)union.Value;
@@ -891,9 +891,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -941,10 +941,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -1007,9 +1007,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6> union) => (T1)union.Value;
@@ -1017,9 +1017,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6> union) => (T2)union.Value;
@@ -1027,9 +1027,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6> union) => (T3)union.Value;
@@ -1037,9 +1037,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6> union) => (T4)union.Value;
@@ -1047,9 +1047,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6> union) => (T5)union.Value;
@@ -1057,9 +1057,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6> union) => (T6)union.Value;
@@ -1188,9 +1188,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -1245,10 +1245,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -1319,9 +1319,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T1)union.Value;
@@ -1329,9 +1329,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T2)union.Value;
@@ -1339,9 +1339,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T3)union.Value;
@@ -1349,9 +1349,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T4)union.Value;
@@ -1359,9 +1359,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T5)union.Value;
@@ -1369,9 +1369,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T6)union.Value;
@@ -1379,9 +1379,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T7"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T7"/>.</exception>
         public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7> union) => (T7)union.Value;
@@ -1525,9 +1525,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -1589,10 +1589,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -1671,9 +1671,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T1)union.Value;
@@ -1681,9 +1681,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T2)union.Value;
@@ -1691,9 +1691,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T3)union.Value;
@@ -1701,9 +1701,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T4)union.Value;
@@ -1711,9 +1711,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T5)union.Value;
@@ -1721,9 +1721,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T6)union.Value;
@@ -1731,9 +1731,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T7"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T7"/>.</exception>
         public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T7)union.Value;
@@ -1741,9 +1741,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T8"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T8"/>.</exception>
         public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8> union) => (T8)union.Value;
@@ -1902,9 +1902,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -1973,10 +1973,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -2063,9 +2063,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T1)union.Value;
@@ -2073,9 +2073,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T2)union.Value;
@@ -2083,9 +2083,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T3)union.Value;
@@ -2093,9 +2093,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T4)union.Value;
@@ -2103,9 +2103,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T5)union.Value;
@@ -2113,9 +2113,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T6)union.Value;
@@ -2123,9 +2123,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T7"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T7"/>.</exception>
         public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T7)union.Value;
@@ -2133,9 +2133,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T8"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T8"/>.</exception>
         public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T8)union.Value;
@@ -2143,9 +2143,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T9"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T9"/>.</exception>
         public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9> union) => (T9)union.Value;
@@ -2319,9 +2319,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -2397,10 +2397,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -2495,9 +2495,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T1)union.Value;
@@ -2505,9 +2505,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T2)union.Value;
@@ -2515,9 +2515,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T3)union.Value;
@@ -2525,9 +2525,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T4)union.Value;
@@ -2535,9 +2535,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T5)union.Value;
@@ -2545,9 +2545,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T6)union.Value;
@@ -2555,9 +2555,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T7"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T7"/>.</exception>
         public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T7)union.Value;
@@ -2565,9 +2565,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T8"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T8"/>.</exception>
         public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T8)union.Value;
@@ -2575,9 +2575,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T9"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T9"/>.</exception>
         public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T9)union.Value;
@@ -2585,9 +2585,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T10"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T10"/>.</exception>
         public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> union) => (T10)union.Value;
@@ -2776,9 +2776,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -2861,10 +2861,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -2967,9 +2967,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T1)union.Value;
@@ -2977,9 +2977,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T2)union.Value;
@@ -2987,9 +2987,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T3)union.Value;
@@ -2997,9 +2997,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T4)union.Value;
@@ -3007,9 +3007,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T5)union.Value;
@@ -3017,9 +3017,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T6)union.Value;
@@ -3027,9 +3027,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T7"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T7"/>.</exception>
         public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T7)union.Value;
@@ -3037,9 +3037,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T8"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T8"/>.</exception>
         public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T8)union.Value;
@@ -3047,9 +3047,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T9"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T9"/>.</exception>
         public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T9)union.Value;
@@ -3057,9 +3057,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T10"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T10"/>.</exception>
         public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T10)union.Value;
@@ -3067,9 +3067,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T11"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T11"/>.</exception>
         public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> union) => (T11)union.Value;
@@ -3273,9 +3273,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -3365,10 +3365,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -3479,9 +3479,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T1)union.Value;
@@ -3489,9 +3489,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T2)union.Value;
@@ -3499,9 +3499,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T3)union.Value;
@@ -3509,9 +3509,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T4)union.Value;
@@ -3519,9 +3519,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T5)union.Value;
@@ -3529,9 +3529,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T6)union.Value;
@@ -3539,9 +3539,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T7"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T7"/>.</exception>
         public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T7)union.Value;
@@ -3549,9 +3549,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T8"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T8"/>.</exception>
         public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T8)union.Value;
@@ -3559,9 +3559,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T9"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T9"/>.</exception>
         public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T9)union.Value;
@@ -3569,9 +3569,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T10"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T10"/>.</exception>
         public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T10)union.Value;
@@ -3579,9 +3579,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T11"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T11"/>.</exception>
         public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T11)union.Value;
@@ -3589,9 +3589,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T12"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T12"/>.</exception>
         public static explicit operator T12(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> union) => (T12)union.Value;
@@ -3810,9 +3810,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -3909,10 +3909,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -4031,9 +4031,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T1)union.Value;
@@ -4041,9 +4041,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T2)union.Value;
@@ -4051,9 +4051,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T3)union.Value;
@@ -4061,9 +4061,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T4)union.Value;
@@ -4071,9 +4071,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T5)union.Value;
@@ -4081,9 +4081,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T6)union.Value;
@@ -4091,9 +4091,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T7"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T7"/>.</exception>
         public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T7)union.Value;
@@ -4101,9 +4101,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T8"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T8"/>.</exception>
         public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T8)union.Value;
@@ -4111,9 +4111,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T9"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T9"/>.</exception>
         public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T9)union.Value;
@@ -4121,9 +4121,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T10"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T10"/>.</exception>
         public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T10)union.Value;
@@ -4131,9 +4131,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T11"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T11"/>.</exception>
         public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T11)union.Value;
@@ -4141,9 +4141,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T12"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T12"/>.</exception>
         public static explicit operator T12(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T12)union.Value;
@@ -4151,9 +4151,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T13"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T13"/>.</exception>
         public static explicit operator T13(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> union) => (T13)union.Value;
@@ -4387,9 +4387,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -4493,10 +4493,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -4623,9 +4623,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T1)union.Value;
@@ -4633,9 +4633,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T2)union.Value;
@@ -4643,9 +4643,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T3)union.Value;
@@ -4653,9 +4653,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T4)union.Value;
@@ -4663,9 +4663,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T5)union.Value;
@@ -4673,9 +4673,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T6)union.Value;
@@ -4683,9 +4683,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T7"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T7"/>.</exception>
         public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T7)union.Value;
@@ -4693,9 +4693,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T8"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T8"/>.</exception>
         public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T8)union.Value;
@@ -4703,9 +4703,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T9"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T9"/>.</exception>
         public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T9)union.Value;
@@ -4713,9 +4713,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T10"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T10"/>.</exception>
         public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T10)union.Value;
@@ -4723,9 +4723,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T11"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T11"/>.</exception>
         public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T11)union.Value;
@@ -4733,9 +4733,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T12"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T12"/>.</exception>
         public static explicit operator T12(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T12)union.Value;
@@ -4743,9 +4743,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T13"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T13"/>.</exception>
         public static explicit operator T13(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T13)union.Value;
@@ -4753,9 +4753,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T14"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T14"/>.</exception>
         public static explicit operator T14(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> union) => (T14)union.Value;
@@ -5004,9 +5004,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -5117,10 +5117,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -5255,9 +5255,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T1)union.Value;
@@ -5265,9 +5265,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T2)union.Value;
@@ -5275,9 +5275,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T3)union.Value;
@@ -5285,9 +5285,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T4)union.Value;
@@ -5295,9 +5295,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T5)union.Value;
@@ -5305,9 +5305,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T6)union.Value;
@@ -5315,9 +5315,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T7"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T7"/>.</exception>
         public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T7)union.Value;
@@ -5325,9 +5325,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T8"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T8"/>.</exception>
         public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T8)union.Value;
@@ -5335,9 +5335,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T9"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T9"/>.</exception>
         public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T9)union.Value;
@@ -5345,9 +5345,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T10"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T10"/>.</exception>
         public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T10)union.Value;
@@ -5355,9 +5355,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T11"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T11"/>.</exception>
         public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T11)union.Value;
@@ -5365,9 +5365,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T12"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T12"/>.</exception>
         public static explicit operator T12(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T12)union.Value;
@@ -5375,9 +5375,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T13"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T13"/>.</exception>
         public static explicit operator T13(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T13)union.Value;
@@ -5385,9 +5385,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T14"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T14"/>.</exception>
         public static explicit operator T14(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T14)union.Value;
@@ -5395,9 +5395,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T15"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T15"/>.</exception>
         public static explicit operator T15(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> union) => (T15)union.Value;
@@ -5661,9 +5661,9 @@ namespace Dasher
         /// <summary>
         /// Gets the contained value's type.
         /// </summary>
-		/// <remarks>
-		/// This type will be one of the union's generic member types.
-		/// </remarks>
+        /// <remarks>
+        /// This type will be one of the union's generic member types.
+        /// </remarks>
         public abstract Type Type { get; }
 
         /// <summary>
@@ -5781,10 +5781,10 @@ namespace Dasher
         /// <summary>
         /// Attempts to instantiate an instance of this union from <paramref name="value" />.
         /// </summary>
-		/// <remarks>
-		/// If the type of <paramref name="value" /> is not one of the union's member types,
-		/// instantiation will fail.
-		/// </remarks>
+        /// <remarks>
+        /// If the type of <paramref name="value" /> is not one of the union's member types,
+        /// instantiation will fail.
+        /// </remarks>
         /// <param name="value">The value to attempt instantiation with.</param>
         /// <param name="union">The resulting union if instantiation was successful, otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if instantiation was successful, otherwise <c>false</c>.</returns>
@@ -5927,9 +5927,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T1"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T1"/>.</exception>
         public static explicit operator T1(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T1)union.Value;
@@ -5937,9 +5937,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T2"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T2"/>.</exception>
         public static explicit operator T2(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T2)union.Value;
@@ -5947,9 +5947,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T3"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T3"/>.</exception>
         public static explicit operator T3(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T3)union.Value;
@@ -5957,9 +5957,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T4"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T4"/>.</exception>
         public static explicit operator T4(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T4)union.Value;
@@ -5967,9 +5967,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T5"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T5"/>.</exception>
         public static explicit operator T5(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T5)union.Value;
@@ -5977,9 +5977,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T6"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T6"/>.</exception>
         public static explicit operator T6(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T6)union.Value;
@@ -5987,9 +5987,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T7"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T7"/>.</exception>
         public static explicit operator T7(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T7)union.Value;
@@ -5997,9 +5997,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T8"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T8"/>.</exception>
         public static explicit operator T8(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T8)union.Value;
@@ -6007,9 +6007,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T9"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T9"/>.</exception>
         public static explicit operator T9(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T9)union.Value;
@@ -6017,9 +6017,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T10"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T10"/>.</exception>
         public static explicit operator T10(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T10)union.Value;
@@ -6027,9 +6027,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T11"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T11"/>.</exception>
         public static explicit operator T11(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T11)union.Value;
@@ -6037,9 +6037,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T12"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T12"/>.</exception>
         public static explicit operator T12(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T12)union.Value;
@@ -6047,9 +6047,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T13"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T13"/>.</exception>
         public static explicit operator T13(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T13)union.Value;
@@ -6057,9 +6057,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T14"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T14"/>.</exception>
         public static explicit operator T14(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T14)union.Value;
@@ -6067,9 +6067,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T15"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T15"/>.</exception>
         public static explicit operator T15(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T15)union.Value;
@@ -6077,9 +6077,9 @@ namespace Dasher
         /// <summary>
         /// Attempts to cast the union's inner value to member type <typeparamref name="T16"/>.
         /// </summary>
-		/// <remarks>
-		/// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
-		/// </remarks>
+        /// <remarks>
+        /// Casting is rarely the best approach. For safety and performance, use one of the <c>Match</c> overloads instead.
+        /// </remarks>
         /// <param name="union">The union to cast.</param>
         /// <exception cref="InvalidCastException"><paramref name="union"/> does not contain a value of type <typeparamref name="T16"/>.</exception>
         public static explicit operator T16(Union<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> union) => (T16)union.Value;
