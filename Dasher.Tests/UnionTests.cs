@@ -64,8 +64,7 @@ namespace Dasher.Tests
         public void TryCreate()
         {
             object o = 123;
-            Union<int, double> union;
-            Assert.True(Union<int, double>.TryCreate(o, out union));
+            Assert.True(Union<int, double>.TryCreate(o, out Union<int, double> union));
 
             Assert.NotNull(union);
             Assert.Equal(123, union);

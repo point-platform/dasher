@@ -52,8 +52,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                byte value;
-                Assert.True(unpacker.TryReadByte(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadByte(out byte value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -65,8 +64,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                sbyte value;
-                Assert.True(unpacker.TryReadSByte(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadSByte(out sbyte value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -80,8 +78,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                short value;
-                Assert.True(unpacker.TryReadInt16(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadInt16(out short value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -95,8 +92,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                ushort value;
-                Assert.True(unpacker.TryReadUInt16(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadUInt16(out ushort value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -110,8 +106,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                int value;
-                Assert.True(unpacker.TryReadInt32(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadInt32(out int value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -125,8 +120,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                uint value;
-                Assert.True(unpacker.TryReadUInt32(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadUInt32(out uint value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -140,8 +134,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                long value;
-                Assert.True(unpacker.TryReadInt64(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadInt64(out long value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -155,8 +148,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                ulong value;
-                Assert.True(unpacker.TryReadUInt64(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadUInt64(out ulong value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -170,8 +162,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                string value;
-                Assert.True(unpacker.TryReadString(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadString(out string value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -183,8 +174,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                float value;
-                Assert.True(unpacker.TryReadSingle(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadSingle(out float value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -196,8 +186,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                double value;
-                Assert.True(unpacker.TryReadDouble(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadDouble(out double value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
 
@@ -206,8 +195,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.Pack(input));
 
-                double value;
-                Assert.True(unpacker.TryReadDouble(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadDouble(out double value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -240,8 +228,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.PackArrayHeader(input));
 
-                int value;
-                Assert.True(unpacker.TryReadArrayLength(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadArrayLength(out int value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -255,8 +242,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.PackMapHeader(input));
 
-                int value;
-                Assert.True(unpacker.TryReadMapLength(out value), $"Processing {input}");
+                Assert.True(unpacker.TryReadMapLength(out int value), $"Processing {input}");
                 Assert.Equal(input, value);
             }
         }
@@ -279,8 +265,7 @@ namespace Dasher.Tests
             {
                 var unpacker = InitTest(p => p.PackBinary(input));
 
-                byte[] value;
-                Assert.True(unpacker.TryReadBinary(out value), $"Processing {(input == null ? "null" : $"[{string.Join(",", input)}]")}");
+                Assert.True(unpacker.TryReadBinary(out byte[] value), $"Processing {(input == null ? "null" : $"[{string.Join(",", input)}]")}");
                 Assert.Equal(input, value);
             }
         }
@@ -399,8 +384,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"Array Header {input}");
-                        int output;
-                        Assert.True(unpacker.TryReadArrayLength(out output));
+                        Assert.True(unpacker.TryReadArrayLength(out int output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -412,8 +396,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"Map Header {input}");
-                        int output;
-                        Assert.True(unpacker.TryReadMapLength(out output));
+                        Assert.True(unpacker.TryReadMapLength(out int output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -425,8 +408,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"SByte {input}");
-                        sbyte output;
-                        Assert.True(unpacker.TryReadSByte(out output));
+                        Assert.True(unpacker.TryReadSByte(out sbyte output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -438,8 +420,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"Int16 {input}");
-                        short output;
-                        Assert.True(unpacker.TryReadInt16(out output));
+                        Assert.True(unpacker.TryReadInt16(out short output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -451,8 +432,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"UInt16 {input}");
-                        ushort output;
-                        Assert.True(unpacker.TryReadUInt16(out output));
+                        Assert.True(unpacker.TryReadUInt16(out ushort output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -464,8 +444,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"Int32 {input}");
-                        int output;
-                        Assert.True(unpacker.TryReadInt32(out output));
+                        Assert.True(unpacker.TryReadInt32(out int output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -477,8 +456,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"UInt32 {input}");
-                        uint output;
-                        Assert.True(unpacker.TryReadUInt32(out output));
+                        Assert.True(unpacker.TryReadUInt32(out uint output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -492,8 +470,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"Int64 {input}");
-                        long output;
-                        Assert.True(unpacker.TryReadInt64(out output));
+                        Assert.True(unpacker.TryReadInt64(out long output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -507,8 +484,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"UInt64 {input}");
-                        ulong output;
-                        Assert.True(unpacker.TryReadUInt64(out output));
+                        Assert.True(unpacker.TryReadUInt64(out ulong output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -520,8 +496,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"Bool {input}");
-                        bool output;
-                        Assert.True(unpacker.TryReadBoolean(out output));
+                        Assert.True(unpacker.TryReadBoolean(out bool output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -533,8 +508,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"String {input}");
-                        string output;
-                        Assert.True(unpacker.TryReadString(out output));
+                        Assert.True(unpacker.TryReadString(out string output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -546,8 +520,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"Single {input}");
-                        float output;
-                        Assert.True(unpacker.TryReadSingle(out output));
+                        Assert.True(unpacker.TryReadSingle(out float output));
                         Assert.Equal(input, output);
                     };
                 },
@@ -559,8 +532,7 @@ namespace Dasher.Tests
                     return () =>
                     {
                         sequence.Add($"Double {input}");
-                        double output;
-                        Assert.True(unpacker.TryReadDouble(out output));
+                        Assert.True(unpacker.TryReadDouble(out double output));
                         Assert.Equal(input, output);
                     };
                 }
@@ -695,8 +667,7 @@ namespace Dasher.Tests
                 try
                 {
                     // Read the first sentinel
-                    float value;
-                    Assert.True(unpacker.TryReadSingle(out value));
+                    Assert.True(unpacker.TryReadSingle(out float value));
                     Assert.True(float.IsNaN(value));
 
                     // Peek at the value's format
@@ -740,8 +711,7 @@ namespace Dasher.Tests
 
             var unpacker = new Unpacker(stream);
 
-            FormatFamily actual;
-            Assert.True(unpacker.TryPeekFormatFamily(out actual));
+            Assert.True(unpacker.TryPeekFormatFamily(out FormatFamily actual));
             Assert.Equal(expected, actual);
         }
 
@@ -753,8 +723,7 @@ namespace Dasher.Tests
 
             var unpacker = new Unpacker(stream);
 
-            Format actual;
-            Assert.True(unpacker.TryPeekFormat(out actual));
+            Assert.True(unpacker.TryPeekFormat(out Format actual));
             Assert.Equal(expected, actual);
         }
 

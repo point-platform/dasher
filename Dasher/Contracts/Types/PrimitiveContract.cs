@@ -69,8 +69,7 @@ namespace Dasher.Contracts.Types
 
         public PrimitiveContract(Type type)
         {
-            string name;
-            if (!_nameByType.TryGetValue(type, out name))
+            if (!_nameByType.TryGetValue(type, out string name))
                 throw new ArgumentException($"Type {type} is not a supported primitive.", nameof(type));
             TypeName = name;
         }

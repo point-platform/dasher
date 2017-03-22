@@ -79,8 +79,7 @@ namespace Dasher.Contracts
         [PublicAPI]
         public IReadContract ResolveReadContract(string str)
         {
-            IReadContract contract;
-            if (!TryResolveReadContract(str, out contract))
+            if (!TryResolveReadContract(str, out IReadContract contract))
                 throw new Exception($"String \"{str}\" cannot be resolved as a read contract within this collection.");
             return contract;
         }
@@ -124,8 +123,7 @@ namespace Dasher.Contracts
                     case 2:
                         if (tokens[0] == "nullable")
                         {
-                            IReadContract inner;
-                            if (TryResolveReadContract(tokens[1], out inner))
+                            if (TryResolveReadContract(tokens[1], out IReadContract inner))
                             {
                                 readContract = Intern(new NullableReadContract(inner));
                                 return true;
@@ -133,8 +131,7 @@ namespace Dasher.Contracts
                         }
                         else if (tokens[0] == "list")
                         {
-                            IReadContract itemContract;
-                            if (TryResolveReadContract(tokens[1], out itemContract))
+                            if (TryResolveReadContract(tokens[1], out IReadContract itemContract))
                             {
                                 readContract = Intern(new ListReadContract(itemContract));
                                 return true;
@@ -144,9 +141,7 @@ namespace Dasher.Contracts
                     case 3:
                         if (tokens[0] == "dictionary")
                         {
-                            IReadContract keyContract;
-                            IReadContract valueContract;
-                            if (TryResolveReadContract(tokens[1], out keyContract) && TryResolveReadContract(tokens[2], out valueContract))
+                            if (TryResolveReadContract(tokens[1], out IReadContract keyContract) && TryResolveReadContract(tokens[2], out IReadContract valueContract))
                             {
                                 readContract = Intern(new DictionaryReadContract(keyContract, valueContract));
                                 return true;
@@ -160,8 +155,7 @@ namespace Dasher.Contracts
                     var itemContracts = new List<IReadContract>();
                     foreach (var token in tokens.Skip(1))
                     {
-                        IReadContract itemContract;
-                        if (!TryResolveReadContract(token, out itemContract))
+                        if (!TryResolveReadContract(token, out IReadContract itemContract))
                         {
                             readContract = null;
                             return false;
@@ -194,8 +188,7 @@ namespace Dasher.Contracts
         [PublicAPI]
         public IWriteContract ResolveWriteContract(string str)
         {
-            IWriteContract contract;
-            if (!TryResolveWriteContract(str, out contract))
+            if (!TryResolveWriteContract(str, out IWriteContract contract))
                 throw new Exception($"String \"{str}\" cannot be resolved as a write contract within this collection.");
             return contract;
         }
@@ -239,8 +232,7 @@ namespace Dasher.Contracts
                     case 2:
                         if (tokens[0] == "nullable")
                         {
-                            IWriteContract inner;
-                            if (TryResolveWriteContract(tokens[1], out inner))
+                            if (TryResolveWriteContract(tokens[1], out IWriteContract inner))
                             {
                                 writeContract = Intern(new NullableWriteContract(inner));
                                 return true;
@@ -248,8 +240,7 @@ namespace Dasher.Contracts
                         }
                         else if (tokens[0] == "list")
                         {
-                            IWriteContract itemContract;
-                            if (TryResolveWriteContract(tokens[1], out itemContract))
+                            if (TryResolveWriteContract(tokens[1], out IWriteContract itemContract))
                             {
                                 writeContract = Intern(new ListWriteContract(itemContract));
                                 return true;
@@ -259,9 +250,7 @@ namespace Dasher.Contracts
                     case 3:
                         if (tokens[0] == "dictionary")
                         {
-                            IWriteContract keyContract;
-                            IWriteContract valueContract;
-                            if (TryResolveWriteContract(tokens[1], out keyContract) && TryResolveWriteContract(tokens[2], out valueContract))
+                            if (TryResolveWriteContract(tokens[1], out IWriteContract keyContract) && TryResolveWriteContract(tokens[2], out IWriteContract valueContract))
                             {
                                 writeContract = Intern(new DictionaryWriteContract(keyContract, valueContract));
                                 return true;
@@ -275,8 +264,7 @@ namespace Dasher.Contracts
                     var itemContracts = new List<IWriteContract>();
                     foreach (var token in tokens.Skip(1))
                     {
-                        IWriteContract itemContract;
-                        if (!TryResolveWriteContract(token, out itemContract))
+                        if (!TryResolveWriteContract(token, out IWriteContract itemContract))
                         {
                             writeContract = null;
                             return false;

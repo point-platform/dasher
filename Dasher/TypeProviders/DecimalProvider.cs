@@ -59,8 +59,7 @@ namespace Dasher.TypeProviders
 
         public static decimal Parse(Unpacker unpacker, Type targetType, string name)
         {
-            Format format;
-            if (!unpacker.TryPeekFormat(out format))
+            if (!unpacker.TryPeekFormat(out Format format))
                 throw new DeserialisationException($"Unable to determine MsgPack format for \"{name}\".", targetType);
 
             switch (format)
@@ -70,15 +69,13 @@ namespace Dasher.TypeProviders
                 case Format.Str32:
                 case Format.FixStr:
                 {
-                    string str;
-                    if (!unpacker.TryReadString(out str))
-                        throw new DeserialisationException($"Unable to read MsgPack string for decimal value \"{name}\".", targetType);
+                        if (!unpacker.TryReadString(out string str))
+                            throw new DeserialisationException($"Unable to read MsgPack string for decimal value \"{name}\".", targetType);
 
-                    decimal value;
-                    if (!decimal.TryParse(str, out value))
-                        throw new DeserialisationException($"Unable to parse string \"{str}\" as a decimal for \"{name}\".", targetType);
+                        if (!decimal.TryParse(str, out decimal value))
+                            throw new DeserialisationException($"Unable to parse string \"{str}\" as a decimal for \"{name}\".", targetType);
 
-                    return value;
+                        return value;
                 }
                 case Format.NegativeFixInt:
                 case Format.Int8:
@@ -86,10 +83,9 @@ namespace Dasher.TypeProviders
                 case Format.Int32:
                 case Format.Int64:
                 {
-                    long value;
-                    if (!unpacker.TryReadInt64(out value))
-                        throw new DeserialisationException($"Unable to read MsgPack integer for decimal value \"{name}\".", targetType);
-                    return value;
+                        if (!unpacker.TryReadInt64(out long value))
+                            throw new DeserialisationException($"Unable to read MsgPack integer for decimal value \"{name}\".", targetType);
+                        return value;
                 }
                 case Format.PositiveFixInt:
                 case Format.UInt8:
@@ -97,10 +93,9 @@ namespace Dasher.TypeProviders
                 case Format.UInt32:
                 case Format.UInt64:
                 {
-                    ulong value;
-                    if (!unpacker.TryReadUInt64(out value))
-                        throw new DeserialisationException($"Unable to read MsgPack unsigned integer for decimal value \"{name}\".", targetType);
-                    return value;
+                        if (!unpacker.TryReadUInt64(out ulong value))
+                            throw new DeserialisationException($"Unable to read MsgPack unsigned integer for decimal value \"{name}\".", targetType);
+                        return value;
                 }
                 default:
                     throw new DeserialisationException($"Unable to deserialise decimal value from MsgPack format {format}.", targetType);

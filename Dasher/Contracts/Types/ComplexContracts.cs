@@ -186,8 +186,7 @@ namespace Dasher.Contracts.Types
                         throw new ContractParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Name)}\" attribute.");
                     if (string.IsNullOrWhiteSpace(contract))
                         throw new ContractParseException($"\"{element.Name}\" element must have a non-empty \"{nameof(Field.Contract)}\" attribute.");
-                    bool isRequired;
-                    if (!bool.TryParse(isRequiredStr, out isRequired))
+                    if (!bool.TryParse(isRequiredStr, out bool isRequired))
                         throw new ContractParseException($"\"{element.Name}\" element must have a boolean \"{nameof(Field.IsRequired)}\" attribute.");
 
                     fields.Add(new Field(name, resolveContract(contract), isRequired));

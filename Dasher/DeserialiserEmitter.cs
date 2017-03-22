@@ -91,8 +91,7 @@ namespace Dasher
 
         public static bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, DasherContext context, LocalBuilder contextLocal, UnexpectedFieldBehaviour unexpectedFieldBehaviour, bool isRoot = false)
         {
-            ITypeProvider provider;
-            if (!context.TryGetTypeProvider(value.LocalType, errors, out provider))
+            if (!context.TryGetTypeProvider(value.LocalType, errors, out ITypeProvider provider))
                 return false;
 
             if (!isRoot && provider is ComplexTypeProvider)

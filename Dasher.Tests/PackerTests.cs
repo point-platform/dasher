@@ -55,8 +55,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                byte result;
-                Assert.True(_unpacker.ReadByte(out result));
+                Assert.True(_unpacker.ReadByte(out byte result));
                 Assert.Equal(i, result);
             }
         }
@@ -73,8 +72,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                sbyte result;
-                Assert.True(_unpacker.ReadSByte(out result));
+                Assert.True(_unpacker.ReadSByte(out sbyte result));
                 Assert.Equal(i, result);
             }
         }
@@ -91,8 +89,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                short result;
-                Assert.True(_unpacker.ReadInt16(out result));
+                Assert.True(_unpacker.ReadInt16(out short result));
                 Assert.Equal(i, result);
             }
         }
@@ -109,8 +106,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                ushort result;
-                Assert.True(_unpacker.ReadUInt16(out result));
+                Assert.True(_unpacker.ReadUInt16(out ushort result));
                 Assert.Equal(i, result);
             }
         }
@@ -129,8 +125,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                int result;
-                Assert.True(_unpacker.ReadInt32(out result));
+                Assert.True(_unpacker.ReadInt32(out int result));
                 Assert.Equal(i, result);
             }
         }
@@ -151,8 +146,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                uint result;
-                Assert.True(_unpacker.ReadUInt32(out result));
+                Assert.True(_unpacker.ReadUInt32(out uint result));
                 Assert.Equal(i, result);
             }
         }
@@ -173,8 +167,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                long result;
-                Assert.True(_unpacker.ReadInt64(out result));
+                Assert.True(_unpacker.ReadInt64(out long result));
                 Assert.Equal(i, result);
             }
         }
@@ -195,8 +188,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                ulong result;
-                Assert.True(_unpacker.ReadUInt64(out result));
+                Assert.True(_unpacker.ReadUInt64(out ulong result));
                 Assert.Equal(i, result);
             }
         }
@@ -215,8 +207,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                float result;
-                Assert.True(_unpacker.ReadSingle(out result));
+                Assert.True(_unpacker.ReadSingle(out float result));
                 Assert.Equal(i, result);
             }
         }
@@ -235,8 +226,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                double result;
-                Assert.True(_unpacker.ReadDouble(out result));
+                Assert.True(_unpacker.ReadDouble(out double result));
                 Assert.Equal(i, result);
             }
         }
@@ -255,8 +245,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                string result;
-                Assert.True(_unpacker.ReadString(out result));
+                Assert.True(_unpacker.ReadString(out string result));
                 Assert.Equal(i, result);
             }
         }
@@ -275,8 +264,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                string result;
-                Assert.True(_unpacker.ReadString(out result));
+                Assert.True(_unpacker.ReadString(out string result));
                 Assert.Equal(i, result);
             }
         }
@@ -295,8 +283,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                bool result;
-                Assert.True(_unpacker.ReadBoolean(out result));
+                Assert.True(_unpacker.ReadBoolean(out bool result));
                 Assert.Equal(i, result);
             }
         }
@@ -315,8 +302,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                byte[] result;
-                Assert.True(_unpacker.ReadBinary(out result));
+                Assert.True(_unpacker.ReadBinary(out byte[] result));
                 Assert.Equal(i, result);
             }
         }
@@ -335,8 +321,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                long result;
-                Assert.True(_unpacker.ReadArrayLength(out result));
+                Assert.True(_unpacker.ReadArrayLength(out long result));
                 Assert.Equal(i, result);
             }
         }
@@ -355,8 +340,7 @@ namespace Dasher.Tests
 
                 _stream.Position = 0;
 
-                long result;
-                Assert.True(_unpacker.ReadMapLength(out result));
+                Assert.True(_unpacker.ReadMapLength(out long result));
                 Assert.Equal(i, result);
             }
         }

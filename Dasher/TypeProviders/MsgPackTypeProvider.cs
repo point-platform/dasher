@@ -68,8 +68,7 @@ namespace Dasher.TypeProviders
 
         public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
-            MethodInfo unpackerMethod;
-            if (!_unpackerTryReadMethodByType.TryGetValue(value.LocalType, out unpackerMethod))
+            if (!_unpackerTryReadMethodByType.TryGetValue(value.LocalType, out MethodInfo unpackerMethod))
             {
                 errors.Add($"Type {targetType} does not map to a native MsgPack type");
                 return false;
