@@ -144,7 +144,7 @@ for (var level = 2; level <= 16; level++)
         public static bool TryCreate(object value, out <#= unionName #> union)
         {
 <# for (var i = 1; i <= level; i++) { #>
-            if (value is T<#=i#>) { union = new Type<#=i#>((T<#=i#>)value); return true; }
+            if (value is T<#=i#> t<#=i#>) { union = new Type<#=i#>(t<#=i#>); return true; }
 <# } #>
             union = null;
             return false;
@@ -179,10 +179,10 @@ for (var level = 2; level <= 16; level++)
             private T<#=i#> _value;
             public override object Value => _value;
             public override Type Type => typeof(T<#=i#>);
-            public Type<#=i#>(T<#=i#> value) { _value = value; }
+            public Type<#=i#>(T<#=i#> value) => _value = value;
             public override T Match<T>(<#=funcMatchArgs#>) => func<#=i#>(_value);
             public override void Match(<#=actionMatchArgs#>) => action<#=i#>(_value);
-            public override bool Equals(object o) => o is Type<#=i#> ? Equals(((Type<#=i#>)o)._value, _value) : Equals(o, _value);
+            public override bool Equals(object o) => o is Type<#=i#> t<#=i#> ? Equals(t<#=i#>._value, _value) : Equals(o, _value);
             public override int GetHashCode() => _value?.GetHashCode() ?? 0;
             public override string ToString() => _value?.ToString();
         }
