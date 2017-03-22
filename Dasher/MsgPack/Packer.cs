@@ -25,6 +25,7 @@
 using System;
 using System.IO;
 using System.Text;
+using JetBrains.Annotations;
 using static Dasher.MsgPackConstants;
 
 namespace Dasher
@@ -263,7 +264,7 @@ namespace Dasher
         /// Pack a byte array.
         /// </summary>
         /// <param name="bytes">The byte array to pack.</param>
-        public void Pack(byte[] bytes)
+        public void Pack([CanBeNull] byte[] bytes)
         {
             if (bytes == null)
             {
@@ -338,7 +339,7 @@ namespace Dasher
         /// Pack a string value, encoded as <see cref="Encoding.UTF8"/>.
         /// </summary>
         /// <param name="value">The string to pack.</param>
-        public void Pack(string value)
+        public void Pack([CanBeNull] string value)
         {
             Pack(value, Encoding.UTF8);
         }
@@ -348,7 +349,7 @@ namespace Dasher
         /// </summary>
         /// <param name="value">The string to pack.</param>
         /// <param name="encoding">The encoding to use.</param>
-        public void Pack(string value, Encoding encoding)
+        public void Pack([CanBeNull] string value, Encoding encoding)
         {
             if (value == null)
             {
