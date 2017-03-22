@@ -77,11 +77,7 @@ namespace Dasher.Contracts
         internal abstract IEnumerable<Contract> Children { get; }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
-        {
-            var other = obj as Contract;
-            return other != null && Equals(other);
-        }
+        public override bool Equals(object obj) => obj is Contract other && Equals(other);
 
         /// <summary>
         /// Determines whether the specified contract is equal to this one.

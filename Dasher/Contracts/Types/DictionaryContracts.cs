@@ -51,8 +51,7 @@ namespace Dasher.Contracts.Types
 
         public override bool Equals(Contract other)
         {
-            var o = other as DictionaryWriteContract;
-            return o != null && o.KeyContract.Equals(KeyContract) && o.ValueContract.Equals(ValueContract);
+            return other is DictionaryWriteContract o && o.KeyContract.Equals(KeyContract) && o.ValueContract.Equals(ValueContract);
         }
 
         protected override int ComputeHashCode()
@@ -99,17 +98,14 @@ namespace Dasher.Contracts.Types
 
         public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
-            var ws = writeContract as DictionaryWriteContract;
-            if (ws == null)
-                return false;
-            return KeyContract.CanReadFrom(ws.KeyContract, strict) &&
+            return writeContract is DictionaryWriteContract ws &&
+                   KeyContract.CanReadFrom(ws.KeyContract, strict) &&
                    ValueContract.CanReadFrom(ws.ValueContract, strict);
         }
 
         public override bool Equals(Contract other)
         {
-            var o = other as DictionaryReadContract;
-            return o != null && o.KeyContract.Equals(KeyContract) && o.ValueContract.Equals(ValueContract);
+            return other is DictionaryReadContract o && o.KeyContract.Equals(KeyContract) && o.ValueContract.Equals(ValueContract);
         }
 
         protected override int ComputeHashCode()

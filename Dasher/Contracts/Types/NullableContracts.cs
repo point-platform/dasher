@@ -47,8 +47,7 @@ namespace Dasher.Contracts.Types
 
         public override bool Equals(Contract other)
         {
-            var o = other as NullableWriteContract;
-            return o != null && ((Contract)o.Inner).Equals((Contract)Inner);
+            return other is NullableWriteContract o && ((Contract)o.Inner).Equals((Contract)Inner);
         }
 
         protected override int ComputeHashCode() => unchecked(0x3731AFBB ^ Inner.GetHashCode());
@@ -83,9 +82,7 @@ namespace Dasher.Contracts.Types
 
         public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
-            var ws = writeContract as NullableWriteContract;
-
-            if (ws != null)
+            if (writeContract is NullableWriteContract ws)
                 return Inner.CanReadFrom(ws.Inner, strict);
 
             if (strict)
@@ -96,8 +93,7 @@ namespace Dasher.Contracts.Types
 
         public override bool Equals(Contract other)
         {
-            var o = other as NullableReadContract;
-            return o != null && ((Contract)o.Inner).Equals((Contract)Inner);
+            return other is NullableReadContract o && ((Contract)o.Inner).Equals((Contract)Inner);
         }
 
         protected override int ComputeHashCode() => unchecked(0x563D4345 ^ Inner.GetHashCode());

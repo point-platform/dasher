@@ -84,11 +84,7 @@ namespace Dasher.Contracts.Types
 
         public bool CanReadFrom(IWriteContract writeContract, bool strict) => Equals(writeContract);
 
-        public override bool Equals(Contract other)
-        {
-            var contract = other as PrimitiveContract;
-            return contract != null && contract.TypeName == TypeName;
-        }
+        public override bool Equals(Contract other) => other is PrimitiveContract contract && contract.TypeName == TypeName;
 
         protected override int ComputeHashCode() => TypeName.GetHashCode();
 

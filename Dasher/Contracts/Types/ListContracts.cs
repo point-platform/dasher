@@ -49,8 +49,7 @@ namespace Dasher.Contracts.Types
 
         public override bool Equals(Contract other)
         {
-            var o = other as ListWriteContract;
-            return o != null && ((Contract)o.ItemContract).Equals((Contract)ItemContract);
+            return other is ListWriteContract o && ((Contract)o.ItemContract).Equals((Contract)ItemContract);
         }
 
         protected override int ComputeHashCode() => unchecked((int)0xA4A76926 ^ ItemContract.GetHashCode());
@@ -85,11 +84,10 @@ namespace Dasher.Contracts.Types
 
         public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
-            var ws = writeContract as ListWriteContract;
-            return ws != null && ItemContract.CanReadFrom(ws.ItemContract, strict);
+            return writeContract is ListWriteContract ws && ItemContract.CanReadFrom(ws.ItemContract, strict);
         }
 
-        public override bool Equals(Contract other) => (other as ListReadContract)?.ItemContract.Equals(ItemContract) ?? false;
+        public override bool Equals(Contract other) => other is ListReadContract lrc && lrc.ItemContract.Equals(ItemContract);
 
         protected override int ComputeHashCode() => unchecked((int)0x9ABCF854 ^ ItemContract.GetHashCode());
 

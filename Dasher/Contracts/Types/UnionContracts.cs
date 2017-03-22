@@ -89,8 +89,7 @@ namespace Dasher.Contracts.Types
 
         public override bool Equals(Contract other)
         {
-            var o = other as UnionWriteContract;
-            return o != null && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Contract.Equals(b.Contract));
+            return other is UnionWriteContract o && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Contract.Equals(b.Contract));
         }
 
         protected override int ComputeHashCode()
@@ -243,8 +242,7 @@ namespace Dasher.Contracts.Types
 
         public override bool Equals(Contract other)
         {
-            var o = other as UnionReadContract;
-            return o != null && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Contract.Equals(b.Contract));
+            return other is UnionReadContract o && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Contract.Equals(b.Contract));
         }
 
         protected override int ComputeHashCode()

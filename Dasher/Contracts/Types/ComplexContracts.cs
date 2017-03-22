@@ -89,9 +89,8 @@ namespace Dasher.Contracts.Types
 
         public override bool Equals(Contract other)
         {
-            return (other as ComplexWriteContract)?.Fields.SequenceEqual(Fields,
-                       (a, b) => a.Name == b.Name && a.Contract.Equals(b.Contract))
-                   ?? false;
+            return other is ComplexWriteContract cwc &&
+                cwc.Fields.SequenceEqual(Fields, (a, b) => a.Name == b.Name && a.Contract.Equals(b.Contract));
         }
 
         protected override int ComputeHashCode()
@@ -270,9 +269,9 @@ namespace Dasher.Contracts.Types
 
         public override bool Equals(Contract other)
         {
-            return (other as ComplexReadContract)?.Fields.SequenceEqual(Fields,
-                       (a, b) => a.Name == b.Name && a.IsRequired == b.IsRequired && a.Contract.Equals(b.Contract))
-                   ?? false;
+            return other is ComplexReadContract crc &&
+                   crc.Fields.SequenceEqual(Fields,
+                       (a, b) => a.Name == b.Name && a.IsRequired == b.IsRequired && a.Contract.Equals(b.Contract));
         }
 
         protected override int ComputeHashCode()

@@ -61,11 +61,7 @@ namespace Dasher.Contracts.Types
 
         internal override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
 
-        public override bool Equals(Contract other)
-        {
-            var e = other as EnumContract;
-            return e != null && MemberNames.SetEquals(e.MemberNames);
-        }
+        public override bool Equals(Contract other) => other is EnumContract e && MemberNames.SetEquals(e.MemberNames);
 
         protected override int ComputeHashCode()
         {

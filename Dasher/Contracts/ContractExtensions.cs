@@ -53,9 +53,7 @@ namespace Dasher.Contracts
 
         private static string ToReferenceStringInternal(object contract)
         {
-            var byRefContract = contract as ByRefContract;
-
-            if (byRefContract != null)
+            if (contract is ByRefContract byRefContract)
             {
                 if (string.IsNullOrWhiteSpace(byRefContract.Id))
                     throw new Exception("ByRefContract must have an ID to produce a reference string.");

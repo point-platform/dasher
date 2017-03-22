@@ -56,7 +56,7 @@ namespace Dasher.Contracts.Types
                    && !Items.Where((rs, i) => !rs.CanReadFrom(that.Items[i], strict)).Any();
         }
 
-        public override bool Equals(Contract other) => (other as TupleReadContract)?.Items.SequenceEqual(Items) ?? false;
+        public override bool Equals(Contract other) => other is TupleReadContract o && o.Items.SequenceEqual(Items);
 
         protected override int ComputeHashCode()
         {
@@ -122,7 +122,7 @@ namespace Dasher.Contracts.Types
             Items = items;
         }
 
-        public override bool Equals(Contract other) => (other as TupleWriteContract)?.Items.SequenceEqual(Items) ?? false;
+        public override bool Equals(Contract other) => other is TupleWriteContract o && o.Items.SequenceEqual(Items);
 
         protected override int ComputeHashCode()
         {

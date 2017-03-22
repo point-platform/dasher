@@ -51,8 +51,7 @@ namespace Dasher.Tests
                 return false;
             if (ReferenceEquals(this, obj))
                 return true;
-            var other = obj as UserScore;
-            return other != null && string.Equals(Name, other.Name) && Score == other.Score;
+            return obj is UserScore other && string.Equals(Name, other.Name) && Score == other.Score;
         }
 
         public override int GetHashCode() => unchecked(((Name?.GetHashCode() ?? 0)*397) ^ Score);
@@ -75,12 +74,7 @@ namespace Dasher.Tests
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
-                return false;
-            if (!(obj is UserScoreStruct))
-                return false;
-            var other = (UserScoreStruct)obj;
-            return string.Equals(Name, other.Name) && Score == other.Score;
+            return obj is UserScoreStruct other && string.Equals(Name, other.Name) && Score == other.Score;
         }
 
         public override int GetHashCode() => unchecked((Name?.GetHashCode() ?? 0)*397 ^ Score);
@@ -334,7 +328,7 @@ namespace Dasher.Tests
         }
 
         public int Number { get; }
-        
+
         #region Equality & hashing
 
         public override bool Equals(object obj)
@@ -343,8 +337,7 @@ namespace Dasher.Tests
                 return false;
             if (ReferenceEquals(this, obj))
                 return true;
-            var a = obj as TaggedA;
-            return a != null && Number == a.Number;
+            return obj is TaggedA a && Number == a.Number;
         }
 
         public override int GetHashCode() => Number;
@@ -370,8 +363,7 @@ namespace Dasher.Tests
                 return false;
             if (ReferenceEquals(this, obj))
                 return true;
-            var b = obj as TaggedB;
-            return b != null && Number == b.Number;
+            return obj is TaggedB b && Number == b.Number;
         }
 
         public override int GetHashCode() => Number;
