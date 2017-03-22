@@ -99,7 +99,7 @@ namespace Dasher
                     continue;
 
                 // Disallow providers to overlap in their capabilities.
-                // This property makes them run indeptendent of execution order.
+                // This property makes them run independent of execution order.
                 // If we wish to allow overlap (to override behaviour, for example) then we need
                 // to allow control over the order of registered type providers.
                 if (found != null)

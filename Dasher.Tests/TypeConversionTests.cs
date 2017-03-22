@@ -187,7 +187,7 @@ namespace Dasher.Tests
             ConversionFails<float,   decimal>(float.MaxValue);
             ConversionFails<double,  decimal>(double.MaxValue);
 
-            // TODO Make a decistion on commented code
+            // TODO Make a decision on commented code
             // float
             ConversionFails<bool,    float>(true);
             //ConversionWorks<byte,    float>(byte.MaxValue, byte.MaxValue);
