@@ -66,7 +66,7 @@ namespace Dasher
         };
 
         private readonly ConcurrentDictionary<Type, Action<Packer, DasherContext, object>> _serialiseActionByType = new ConcurrentDictionary<Type, Action<Packer, DasherContext, object>>();
-        private readonly ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>> _deserialiseFuncByType = new ConcurrentDictionary<Tuple<Type, UnexpectedFieldBehaviour>, Func<Unpacker, DasherContext, object>>();
+        private readonly ConcurrentDictionary<(Type, UnexpectedFieldBehaviour), Func<Unpacker, DasherContext, object>> _deserialiseFuncByType = new ConcurrentDictionary<(Type, UnexpectedFieldBehaviour), Func<Unpacker, DasherContext, object>>();
         private readonly IReadOnlyList<ITypeProvider> _typeProviders;
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Dasher
 
         internal Func<Unpacker, DasherContext, object> GetOrCreateDeserialiseFunc(Type type, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
             => _deserialiseFuncByType.GetOrAdd(
-                Tuple.Create(type, unexpectedFieldBehaviour),
+                (type, unexpectedFieldBehaviour),
                 _ => DeserialiserEmitter.Build(type, unexpectedFieldBehaviour, this));
 
         internal bool TryGetTypeProvider(Type type, ICollection<string> errors, out ITypeProvider provider)

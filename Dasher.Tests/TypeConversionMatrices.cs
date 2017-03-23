@@ -80,8 +80,8 @@ namespace Dasher.Tests
                 new[] {new ArraySegment<byte>(new byte[0]), new ArraySegment<byte>(new byte[] {1, 2, 3})}
             };
 
-            var dotNetConversions = new Dictionary<Tuple<Type, Type>, ConversionResult>();
-            var dasherConversions = new Dictionary<Tuple<Type, Type>, ConversionResult>();
+            var dotNetConversions = new Dictionary<(Type from, Type to), ConversionResult>();
+            var dasherConversions = new Dictionary<(Type from, Type to), ConversionResult>();
 
             var types = valueArrays.Select(a => a.GetType().GetElementType()).ToList();
             var wrapperTypes = types.Select(t => typeof(ValueWrapper<>).MakeGenericType(t)).ToList();
@@ -109,7 +109,7 @@ namespace Dasher.Tests
                     if (i == j)
                         continue;
 
-                    var tuple = Tuple.Create(types[i], types[j]);
+                    var pair = (from: types[i], to: types[j]);
 
                     var anyDotNetPassed = false;
                     var anyDotNetFailed = false;
@@ -128,7 +128,7 @@ namespace Dasher.Tests
                         }
                     }
 
-                    dotNetConversions.Add(tuple, BuildResult(anyDotNetPassed, anyDotNetFailed));
+                    dotNetConversions.Add(pair, BuildResult(anyDotNetPassed, anyDotNetFailed));
 
                     var anyDasherPassed = false;
                     var anyDasherFailed = false;
@@ -151,7 +151,7 @@ namespace Dasher.Tests
                         }
                     }
 
-                    dasherConversions.Add(tuple, BuildResult(anyDasherPassed, anyDasherFailed));
+                    dasherConversions.Add(pair, BuildResult(anyDasherPassed, anyDasherFailed));
                 }
             }
 
@@ -164,10 +164,10 @@ namespace Dasher.Tests
             DumpMarkdownMatrix(dotNetConversions);
         }
 
-        private void DumpMarkdownMatrix(Dictionary<Tuple<Type, Type>, ConversionResult> dic)
+        private void DumpMarkdownMatrix(Dictionary<(Type from, Type to), ConversionResult> dic)
         {
             var sb = new StringBuilder();
-            var types = dic.Keys.Select(t => t.Item1).Distinct().ToList();
+            var types = dic.Keys.Select(t => t.from).Distinct().ToList();
 
             sb.AppendLine("| | " + string.Join(" | ", types.Select(t => t.Name)));
             sb.AppendLine("|---|" + string.Join("", types.Select(t => ":---:|")));
@@ -179,7 +179,7 @@ namespace Dasher.Tests
                 foreach (var toType in types)
                 {
                     if (fromType != toType)
-                        sb.Append(_emojiByResult[dic[Tuple.Create(fromType, toType)]]);
+                        sb.Append(_emojiByResult[dic[(fromType, toType)]]);
                     else
                         sb.Append(' ');
 
