@@ -47,6 +47,7 @@ namespace Dasher
         public static MethodInfo String_Format_String_Object_Object             { get; } = typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object)});
         public static MethodInfo String_Format_String_Object_Object_Object      { get; } = typeof(string).GetMethod(nameof(string.Format), new[] {typeof(string), typeof(object), typeof(object), typeof(object)});
         public static MethodInfo String_GetLength                               { get; } = typeof(string).GetProperty(nameof(string.Length)).GetMethod;
+        public static MethodInfo String_Indexer                                 { get; } = typeof(string).GetProperties(BindingFlags.Instance | BindingFlags.Public).Single(p => p.GetIndexParameters().Length == 1 && p.PropertyType == typeof(char)).GetMethod;
 
         public static MethodInfo Unpacker_TryReadString                         { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadString), new[] {typeof(string).MakeByRefType()});
         public static MethodInfo Unpacker_TryReadArrayLength                    { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadArrayLength));

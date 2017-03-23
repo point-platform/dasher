@@ -83,6 +83,11 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Throw);
             });
 
+            ilg.Emit(OpCodes.Ldloc, s);
+            ilg.Emit(OpCodes.Ldc_I4_0);
+            ilg.Emit(OpCodes.Call, Methods.String_Indexer);
+            ilg.Emit(OpCodes.Stloc, value);
+
             return true;
         }
     }
