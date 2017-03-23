@@ -155,13 +155,13 @@ namespace Dasher.Tests
                 }
             }
 
-            _output.WriteLine("# .NET Conversion Support");
-
-            DumpMarkdownMatrix(dotNetConversions);
-
             _output.WriteLine("# Dasher Conversion Support");
 
             DumpMarkdownMatrix(dasherConversions);
+
+            _output.WriteLine("# .NET Conversion Support");
+
+            DumpMarkdownMatrix(dotNetConversions);
         }
 
         private void DumpMarkdownMatrix(Dictionary<Tuple<Type, Type>, ConversionResult> dic)
