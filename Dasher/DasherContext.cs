@@ -60,6 +60,7 @@ namespace Dasher
             new ReadOnlyDictionaryProvider(),
             new NullableValueProvider(),
             new TupleProvider(),
+            new ValueTupleProvider(),
             new UnionProvider(),
             new ByteArraySegmentProvider(),
             new EmptyProvider()

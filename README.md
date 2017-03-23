@@ -47,7 +47,7 @@ public sealed class Holiday
 
 Both serialiser and deserialiser support the core built-in types of `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`,
 `ulong`, `float`, `double`, `decimal`, `string`, `char`, as well as `byte[]`, `ArraySegment<byte>`, `DateTime`, `DateTimeOffset`, `TimeSpan`, `Guid`, `IntPtr`,
-`Version`, `Nullable<T>`, `IReadOnlyList<T>`, `IReadOnlyDictionary<TKey, TValue>`, `Tuple<...>` and enum types.
+`Version`, `Nullable<T>`, `IReadOnlyList<T>`, `IReadOnlyDictionary<TKey, TValue>`, `Tuple<...>`, `ValueTuple<...>` and enum types.
 
 Dasher also provides and supports types:
 
@@ -319,7 +319,7 @@ Dasher encodes the following types using the following MsgPack formats:
 * `IReadOnlyList<T>` as array of `T` (recor on this list)
 * `Nullable<T>` as either null or `T` (recur on this list)
 * `TimeSpan` as 64-bit integer
-* `Tuple<>` as array of values (recur on this list)
+* `Tuple<>` and `ValueTuple<>` as array of values (recur on this list)
 * `Union<>` as two-element array: type identifier as string, value (recur on this list)
 * `Version` as string
 * Finally, if none of the above apply, `class` and `struct` as heterogeneous MsgPack map from name to value

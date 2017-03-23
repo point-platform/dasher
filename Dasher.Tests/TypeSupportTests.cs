@@ -260,6 +260,18 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void SupportsValueNestedTuple2()
+        {
+            TestNested((1, "Hello"), packer => packer.PackArrayHeader(2).Pack(1).Pack("Hello"));
+        }
+
+        [Fact]
+        public void SupportsNestedValueTuple3()
+        {
+            TestNested((1, "Hello", true), packer => packer.PackArrayHeader(3).Pack(1).Pack("Hello").Pack(true));
+        }
+
+        [Fact]
         public void SupportsNestedUnion()
         {
             TestNested(Union<int, double>.Create(123), packer => packer.PackArrayHeader(2).Pack("Int32").Pack(123));
