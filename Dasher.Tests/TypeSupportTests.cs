@@ -349,7 +349,7 @@ namespace Dasher.Tests
             var deserialisedValue = new Deserialiser<T>().Deserialise(msgPackCliBytes);
 
             if (customEvaluator != null)
-                customEvaluator(value);
+                customEvaluator(deserialisedValue);
             else
                 Assert.Equal(value, deserialisedValue);
 
