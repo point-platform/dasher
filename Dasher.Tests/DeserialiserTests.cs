@@ -478,7 +478,7 @@ namespace Dasher.Tests
 #if NETCOREAPP1_0
             Assert.Equal("An item with the same key has already been added. Key: 1", ex.Message);
 #else
-#if NET451
+#if NET452
             Assert.Equal("An item with the same key has already been added.", ex.Message);
 #else
             throw new Exception("Build configuration is not tested.");
