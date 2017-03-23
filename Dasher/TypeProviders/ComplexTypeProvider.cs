@@ -115,12 +115,12 @@ namespace Dasher.TypeProviders
             var constructor = constructors[0];
             var parameters = constructor.GetParameters();
 
-            Action throwException = () =>
+            void ThrowException()
             {
                 ilg.LoadType(targetType);
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
-            };
+            }
 
             #region Initialise locals for constructor args
 
@@ -204,12 +204,12 @@ namespace Dasher.TypeProviders
                     var lblNotEmpty = ilg.DefineLabel();
                     ilg.Emit(OpCodes.Brfalse_S, lblNotEmpty);
                     ilg.Emit(OpCodes.Ldstr, "Data stream empty");
-                    throwException();
+                    ThrowException();
                     ilg.MarkLabel(lblNotEmpty);
                     ilg.Emit(OpCodes.Ldstr, "Message must be encoded as a MsgPack map, not \"{0}\".");
                     ilg.PeekFormatString(unpacker);
                     ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object);
-                    throwException();
+                    ThrowException();
                 });
             }
 
@@ -253,7 +253,7 @@ namespace Dasher.TypeProviders
                     throwBlocks.ThrowIfFalse(() =>
                     {
                         ilg.Emit(OpCodes.Ldstr, "Data stream ended.");
-                        throwException();
+                        ThrowException();
                     });
                 }
 
@@ -301,7 +301,7 @@ namespace Dasher.TypeProviders
                             ilg.Emit(OpCodes.Ldloc, key);
                             ilg.Emit(OpCodes.Ldstr, targetType.Name);
                             ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object);
-                            throwException();
+                            ThrowException();
                         });
 
                         // Record the fact that we've seen this property
@@ -334,7 +334,7 @@ namespace Dasher.TypeProviders
                         ilg.PeekFormatString(unpacker);
                         ilg.Emit(OpCodes.Ldstr, targetType.Name);
                         ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object_Object);
-                        throwException();
+                        ThrowException();
                     });
                 }
                 else
@@ -398,7 +398,7 @@ namespace Dasher.TypeProviders
                     ilg.Emit(OpCodes.Ldloc, paramName);
                     ilg.Emit(OpCodes.Ldstr, targetType.Name);
                     ilg.Emit(OpCodes.Call, Methods.String_Format_String_Object_Object);
-                    throwException();
+                    ThrowException();
                 });
             }
 

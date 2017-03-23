@@ -95,28 +95,28 @@ namespace Dasher.Tests
         [Fact]
         public void SupportsNestedDateTime()
         {
-            Action<DateTime> test = dateTime =>
+            void Test(DateTime dateTime)
             {
                 var after = TestNested(dateTime, packer => packer.Pack(dateTime.ToBinary()));
 
                 Assert.Equal(dateTime, after);
                 Assert.Equal(dateTime.Kind, after.Kind);
-            };
+            }
 
-            test(new DateTime(2015, 12, 25));
-            test(DateTime.SpecifyKind(new DateTime(2015, 12, 25), DateTimeKind.Local));
-            test(DateTime.SpecifyKind(new DateTime(2015, 12, 25), DateTimeKind.Unspecified));
-            test(DateTime.SpecifyKind(new DateTime(2015, 12, 25), DateTimeKind.Utc));
-            test(DateTime.MinValue);
-            test(DateTime.MaxValue);
-            test(DateTime.Now);
-            test(DateTime.UtcNow);
+            Test(new DateTime(2015, 12, 25));
+            Test(DateTime.SpecifyKind(new DateTime(2015, 12, 25), DateTimeKind.Local));
+            Test(DateTime.SpecifyKind(new DateTime(2015, 12, 25), DateTimeKind.Unspecified));
+            Test(DateTime.SpecifyKind(new DateTime(2015, 12, 25), DateTimeKind.Utc));
+            Test(DateTime.MinValue);
+            Test(DateTime.MaxValue);
+            Test(DateTime.Now);
+            Test(DateTime.UtcNow);
         }
 
         [Fact]
         public void SupportsNestedDateTimeOffset()
         {
-            Action<DateTimeOffset> test = dto =>
+            void Test(DateTimeOffset dto)
             {
                 var after = TestNested(dto, packer => packer.PackArrayHeader(2)
                     .Pack(dto.DateTime.ToBinary())
@@ -126,7 +126,7 @@ namespace Dasher.Tests
                 Assert.Equal(dto.Offset, after.Offset);
                 Assert.Equal(dto.DateTime.Kind, after.DateTime.Kind);
                 Assert.True(dto.EqualsExact(after));
-            };
+            }
 
             var offsets = new[]
             {
@@ -140,12 +140,12 @@ namespace Dasher.Tests
             };
 
             foreach (var offset in offsets)
-                test(new DateTimeOffset(new DateTime(2015, 12, 25), offset));
+                Test(new DateTimeOffset(new DateTime(2015, 12, 25), offset));
 
-            test(DateTimeOffset.MinValue);
-            test(DateTimeOffset.MaxValue);
-            test(DateTimeOffset.Now);
-            test(DateTimeOffset.UtcNow);
+            Test(DateTimeOffset.MinValue);
+            Test(DateTimeOffset.MaxValue);
+            Test(DateTimeOffset.Now);
+            Test(DateTimeOffset.UtcNow);
         }
 
         [Fact]

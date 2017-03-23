@@ -92,7 +92,7 @@ namespace Dasher.Tests
 
             const int loopCount = 1024 * 1024;
 
-            Action dasherPack = () =>
+            void DasherPack()
             {
                 s.Position = 0;
                 dasherPacker.Pack(false);
@@ -111,9 +111,9 @@ namespace Dasher.Tests
 //                dasherPacker.Pack(str);
 //                dasherPacker.Pack(bytes);
                 dasherPacker.Flush();
-            };
+            }
 
-            Action msgPackCliPack = () =>
+            void MsgPackCliPack()
             {
                 s.Position = 0;
                 msgPackCliPacker.Pack(false);
@@ -131,25 +131,25 @@ namespace Dasher.Tests
                 msgPackCliPacker.Pack("Hello World");
 //                msgPackCliPacker.Pack(str);
 //                msgPackCliPacker.Pack(bytes);
-            };
+            }
 
             for (var i = 0; i < 10; i++)
             {
-                dasherPack();
-                msgPackCliPack();
+                DasherPack();
+                MsgPackCliPack();
             }
 
             var sw = Stopwatch.StartNew();
 
             for (var i = 0; i < loopCount; i++)
-                dasherPack();
+                DasherPack();
 
             var unsafePackTime = sw.Elapsed.TotalMilliseconds;
 
             sw.Restart();
 
             for (var i = 0; i < loopCount; i++)
-                msgPackCliPack();
+                MsgPackCliPack();
 
             var msgPackCliPackTime = sw.Elapsed.TotalMilliseconds;
 

@@ -569,14 +569,14 @@ namespace Dasher.Tests
             var unpacker = new Unpacker(stream);
             var random = new Random();
 
-            Action<int> packArray = count =>
+            void PackArray(int count)
             {
                 packer.PackArrayHeader((uint)count);
                 for (var i = 0; i < count; i++)
                     packer.PackNull();
-            };
+            }
 
-            Action<int> packMap = count =>
+            void PackMap(int count)
             {
                 packer.PackMapHeader((uint)count);
                 for (var i = 0; i < count; i++)
@@ -584,24 +584,24 @@ namespace Dasher.Tests
                     packer.PackNull();
                     packer.PackNull();
                 }
-            };
+            }
 
             Action[] scenarios =
             {
                 // Array
-                () => packArray(0),
-                () => packArray(1),
-                () => packArray(10),
-                () => packArray(127),
-                () => packArray(255),
-                () => packArray(1024),
+                () => PackArray(0),
+                () => PackArray(1),
+                () => PackArray(10),
+                () => PackArray(127),
+                () => PackArray(255),
+                () => PackArray(1024),
                 // Map
-                () => packMap(0),
-                () => packMap(1),
-                () => packMap(10),
-                () => packMap(127),
-                () => packMap(255),
-                () => packMap(1024),
+                () => PackMap(0),
+                () => PackMap(1),
+                () => PackMap(10),
+                () => PackMap(127),
+                () => PackMap(255),
+                () => PackMap(1024),
                 // SByte
                 () => packer.Pack((sbyte)random.Next()),
                 // Int16

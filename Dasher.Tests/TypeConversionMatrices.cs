@@ -87,7 +87,7 @@ namespace Dasher.Tests
             var deserialisers = wrapperTypes.Select(t => new Deserialiser(t)).ToList();
             var wrapperCtors = wrapperTypes.Select(t => t.GetTypeInfo().GetConstructors().Single()).ToList();
 
-            Func<bool, bool, ConversionResult> buildResult = (anyPassed, anyFailed) =>
+            ConversionResult BuildResult(bool anyPassed, bool anyFailed)
             {
                 if (anyPassed && anyFailed)
                     return ConversionResult.Maybe;
@@ -96,7 +96,7 @@ namespace Dasher.Tests
                 if (anyFailed)
                     return ConversionResult.No;
                 throw new Exception("No tests ran.");
-            };
+            }
 
             var stream = new MemoryStream();
 
@@ -126,7 +126,7 @@ namespace Dasher.Tests
                         }
                     }
 
-                    dotNetConversions.Add(tuple, buildResult(anyDotNetPassed, anyDotNetFailed));
+                    dotNetConversions.Add(tuple, BuildResult(anyDotNetPassed, anyDotNetFailed));
 
                     var anyDasherPassed = false;
                     var anyDasherFailed = false;
@@ -149,7 +149,7 @@ namespace Dasher.Tests
                         }
                     }
 
-                    dasherConversions.Add(tuple, buildResult(anyDasherPassed, anyDasherFailed));
+                    dasherConversions.Add(tuple, BuildResult(anyDasherPassed, anyDasherFailed));
                 }
             }
 

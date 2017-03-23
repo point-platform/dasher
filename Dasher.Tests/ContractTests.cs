@@ -785,7 +785,7 @@ namespace Dasher.Tests
         [Fact]
         public void ContractEquality()
         {
-            Action<Type> test = type =>
+            void Test(Type type)
             {
                 var c1 = new ContractCollection();
                 var c2 = new ContractCollection();
@@ -801,18 +801,18 @@ namespace Dasher.Tests
                 Assert.Equal(w1, w2);
                 Assert.Equal(w2, w1);
                 Assert.Equal(w1.GetHashCode(), w2.GetHashCode());
-            };
+            }
 
-            test(typeof(Person));
-            test(typeof(Wrapper<Person>));
-            test(typeof(EnumAbc));
-            test(typeof(int?));
-            test(typeof(IReadOnlyList<EnumAbc>));
-            test(typeof(IReadOnlyDictionary<EnumAbc, int?>));
-            test(typeof(Tuple<int, long, double>));
-            test(typeof(Union<int, long, double>));
-            test(typeof(int));
-            test(typeof(long));
+            Test(typeof(Person));
+            Test(typeof(Wrapper<Person>));
+            Test(typeof(EnumAbc));
+            Test(typeof(int?));
+            Test(typeof(IReadOnlyList<EnumAbc>));
+            Test(typeof(IReadOnlyDictionary<EnumAbc, int?>));
+            Test(typeof(Tuple<int, long, double>));
+            Test(typeof(Union<int, long, double>));
+            Test(typeof(int));
+            Test(typeof(long));
 
             //////
 
