@@ -77,6 +77,7 @@ namespace Dasher
         public static MethodInfo Packer_Pack_Int16                              { get; } = typeof(Packer).GetMethod(nameof(Packer.Pack), new[] {typeof(short)});
         public static MethodInfo Packer_Pack_Int64                              { get; } = typeof(Packer).GetMethod(nameof(Packer.Pack), new[] {typeof(long)});
         public static MethodInfo Packer_Pack_ByteArray                          { get; } = typeof(Packer).GetMethod(nameof(Packer.Pack), new[] {typeof(byte[])});
+        public static MethodInfo Packer_Pack_ByteArraySegment                   { get; } = typeof(Packer).GetMethod(nameof(Packer.Pack), new[] {typeof(ArraySegment<byte>)});
 
         public static MethodInfo Object_Equals_Object_Object                    { get; } = typeof(object).GetMethod(nameof(object.Equals), BindingFlags.Static | BindingFlags.Public);
 
@@ -104,6 +105,8 @@ namespace Dasher
         public static MethodInfo Decimal_ToString                               { get; } = typeof(decimal).GetMethod(nameof(decimal.ToString), Type.EmptyTypes);
         public static MethodInfo Decimal_TryParse                               { get; } = typeof(decimal).GetMethod(nameof(decimal.TryParse), new[] {typeof(string), typeof(decimal).MakeByRefType()});
         public static ConstructorInfo Decimal_Ctor_IntArray                     { get; } = typeof(decimal).GetConstructor(new[] {typeof(int[])});
+
+        public static ConstructorInfo ArraySegment_Ctor_ByteArray               { get; } = typeof(ArraySegment<byte>).GetConstructor(new[] {typeof(byte[])});
 
         public static MethodInfo Char_ToString                                  { get; } = typeof(char).GetMethod(nameof(char.ToString), Type.EmptyTypes);
 

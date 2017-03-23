@@ -46,7 +46,7 @@ public sealed class Holiday
 # Supported types
 
 Both serialiser and deserialiser support the core built-in types of `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`,
-`ulong`, `float`, `double`, `decimal`, `string`, `char`, as well as `DateTime`, `DateTimeOffset`, `TimeSpan`, `Guid`, `IntPtr`,
+`ulong`, `float`, `double`, `decimal`, `string`, `char`, as well as `byte[]`, `ArraySegment<byte>`, `DateTime`, `DateTimeOffset`, `TimeSpan`, `Guid`, `IntPtr`,
 `Version`, `Nullable<T>`, `IReadOnlyList<T>`, `IReadOnlyDictionary<TKey, TValue>`, `Tuple<...>` and enum types.
 
 Dasher also provides and supports types:
@@ -306,6 +306,7 @@ MsgPack specifies the encoding of types `sbyte`, `byte`, `short`, `ushort`, `int
 Dasher encodes the following types using the following MsgPack formats:
 
 * Array (other than `byte[]`) as array
+* `ArraySegment<byte>` as binary (byte array)
 * `char` as 1-character string
 * `DateTime` as 64-bit integer
 * `DateTimeOffset` as two-element array of 64-bit integer (ticks) and 16-bit integer (offset)

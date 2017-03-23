@@ -75,7 +75,9 @@ namespace Dasher.Tests
                 new[] {true, false},
                 new[] {char.MinValue, char.MaxValue, default(char), '0'},
                 new[] {"", "123", "12.3", "Hello", null, "True", "false", "NaN", "-100", "0xFACE"},
-                new[] {(Empty)null}
+                new[] {(Empty)null},
+                new[] {new byte[0], new byte[] {1, 2, 3}},
+                new[] {new ArraySegment<byte>(new byte[0]), new ArraySegment<byte>(new byte[] {1, 2, 3})}
             };
 
             var dotNetConversions = new Dictionary<Tuple<Type, Type>, ConversionResult>();

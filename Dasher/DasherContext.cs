@@ -61,6 +61,7 @@ namespace Dasher
             new NullableValueProvider(),
             new TupleProvider(),
             new UnionProvider(),
+            new ByteArraySegmentProvider(),
             new EmptyProvider()
         };
 

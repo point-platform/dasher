@@ -236,6 +236,15 @@ namespace Dasher.Tests
         public void SupportsNestedByteArray()
         {
             TestNested(new byte[] {1, 2, 3, 4}, packer => packer.PackBinary(new byte[] {1, 2, 3, 4}));
+            TestNested(new byte[0], packer => packer.PackBinary(new byte[0]));
+        }
+
+        [Fact]
+        public void SupportsNestedByteArraySegment()
+        {
+            TestNested(new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }, 0, 4), packer => packer.PackBinary(new byte[] {1, 2, 3, 4}));
+            TestNested(new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }, 1, 2), packer => packer.PackBinary(new byte[] {2, 3}));
+            TestNested(new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }, 2, 0), packer => packer.PackBinary(new byte[0]));
         }
 
         [Fact]

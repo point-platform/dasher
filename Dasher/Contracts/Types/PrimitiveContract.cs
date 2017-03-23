@@ -51,6 +51,7 @@ namespace Dasher.Contracts.Types
                 {typeof(bool), "Boolean"},
                 {typeof(string), "String"},
                 {typeof(byte[]), "ByteArray"},
+                {typeof(ArraySegment<byte>), "ByteArraySegment"},
                 {typeof(decimal), "Decimal"},
                 {typeof(DateTime), "DateTime"},
                 {typeof(DateTimeOffset), "DateTimeOffset"},

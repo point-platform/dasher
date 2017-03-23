@@ -813,6 +813,8 @@ namespace Dasher.Tests
             Test(typeof(Union<int, long, double>));
             Test(typeof(int));
             Test(typeof(long));
+            Test(typeof(byte[]));
+            Test(typeof(ArraySegment<byte>));
 
             //////
 
