@@ -33,6 +33,41 @@ namespace Dasher.Tests
         [Fact]
         public void ValueConversions()
         {
+            var context = new DasherContext();
+
+            void ConversionWorks<TFrom, TTo>(params TFrom[] values)
+            {
+                var stream = new MemoryStream();
+                var serialiser = new Serialiser<ValueWrapper<TFrom>>(context);
+                var deserialiser = new Deserialiser<ValueWrapper<TTo>>(context: context);
+
+                foreach (var value in values)
+                {
+                    stream.Position = 0;
+                    serialiser.Serialise(stream, new ValueWrapper<TFrom>(value));
+
+                    stream.Position = 0;
+                    var actual = deserialiser.Deserialise(stream).Value;
+                    Assert.Equal(Convert.ChangeType(value, typeof(TTo)), actual);
+                }
+            }
+
+            void ConversionFails<TFrom, TTo>(params TFrom[] values)
+            {
+                var stream = new MemoryStream();
+                var serialiser = new Serialiser<ValueWrapper<TFrom>>(context);
+                var deserialiser = new Deserialiser<ValueWrapper<TTo>>(context: context);
+
+                foreach (var value in values)
+                {
+                    stream.Position = 0;
+                    serialiser.Serialise(stream, new ValueWrapper<TFrom>(value));
+
+                    stream.Position = 0;
+                    Assert.Throws<DeserialisationException>(() => deserialiser.Deserialise(stream).Value);
+                }
+            }
+
             // bool
             ConversionFails<byte,    bool>(byte.MaxValue, byte.MinValue, default(byte));
             ConversionFails<sbyte,   bool>(sbyte.MaxValue, sbyte.MinValue, default(sbyte));
@@ -216,42 +251,5 @@ namespace Dasher.Tests
             ConversionFails<decimal, double>(decimal.MaxValue);
             ConversionWorks<float,   double>(float.MaxValue);
         }
-
-        #region Helpers
-
-        private static void ConversionWorks<TFrom, TTo>(params TFrom[] values)
-        {
-            var stream = new MemoryStream();
-            var serialiser = new Serialiser<ValueWrapper<TFrom>>();
-            var deserialiser = new Deserialiser<ValueWrapper<TTo>>();
-
-            foreach (var value in values)
-            {
-                stream.Position = 0;
-                serialiser.Serialise(stream, new ValueWrapper<TFrom>(value));
-
-                stream.Position = 0;
-                var actual = deserialiser.Deserialise(stream).Value;
-                Assert.Equal(Convert.ChangeType(value, typeof(TTo)), actual);
-            }
-        }
-
-        private static void ConversionFails<TFrom, TTo>(params TFrom[] values)
-        {
-            var stream = new MemoryStream();
-            var serialiser = new Serialiser<ValueWrapper<TFrom>>();
-            var deserialiser = new Deserialiser<ValueWrapper<TTo>>();
-
-            foreach (var value in values)
-            {
-                stream.Position = 0;
-                serialiser.Serialise(stream, new ValueWrapper<TFrom>(value));
-
-                stream.Position = 0;
-                Assert.Throws<DeserialisationException>(() => deserialiser.Deserialise(stream).Value);
-            }
-        }
-
-        #endregion
     }
 }
