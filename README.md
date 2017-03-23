@@ -32,14 +32,14 @@ Dasher messages are regular CLR types (POCO), with no need for a base class or a
 ```csharp
 public sealed class Holiday
 {
-	public string Name { get; }
-	public DateTime Date { get; }
+    public string Name { get; }
+    public DateTime Date { get; }
 
-	public Holiday(string name, DateTime date)
-	{
-		Name = name;
-		Date = date;
-	}
+    public Holiday(string name, DateTime date)
+    {
+        Name = name;
+        Date = date;
+    }
 }
 ```
 
@@ -90,8 +90,8 @@ public sealed class Reindeer
 
     public Reindeer(string name, int position)
     {
-    	Name = name;
-    	Position = position;
+        Name = name;
+        Position = position;
     }
 }
 ```
@@ -135,8 +135,8 @@ public sealed class Reindeer
 
     public Reindeer(string name, int position)
     {
-    	Name = name;
-    	Position = position;
+        Name = name;
+        Position = position;
     }
 }
 ```
@@ -169,9 +169,9 @@ public sealed class Reindeer
 
     public Reindeer(string name, int position, bool hasRedNose = false)
     {
-    	Name = name;
-    	Position = position;
-    	HasRedNose = hasRedNose;
+        Name = name;
+        Position = position;
+        HasRedNose = hasRedNose;
     }
 }
 ```
