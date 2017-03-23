@@ -180,6 +180,9 @@ namespace Dasher.Tests
                 {
                     if (fromType != toType)
                         sb.Append(_emojiByResult[dic[Tuple.Create(fromType, toType)]]);
+                    else
+                        sb.Append(' ');
+
                     sb.Append('|');
                 }
 
