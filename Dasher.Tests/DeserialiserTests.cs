@@ -535,6 +535,18 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void ThrowsIfStringTooShortForChar()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(1)
+                .Pack(nameof(ValueWrapper<Union<int, string>>.Value))
+                .PackString(""));
+
+            var ex = Assert.Throws<DeserialisationException>(() => new Deserialiser<ValueWrapper<char>>().Deserialise(bytes));
+
+            Assert.Equal("Unexpected string length for char value \"value\". Expected 1, got 0.", ex.Message);
+        }
+
+        [Fact]
         public void ThrowsIfStringTooLongForChar()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(1)
