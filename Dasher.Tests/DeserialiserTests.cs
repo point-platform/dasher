@@ -481,7 +481,7 @@ namespace Dasher.Tests
 #if NET451
             Assert.Equal("An item with the same key has already been added.", ex.Message);
 #else
-            throw new Exception("Build configuration is not tested.")
+            throw new Exception("Build configuration is not tested.");
 #endif
 #endif
         }
