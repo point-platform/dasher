@@ -89,6 +89,25 @@ namespace Dasher
                 Serialise(packer, value);
             return stream.ToArray();
         }
+
+        /// <summary>
+        /// Serialises <paramref name="value"/> to a byte array segment.
+        /// </summary>
+        /// <remarks>This method can be more efficient than <see cref="Serialise(T)"/> as it needn't trim the buffer.</remarks>
+        /// <param name="value">The value to serialise.</param>
+        /// <returns>A byte array segment containing the serialised value.</returns>
+        public ArraySegment<byte> SerialiseSegment(T value)
+        {
+            var stream = new MemoryStream();
+            using (var packer = new Packer(stream))
+                Serialise(packer, value);
+#if NET45
+            return new ArraySegment<byte>(stream.GetBuffer(), 0, checked((int)stream.Length));
+#else
+            stream.TryGetBuffer(out var buffer);
+            return buffer;
+#endif
+        }
     }
 
     /// <summary>
@@ -152,6 +171,26 @@ namespace Dasher
             using (var packer = new Packer(stream))
                 Serialise(packer, value);
             return stream.ToArray();
+        }
+
+        /// <summary>
+        /// Serialises <paramref name="value"/> to a byte array segment.
+        /// </summary>
+        /// <remarks>This method can be more efficient than <see cref="Serialise(object)"/> as it needn't trim the buffer.</remarks>
+        /// <param name="value">The value to serialise.</param>
+        /// <returns>A byte array segment containing the serialised value.</returns>
+        public ArraySegment<byte> SerialiseSegment(object value)
+        {
+            var stream = new MemoryStream();
+            using (var packer = new Packer(stream))
+                Serialise(packer, value);
+#if NET45
+            return new ArraySegment<byte>(stream.GetBuffer(), 0, checked((int)stream.Length));
+#else
+            stream.TryGetBuffer(out var buffer);
+            return buffer;
+#endif
+
         }
     }
 }
