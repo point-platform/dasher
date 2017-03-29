@@ -65,6 +65,21 @@ namespace Dasher
         }
 
         /// <summary>
+        /// Deserialises an object from <paramref name="bytes"/>.
+        /// </summary>
+        /// <param name="bytes">The byte array segment to deserialise from.</param>
+        /// <returns>The deserialised object.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="bytes"/> is <c>null</c>.</exception>
+        public T Deserialise(ArraySegment<byte> bytes)
+        {
+            if (bytes.Array == null)
+                throw new ArgumentException("Array must not be null.", nameof(bytes));
+            return Deserialise(new Unpacker(new MemoryStream(
+                bytes.Array, bytes.Offset, bytes.Count,
+                writable: true, publiclyVisible: false)));
+        }
+
+        /// <summary>
         /// Deserialises an object from <paramref name="stream"/>.
         /// </summary>
         /// <param name="stream">The stream to deserialise from.</param>
@@ -126,6 +141,21 @@ namespace Dasher
             if (bytes == null)
                 throw new ArgumentNullException(nameof(bytes));
             return Deserialise(new Unpacker(new MemoryStream(bytes)));
+        }
+
+        /// <summary>
+        /// Deserialises an object from <paramref name="bytes"/>.
+        /// </summary>
+        /// <param name="bytes">The byte array segment to deserialise from.</param>
+        /// <returns>The deserialised object.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="bytes"/> is <c>null</c>.</exception>
+        public object Deserialise(ArraySegment<byte> bytes)
+        {
+            if (bytes.Array == null)
+                throw new ArgumentException("Array must not be null.", nameof(bytes));
+            return Deserialise(new Unpacker(new MemoryStream(
+                bytes.Array, bytes.Offset, bytes.Count,
+                writable: true, publiclyVisible: false)));
         }
 
         /// <summary>

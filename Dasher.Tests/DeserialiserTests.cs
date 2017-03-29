@@ -499,6 +499,18 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void ThrowsIfArraySegmentHasNullByteArray()
+        {
+            var ex = Assert.Throws<ArgumentException>(() => new Deserialiser<UserScore>().Deserialise(default(ArraySegment<byte>)));
+
+            Assert.Equal("bytes", ex.ParamName);
+
+            ex = Assert.Throws<ArgumentException>(() => new Deserialiser(typeof(UserScore)).Deserialise(default(ArraySegment<byte>)));
+
+            Assert.Equal("bytes", ex.ParamName);
+        }
+
+        [Fact]
         public void ThrowsIfNullStream()
         {
             var ex = Assert.Throws<ArgumentNullException>(() => new Deserialiser<UserScore>().Deserialise((Stream)null));
