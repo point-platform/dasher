@@ -70,10 +70,5 @@ namespace Dasher.TypeProviders
 
             return true;
         }
-
-        void Foo(byte[] b)
-        {
-            var a = new ArraySegment<byte>(b);
-        }
     }
 }
