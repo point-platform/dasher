@@ -345,6 +345,12 @@ namespace Dasher
         /// <param name="bytes">The byte array segment to pack.</param>
         public void Pack(ArraySegment<byte> bytes)
         {
+            if (bytes.Array == null)
+            {
+                PackNull();
+                return;
+            }
+
             CheckBuffer(5);
 
             var length = bytes.Count;

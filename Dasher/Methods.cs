@@ -67,6 +67,7 @@ namespace Dasher
         public static MethodInfo Unpacker_TryReadDouble                         { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadDouble));
         public static MethodInfo Unpacker_TryReadBoolean                        { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadBoolean));
         public static MethodInfo Unpacker_TryReadBinary                         { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadBinary), new[] {typeof(byte[]).MakeByRefType()});
+        public static MethodInfo Unpacker_TryReadByteArraySegment               { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.TryReadByteArraySegment), new[] {typeof(ArraySegment<byte>).MakeByRefType()});
         public static MethodInfo Unpacker_SkipValue                             { get; } = typeof(Unpacker).GetMethod(nameof(Unpacker.SkipValue));
         public static MethodInfo Unpacker_HasStreamEnded_Get                    { get; } = typeof(Unpacker).GetProperty(nameof(Unpacker.HasStreamEnded)).GetMethod;
 

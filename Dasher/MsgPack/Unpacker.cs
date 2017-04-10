@@ -555,7 +555,7 @@ namespace Dasher
         /// <summary>
         /// Attempt to read binary data.
         /// </summary>
-        /// <param name="value">The unpacked byte array length, or zero if unpacking failed.</param>
+        /// <param name="value">The unpacked byte array.</param>
         /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         /// <exception cref="Exception">The observed array length exceeds the maximum .NET array length of <see cref="int.MaxValue"/>.</exception>
         public bool TryReadBinary(out byte[] value)
@@ -595,6 +595,27 @@ namespace Dasher
 
             value = default(byte[]);
             return false;
+        }
+
+        /// <summary>
+        /// Attempt to read binary data as an <see cref="ArraySegment{T}"/>.
+        /// </summary>
+        /// <param name="value">The unpacked byte array segment.</param>
+        /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
+        /// <exception cref="Exception">The observed array length exceeds the maximum .NET array length of <see cref="int.MaxValue"/>.</exception>
+        public bool TryReadByteArraySegment(out ArraySegment<byte> value)
+        {
+            if (!TryReadBinary(out var bytes))
+            {
+                value = default(ArraySegment<byte>);
+                return false;
+            }
+
+            value = bytes == null
+                ? default(ArraySegment<byte>)
+                : new ArraySegment<byte>(bytes);
+
+            return true;
         }
 
         /// <summary>

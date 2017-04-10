@@ -45,15 +45,15 @@ namespace Dasher.TypeProviders
 
         public bool TryEmitDeserialiseCode(ILGenerator ilg, ThrowBlockGatherer throwBlocks, ICollection<string> errors, string name, Type targetType, LocalBuilder value, LocalBuilder unpacker, LocalBuilder contextLocal, DasherContext context, UnexpectedFieldBehaviour unexpectedFieldBehaviour)
         {
+            var done = ilg.DefineLabel();
+
             ilg.Emit(OpCodes.Ldloc, unpacker);
+            ilg.Emit(OpCodes.Ldloca, value);
+            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadByteArraySegment);
 
-            var array = ilg.DeclareLocal(typeof(byte[]));
-            ilg.Emit(OpCodes.Ldloca, array);
-            ilg.Emit(OpCodes.Call, Methods.Unpacker_TryReadBinary);
-
-            // If the unpacker method failed (returned false), throw
             throwBlocks.ThrowIfFalse(() =>
             {
+                // not binary and not null
                 ilg.Emit(OpCodes.Ldstr, "Unexpected MsgPack format for \"{0}\". Expected {1}, got {2}.");
                 ilg.Emit(OpCodes.Ldstr, name);
                 ilg.Emit(OpCodes.Ldstr, value.LocalType.Name);
@@ -63,10 +63,6 @@ namespace Dasher.TypeProviders
                 ilg.Emit(OpCodes.Newobj, Methods.DeserialisationException_Ctor_String_Type);
                 ilg.Emit(OpCodes.Throw);
             });
-
-            ilg.Emit(OpCodes.Ldloca, value);
-            ilg.Emit(OpCodes.Ldloc, array);
-            ilg.Emit(OpCodes.Call, Methods.ArraySegment_Ctor_ByteArray);
 
             return true;
         }

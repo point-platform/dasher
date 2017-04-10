@@ -237,6 +237,7 @@ namespace Dasher.Tests
         {
             TestNested(new byte[] {1, 2, 3, 4}, packer => packer.PackBinary(new byte[] {1, 2, 3, 4}));
             TestNested(new byte[0], packer => packer.PackBinary(new byte[0]));
+            TestNested((byte[])null, packer => packer.PackNull());
         }
 
         [Fact]
@@ -245,6 +246,8 @@ namespace Dasher.Tests
             TestNested(new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }, 0, 4), packer => packer.PackBinary(new byte[] {1, 2, 3, 4}));
             TestNested(new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }, 1, 2), packer => packer.PackBinary(new byte[] {2, 3}));
             TestNested(new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }, 2, 0), packer => packer.PackBinary(new byte[0]));
+            TestNested(new ArraySegment<byte>(new byte[] { 1, 2, 3, 4 }, 2, 0), packer => packer.PackBinary(new byte[0]));
+            TestNested(default(ArraySegment<byte>), packer => packer.PackNull(), segment => Assert.Null(segment.Array));
         }
 
         [Fact]
