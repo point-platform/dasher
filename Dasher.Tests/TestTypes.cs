@@ -22,6 +22,7 @@
 //
 #endregion
 
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -129,6 +130,7 @@ namespace Dasher.Tests
         public TestEnum E { get; }
         public UserScore Complex { get; }
         public byte[] ByteArray { get; }
+        public ArraySegment<byte> ByteArraySegment { get; }
 
         public ClassWithAllDefaults(
             byte b = 12,
@@ -147,7 +149,8 @@ namespace Dasher.Tests
             bool bo = true,
             TestEnum e = TestEnum.Bar,
             UserScore complex = null,
-            byte[] byteArray = null)
+            byte[] byteArray = null,
+            ArraySegment<byte> byteArraySegment = default(ArraySegment<byte>))
         {
             B = b;
             Sb = sb;
@@ -166,6 +169,7 @@ namespace Dasher.Tests
             E = e;
             Complex = complex;
             ByteArray = byteArray;
+            ByteArraySegment = byteArraySegment;
         }
 
         public void AssertHasDefaultValues()
@@ -187,6 +191,9 @@ namespace Dasher.Tests
             Assert.Equal(TestEnum.Bar, E);
             Assert.Equal(null, Complex);
             Assert.Equal(null, ByteArray);
+            Assert.Null(ByteArraySegment.Array);
+            Assert.Equal(0, ByteArraySegment.Offset);
+            Assert.Equal(0, ByteArraySegment.Count);
         }
     }
 
@@ -209,6 +216,7 @@ namespace Dasher.Tests
         public TestEnum E { get; }
         public UserScore Complex { get; }
         public byte[] ByteArray { get; }
+        public ArraySegment<byte> ByteArraySegment { get; }
 
         public StructWithAllDefaults(
             byte b = 12,
@@ -227,7 +235,8 @@ namespace Dasher.Tests
             bool bo = true,
             TestEnum e = TestEnum.Bar,
             UserScore complex = null,
-            byte[] byteArray = null)
+            byte[] byteArray = null,
+            ArraySegment<byte> byteArraySegment = default(ArraySegment<byte>))
         {
             B = b;
             Sb = sb;
@@ -246,6 +255,7 @@ namespace Dasher.Tests
             E = e;
             Complex = complex;
             ByteArray = byteArray;
+            ByteArraySegment = byteArraySegment;
         }
 
         public void AssertHasDefaultValues()
@@ -267,6 +277,9 @@ namespace Dasher.Tests
             Assert.Equal(TestEnum.Bar, E);
             Assert.Equal(null, Complex);
             Assert.Equal(null, ByteArray);
+            Assert.Null(ByteArraySegment.Array);
+            Assert.Equal(0, ByteArraySegment.Offset);
+            Assert.Equal(0, ByteArraySegment.Count);
         }
     }
 

@@ -28,6 +28,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 
 namespace Dasher.TypeProviders
 {
@@ -150,9 +151,15 @@ namespace Dasher.TypeProviders
                             ilg.Emit(OpCodes.Call, parameter.ParameterType.GetConstructor(new[] { parameter.ParameterType.GetGenericArguments().Single() }));
                         }
                     }
+                    else if (parameter.DefaultValue == null && parameter.ParameterType.GetTypeInfo().IsValueType)
+                    {
+                        // When DefaultValue is null for a parameter of value type, the programmer must have
+                        // stated default(T) as the default value.
+                        ilg.Emit(OpCodes.Ldloca, valueLocals[i]);
+                        ilg.Emit(OpCodes.Initobj, valueLocals[i].LocalType);
+                    }
                     else
                     {
-                        // TODO if DefaultValue == default(T), do nothing?
                         ilg.LoadConstant(parameter.DefaultValue);
                         ilg.Emit(OpCodes.Stloc, valueLocals[i]);
                     }
