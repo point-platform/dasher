@@ -686,6 +686,16 @@ namespace Dasher.Tests
         }
 
         [Fact]
+        public void DeserialiseEmptyAsComplexStructWithAllDefaults()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(0));
+
+            var o = new Deserialiser<StructWithAllDefaults>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes);
+
+            o.AssertHasDefaultValues();
+        }
+
+        [Fact]
         public void DeserialiseEmptyAsNullableComplexStructWithAllDefaults()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(0));
