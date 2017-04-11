@@ -666,7 +666,7 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void DeserialiseEmptyAsComplexWithAllDefaults()
+        public void DeserialiseEmptyAsComplexClassWithAllDefaults()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(0));
 
