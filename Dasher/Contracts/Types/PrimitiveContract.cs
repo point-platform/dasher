@@ -49,6 +49,7 @@ namespace Dasher.Contracts.Types
                 {typeof(float), "Single"},
                 {typeof(double), "Double"},
                 {typeof(bool), "Boolean"},
+                {typeof(char), "Char"},
                 {typeof(string), "String"},
                 {typeof(byte[]), "ByteArray"},
                 {typeof(ArraySegment<byte>), "ByteArraySegment"},
