@@ -676,16 +676,6 @@ namespace Dasher.Tests
         }
 
         [Fact]
-        public void DeserialiseEmptyAsUnion()
-        {
-            var bytes = PackBytes(packer => packer.PackMapHeader(0));
-
-            var o = new Deserialiser<Union<UserScore, UserScoreStruct>>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes);
-
-            Assert.Null(o);
-        }
-
-        [Fact]
         public void DeserialiseEmptyAsComplexStructWithAllDefaults()
         {
             var bytes = PackBytes(packer => packer.PackMapHeader(0));
@@ -701,6 +691,16 @@ namespace Dasher.Tests
             var bytes = PackBytes(packer => packer.PackMapHeader(0));
 
             var o = new Deserialiser<StructWithAllDefaults?>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes);
+
+            Assert.Null(o);
+        }
+
+        [Fact]
+        public void DeserialiseEmptyAsUnion()
+        {
+            var bytes = PackBytes(packer => packer.PackMapHeader(0));
+
+            var o = new Deserialiser<Union<UserScore, UserScoreStruct>>(UnexpectedFieldBehaviour.Throw).Deserialise(bytes);
 
             Assert.Null(o);
         }
