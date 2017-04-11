@@ -70,6 +70,8 @@ namespace Dasher
                 ilg.Emit(OpCodes.Ldc_I8, (long)value);
             else if (value is ulong)
                 ilg.Emit(OpCodes.Ldc_I8, (long)(ulong)value);
+            else if (value is char)
+                ilg.Emit(OpCodes.Ldc_I4, (char)value);
             else if (value is string)
                 ilg.Emit(OpCodes.Ldstr, (string)value);
             else if (value is bool)

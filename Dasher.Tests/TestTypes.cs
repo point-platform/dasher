@@ -120,6 +120,7 @@ namespace Dasher.Tests
         public uint Ui { get; }
         public long L { get; }
         public ulong Ul { get; }
+        public char C { get; }
         public string Str { get; }
         public float F { get; }
         public double D { get; }
@@ -137,6 +138,7 @@ namespace Dasher.Tests
             uint ui = 12345u,
             long l = -12345678900L,
             ulong ul = 12345678900UL,
+            char c = 'c',
             string str = "str",
             float f = 1.23f,
             double d = 1.23,
@@ -154,6 +156,7 @@ namespace Dasher.Tests
             L = l;
             Ul = ul;
             Str = str;
+            C = c;
             F = f;
             D = d;
             Dc = dc;
@@ -172,6 +175,7 @@ namespace Dasher.Tests
             Assert.Equal(12345u, Ui);
             Assert.Equal(-12345678900L, L);
             Assert.Equal(12345678900UL, Ul);
+            Assert.Equal('c', C);
             Assert.Equal("str", Str);
             Assert.Equal(1.23f, F);
             Assert.Equal(1.23, D);
@@ -192,6 +196,7 @@ namespace Dasher.Tests
         public uint Ui { get; }
         public long L { get; }
         public ulong Ul { get; }
+        public char C { get; }
         public string Str { get; }
         public float F { get; }
         public double D { get; }
@@ -209,6 +214,7 @@ namespace Dasher.Tests
             uint ui = 12345,
             long l = -12345678900L,
             ulong ul = 12345678900UL,
+            char c = 'c',
             string str = "str",
             float f = 1.23f,
             double d = 1.23,
@@ -225,6 +231,7 @@ namespace Dasher.Tests
             Ui = ui;
             L = l;
             Ul = ul;
+            C = c;
             Str = str;
             F = f;
             D = d;
@@ -244,6 +251,7 @@ namespace Dasher.Tests
             Assert.Equal(12345u, Ui);
             Assert.Equal(-12345678900L, L);
             Assert.Equal(12345678900UL, Ul);
+            Assert.Equal('c', C);
             Assert.Equal("str", Str);
             Assert.Equal(1.23f, F);
             Assert.Equal(1.23, D);
