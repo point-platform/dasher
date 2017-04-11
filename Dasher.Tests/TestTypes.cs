@@ -128,6 +128,7 @@ namespace Dasher.Tests
         public bool Bo { get; }
         public TestEnum E { get; }
         public UserScore Complex { get; }
+        public byte[] ByteArray { get; }
 
         public ClassWithAllDefaults(
             byte b = 12,
@@ -145,7 +146,8 @@ namespace Dasher.Tests
             decimal dc = 1.23M,
             bool bo = true,
             TestEnum e = TestEnum.Bar,
-            UserScore complex = null)
+            UserScore complex = null,
+            byte[] byteArray = null)
         {
             B = b;
             Sb = sb;
@@ -163,6 +165,7 @@ namespace Dasher.Tests
             Bo = bo;
             E = e;
             Complex = complex;
+            ByteArray = byteArray;
         }
 
         public void AssertHasDefaultValues()
@@ -183,6 +186,7 @@ namespace Dasher.Tests
             Assert.Equal(true, Bo);
             Assert.Equal(TestEnum.Bar, E);
             Assert.Equal(null, Complex);
+            Assert.Equal(null, ByteArray);
         }
     }
 
@@ -204,6 +208,7 @@ namespace Dasher.Tests
         public bool Bo { get; }
         public TestEnum E { get; }
         public UserScore Complex { get; }
+        public byte[] ByteArray { get; }
 
         public StructWithAllDefaults(
             byte b = 12,
@@ -221,7 +226,8 @@ namespace Dasher.Tests
             decimal dc = 1.23M,
             bool bo = true,
             TestEnum e = TestEnum.Bar,
-            UserScore complex = null)
+            UserScore complex = null,
+            byte[] byteArray = null)
         {
             B = b;
             Sb = sb;
@@ -239,6 +245,7 @@ namespace Dasher.Tests
             Bo = bo;
             E = e;
             Complex = complex;
+            ByteArray = byteArray;
         }
 
         public void AssertHasDefaultValues()
@@ -259,6 +266,7 @@ namespace Dasher.Tests
             Assert.Equal(true, Bo);
             Assert.Equal(TestEnum.Bar, E);
             Assert.Equal(null, Complex);
+            Assert.Equal(null, ByteArray);
         }
     }
 
