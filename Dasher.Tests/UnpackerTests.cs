@@ -26,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using JetBrains.Annotations;
 using MsgPack;
 using Xunit;
 using Xunit.Abstractions;
@@ -691,7 +692,7 @@ namespace Dasher.Tests
 
         #region Test support
 
-        private static Unpacker InitTest(Action<MsgPack.Packer> packerAction)
+        private static Unpacker InitTest([InstantHandle] Action<MsgPack.Packer> packerAction)
         {
             var stream = new MemoryStream();
             packerAction(MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None));
@@ -700,7 +701,7 @@ namespace Dasher.Tests
             return new Unpacker(stream);
         }
 
-        private static void TestFamily(Action<MsgPack.Packer> packerAction, FormatFamily expected)
+        private static void TestFamily([InstantHandle] Action<MsgPack.Packer> packerAction, FormatFamily expected)
         {
             var stream = new MemoryStream();
             packerAction(MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None));
@@ -712,7 +713,7 @@ namespace Dasher.Tests
             Assert.Equal(expected, actual);
         }
 
-        private static void TestFormat(Action<MsgPack.Packer> packerAction, Format expected)
+        private static void TestFormat([InstantHandle] Action<MsgPack.Packer> packerAction, Format expected)
         {
             var stream = new MemoryStream();
             packerAction(MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None));
@@ -724,7 +725,7 @@ namespace Dasher.Tests
             Assert.Equal(expected, actual);
         }
 
-        private static void TestEmptyMap(bool expected, Action<MsgPack.Packer> packerAction)
+        private static void TestEmptyMap(bool expected, [InstantHandle] Action<MsgPack.Packer> packerAction)
         {
             var stream = new MemoryStream();
             packerAction(MsgPack.Packer.Create(stream, PackerCompatibilityOptions.None));
