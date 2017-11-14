@@ -50,10 +50,7 @@ namespace Dasher
         /// Initialise the MsgPack unpacker.
         /// </summary>
         /// <param name="stream">The stream to unpack values from.</param>
-        public Unpacker(Stream stream)
-        {
-            _stream = stream;
-        }
+        public Unpacker(Stream stream) => _stream = stream;
 
         /// <summary>
         /// Gets whether the underlying stream has ended or not.

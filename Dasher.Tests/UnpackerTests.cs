@@ -40,10 +40,7 @@ namespace Dasher.Tests
 
         private readonly ITestOutputHelper _output;
 
-        public UnpackerTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
+        public UnpackerTests(ITestOutputHelper output) => _output = output;
 
         [Fact]
         public void TryReadByte()

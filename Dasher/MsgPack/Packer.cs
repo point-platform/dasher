@@ -76,10 +76,7 @@ namespace Dasher
         }
 
         /// <inheritdoc />
-        void IDisposable.Dispose()
-        {
-            Flush();
-        }
+        void IDisposable.Dispose() => Flush();
 
         private void CheckBuffer(int space)
         {

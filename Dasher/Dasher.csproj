@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <Description>A fast, lightweight, cross-platform serialisation tool with support for safe contract evolution.</Description>
     <Copyright>Copyright Drew Noakes 2015-2017</Copyright>
@@ -22,27 +21,23 @@
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="10.4.0">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.ValueTuple" Version="4.3.0" />
   </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
     <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
   </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="UnionTypes.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -54,9 +49,7 @@
       <DependentUpon>UnionTypes.tt</DependentUpon>
     </Compile>
   </ItemGroup>
-
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
-
 </Project>
