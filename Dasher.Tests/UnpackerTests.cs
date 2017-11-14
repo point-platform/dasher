@@ -45,24 +45,24 @@ namespace Dasher.Tests
         [Fact]
         public void TryReadByte()
         {
-            foreach (var input in Enumerable.Range(0, 255).Select(i => (byte)i))
+            for (var i = (int)byte.MinValue; i <= byte.MaxValue; i++)
             {
-                var unpacker = InitTest(p => p.Pack(input));
+                var unpacker = InitTest(p => p.Pack((byte)i));
 
-                Assert.True(unpacker.TryReadByte(out byte value), $"Processing {input}");
-                Assert.Equal(input, value);
+                Assert.True(unpacker.TryReadByte(out byte value), $"Processing {i}");
+                Assert.Equal(i, value);
             }
         }
 
         [Fact]
         public void TryReadSByte()
         {
-            foreach (var input in Enumerable.Range(sbyte.MinValue, 255).Select(i => (sbyte)i))
+            for (var i = (int)sbyte.MinValue; i <= sbyte.MaxValue; i++)
             {
-                var unpacker = InitTest(p => p.Pack(input));
+                var unpacker = InitTest(p => p.Pack((sbyte)i));
 
-                Assert.True(unpacker.TryReadSByte(out sbyte value), $"Processing {input}");
-                Assert.Equal(input, value);
+                Assert.True(unpacker.TryReadSByte(out sbyte value), $"Processing {i}");
+                Assert.Equal(i, value);
             }
         }
 
