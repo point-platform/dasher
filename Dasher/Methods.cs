@@ -111,7 +111,7 @@ namespace Dasher
 
         public static MethodInfo Char_ToString                                  { get; } = typeof(char).GetMethod(nameof(char.ToString), Type.EmptyTypes);
 
-        public static MethodInfo Enum_TryParse_OpenGeneric                      { get; } = typeof(Enum).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(m => m.Name == nameof(Enum.TryParse) && m.GetParameters().Length == 3);
+        public static MethodInfo Enum_TryParse_OpenGeneric                      { get; } = typeof(Enum).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(m => m.Name == nameof(Enum.TryParse) && m.IsGenericMethod && m.GetParameters().Length == 3);
 
         public static MethodInfo Guid_ToByteArray                               { get; } = typeof(Guid).GetMethod(nameof(Guid.ToByteArray), Type.EmptyTypes);
         public static ConstructorInfo Guid_Constructor_ByteArray                { get; } = typeof(Guid).GetConstructor(new[] {typeof(byte[])});
