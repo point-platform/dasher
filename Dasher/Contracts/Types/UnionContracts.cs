@@ -172,7 +172,10 @@ namespace Dasher.Contracts.Types
             }
         }
 
-        private IReadOnlyList<Member> Members { get; }
+        /// <summary>
+        /// The members that comprise this union type.
+        /// </summary>
+        public IReadOnlyList<Member> Members { get; }
 
         internal UnionReadContract(Type type, ContractCollection contractCollection)
         {
