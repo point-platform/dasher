@@ -26,6 +26,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using JetBrains.Annotations;
 using static Dasher.MsgPackConstants;
 
 namespace Dasher
@@ -555,7 +556,7 @@ namespace Dasher
         /// <param name="value">The unpacked byte array.</param>
         /// <returns><c>true</c> if unpacking succeeded, otherwise <c>false</c>.</returns>
         /// <exception cref="Exception">The observed array length exceeds the maximum .NET array length of <see cref="int.MaxValue"/>.</exception>
-        public bool TryReadBinary(out byte[] value)
+        public bool TryReadBinary([CanBeNull] out byte[] value)
         {
             PrepareNextByte();
 

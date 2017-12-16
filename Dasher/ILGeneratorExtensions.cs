@@ -25,6 +25,7 @@
 using System;
 using System.Reflection;
 using System.Reflection.Emit;
+using JetBrains.Annotations;
 
 namespace Dasher
 {
@@ -50,7 +51,7 @@ namespace Dasher
             ilg.Emit(OpCodes.Call, Methods.Format_ToString);
         }
 
-        internal static void LoadConstant(this ILGenerator ilg, object value)
+        internal static void LoadConstant(this ILGenerator ilg, [CanBeNull] object value)
         {
             if (value == null)
                 ilg.Emit(OpCodes.Ldnull);
