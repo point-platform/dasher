@@ -38,7 +38,7 @@ namespace Dasher.Contracts.Types
         public DictionaryWriteContract(Type type, ContractCollection contractCollection)
         {
             if (!CanProcess(type))
-                throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyDictionary<int, int>)}<>.", nameof(type));
+                throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyDictionary<int, int>)}<,>.", nameof(type));
             KeyContract = contractCollection.GetOrAddWriteContract(type.GetGenericArguments()[0]);
             ValueContract = contractCollection.GetOrAddWriteContract(type.GetGenericArguments()[1]);
         }
@@ -85,7 +85,7 @@ namespace Dasher.Contracts.Types
         public DictionaryReadContract(Type type, ContractCollection contractCollection)
         {
             if (!CanProcess(type))
-                throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyDictionary<int, int>)}<>.", nameof(type));
+                throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyDictionary<int, int>)}<,>.", nameof(type));
             KeyContract = contractCollection.GetOrAddReadContract(type.GetGenericArguments()[0]);
             ValueContract = contractCollection.GetOrAddReadContract(type.GetGenericArguments()[1]);
         }

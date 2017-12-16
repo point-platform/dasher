@@ -1015,13 +1015,13 @@ namespace Dasher
                 var p = b;
                 return (uint)(*p++ << 24 |
                               *p++ << 16 |
-                              *p++ << 8 |
+                              *p++ << 8  |
                               *p);
             }
 #else
             return (uint)(_buffer[0] << 24 |
                           _buffer[1] << 16 |
-                          _buffer[2] << 8 |
+                          _buffer[2] << 8  |
                           _buffer[3]);
 #endif
         }
@@ -1039,8 +1039,8 @@ namespace Dasher
                        (ulong)*p++ << 32 |
                        (ulong)*p++ << 24 |
                        (ulong)*p++ << 16 |
-                       (ulong)*p++ << 8 |
-                       (ulong)*p;
+                       (ulong)*p++ <<  8 |
+                              *p;
             }
 #else
             return (ulong)_buffer[0] << 56 |
@@ -1074,13 +1074,13 @@ namespace Dasher
                 var p = b;
                 return *p++ << 24 |
                        *p++ << 16 |
-                       *p++ << 8 |
+                       *p++ << 8  |
                        *p;
             }
 #else
             return _buffer[0] << 24 |
                    _buffer[1] << 16 |
-                   _buffer[2] << 8 |
+                   _buffer[2] << 8  |
                    _buffer[3];
 #endif
         }
@@ -1099,7 +1099,7 @@ namespace Dasher
                        (long)*p++ << 32 |
                        (long)*p++ << 24 |
                        (long)*p++ << 16 |
-                       (long)*p++ << 8 |
+                       (long)*p++ << 8  |
                        (long)*p;
             }
 #else
@@ -1109,7 +1109,7 @@ namespace Dasher
                    (long)_buffer[3] << 32 |
                    (long)_buffer[4] << 24 |
                    (long)_buffer[5] << 16 |
-                   (long)_buffer[6] << 8 |
+                   (long)_buffer[6] << 8  |
                    (long)_buffer[7];
 #endif
         }

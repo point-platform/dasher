@@ -74,10 +74,7 @@ namespace Dasher.Contracts.Types
 
         internal override IEnumerable<Contract> Children => Items.Cast<Contract>();
 
-        internal override string MarkupValue
-        {
-            get { return $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}"; }
-        }
+        internal override string MarkupValue => $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}";
 
         public IReadContract CopyTo(ContractCollection collection)
         {

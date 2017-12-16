@@ -51,9 +51,9 @@ namespace Dasher.Contracts.Types
 
         public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
-            var that = writeContract as EnumContract;
-            if (that == null)
+            if (!(writeContract is EnumContract that))
                 return false;
+
             return strict
                 ? MemberNames.SetEquals(that.MemberNames)
                 : MemberNames.IsSupersetOf(that.MemberNames);

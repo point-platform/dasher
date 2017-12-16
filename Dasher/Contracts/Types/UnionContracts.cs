@@ -155,10 +155,7 @@ namespace Dasher.Contracts.Types
                 .ToArray();
         }
 
-        private UnionReadContract(IReadOnlyList<Member> members)
-        {
-            Members = members;
-        }
+        private UnionReadContract(IReadOnlyList<Member> members) => Members = members;
 
         public UnionReadContract(XElement element, Func<string, IReadContract> resolveContract, ICollection<Action> bindActions)
         {
@@ -189,9 +186,7 @@ namespace Dasher.Contracts.Types
             if (writeContract is EmptyContract)
                 return true;
 
-            var ws = writeContract as UnionWriteContract;
-
-            if (ws == null)
+            if (!(writeContract is UnionWriteContract ws))
                 return false;
 
             var readMembers = Members;

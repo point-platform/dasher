@@ -108,7 +108,7 @@ namespace Dasher.Contracts
         [CanBeNull]
         internal string Id
         {
-            get { return _id; }
+            get => _id;
             set
             {
                 if (string.IsNullOrWhiteSpace(value))

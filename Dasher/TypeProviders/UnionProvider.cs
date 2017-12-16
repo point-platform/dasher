@@ -248,32 +248,42 @@ namespace Dasher.TypeProviders
             var typeInfo = type.GetTypeInfo();
 
             var tagAttribute = typeInfo.GetCustomAttribute<UnionTagAttribute>();
+
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (tagAttribute != null)
                 return tagAttribute.Tag;
 
+            // ReSharper disable HeuristicUnreachableCode
             if (!typeInfo.IsGenericType)
                 return type.Namespace == nameof(System) ? type.Name : type.FullName;
 
             var arguments = type.GetGenericArguments();
-            if (arguments.Length == 1 && type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>))
-                return $"[{GetTypeName(arguments[0])}]";
-            if (arguments.Length == 2 && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
-                return $"({GetTypeName(arguments[0])}=>{GetTypeName(arguments[1])})";
 
-            var name = type.FullName.Substring(0, type.FullName.IndexOf("[[", StringComparison.Ordinal));
-
-            name = Regex.Replace(name, @"^Dasher\.Union", "Union");
-
-            var argIndex = 0;
-            name = Regex.Replace(name, "`([0-9]+)", match =>
+            switch (arguments.Length)
             {
-                var count = int.Parse(match.Groups[1].Value);
-                var args = $"<{string.Join(",", arguments.Skip(argIndex).Take(count).Select(GetTypeName))}>";
-                argIndex += count;
-                return args;
-            });
+                case 1 when type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>):
+                    return $"[{GetTypeName(arguments[0])}]";
+                case 2 when type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>):
+                    return $"({GetTypeName(arguments[0])}=>{GetTypeName(arguments[1])})";
+                default:
+                    var name = type.FullName.Substring(
+                        0,
+                        type.FullName.IndexOf("[[", StringComparison.Ordinal));
 
-            return name;
+                    name = Regex.Replace(name, @"^Dasher\.Union", "Union");
+
+                    var argIndex = 0;
+
+                    name = Regex.Replace(name, "`([0-9]+)", match =>
+                    {
+                        var count = int.Parse(match.Groups[1].Value);
+                        var names = arguments.Skip(argIndex).Take(count).Select(GetTypeName);
+                        argIndex += count;
+                        return $"<{string.Join(",", names)}>";
+                    });
+
+                    return name;
+            }
         }
     }
 }
