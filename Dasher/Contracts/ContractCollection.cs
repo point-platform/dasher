@@ -59,7 +59,10 @@ namespace Dasher.Contracts
     {
         private readonly List<Contract> _contracts = new List<Contract>();
 
-        internal IReadOnlyCollection<Contract> Contracts => _contracts;
+        /// <summary>
+        /// Gets the complete set of contracts within the collection.
+        /// </summary>
+        public IReadOnlyCollection<Contract> Contracts => _contracts;
 
         #region Contract resolution
 
