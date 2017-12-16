@@ -151,7 +151,7 @@ namespace Dasher.Contracts.Types
     /// <summary>
     /// Contract to use when reading complex types.
     /// </summary>
-    internal sealed class ComplexReadContract : ByRefContract, IReadContract
+    public sealed class ComplexReadContract : ByRefContract, IReadContract
     {
         /// <summary>
         /// Details of a complex type's field, for writing.
@@ -236,6 +236,7 @@ namespace Dasher.Contracts.Types
             Fields = fields;
         }
 
+        /// <inheritdoc />
         public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
             var isEmpty = writeContract is EmptyContract;
@@ -306,6 +307,7 @@ namespace Dasher.Contracts.Types
             return true;
         }
 
+        /// <inheritdoc />
         public override bool Equals(Contract other)
         {
             return other is ComplexReadContract crc &&
@@ -313,6 +315,7 @@ namespace Dasher.Contracts.Types
                        (a, b) => a.Name == b.Name && a.IsRequired == b.IsRequired && a.Contract.Equals(b.Contract));
         }
 
+        /// <inheritdoc />
         protected override int ComputeHashCode()
         {
             unchecked
@@ -346,6 +349,7 @@ namespace Dasher.Contracts.Types
                     new XAttribute(nameof(Field.IsRequired), f.IsRequired))));
         }
 
+        /// <inheritdoc />
         public IReadContract CopyTo(ContractCollection collection)
         {
             return collection.GetOrCreate(this, () => new ComplexReadContract(Fields.Select(f => new Field(f.Name, f.Contract.CopyTo(collection), f.IsRequired)).ToList()));
