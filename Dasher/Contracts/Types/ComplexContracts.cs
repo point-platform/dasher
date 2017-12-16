@@ -31,23 +31,42 @@ using Dasher.Utils;
 
 namespace Dasher.Contracts.Types
 {
-    internal sealed class ComplexWriteContract : ByRefContract, IWriteContract
+    /// <summary>
+    /// Contract to use when writing complex types.
+    /// </summary>
+    public sealed class ComplexWriteContract : ByRefContract, IWriteContract
     {
+        /// <summary>
+        /// Details of a complex type's field, for writing.
+        /// </summary>
         public struct Field
         {
+            /// <summary>
+            /// Name of the field.
+            /// </summary>
+            /// <remarks>
+            /// Names are case in-sensitive.
+            /// </remarks>
             public string Name { get; }
+
+            /// <summary>
+            /// The contract to use when writing this field's value.
+            /// </summary>
             public IWriteContract Contract { get; }
 
-            public Field(string name, IWriteContract contract)
+            internal Field(string name, IWriteContract contract)
             {
                 Name = name;
                 Contract = contract;
             }
         }
 
+        /// <summary>
+        /// The fields that comprise this complex type.
+        /// </summary>
         public IReadOnlyList<Field> Fields { get; }
 
-        public ComplexWriteContract(Type type, ContractCollection contractCollection)
+        internal ComplexWriteContract(Type type, ContractCollection contractCollection)
         {
             var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase);
@@ -59,12 +78,9 @@ namespace Dasher.Contracts.Types
                 throw new ArgumentException($"Type {type} must have at least one public instance property.", nameof(type));
         }
 
-        private ComplexWriteContract(IReadOnlyList<Field> fields)
-        {
-            Fields = fields;
-        }
+        private ComplexWriteContract(IReadOnlyList<Field> fields) => Fields = fields;
 
-        public ComplexWriteContract(XElement element, Func<string, IWriteContract> resolveContract, ICollection<Action> bindActions)
+        internal ComplexWriteContract(XElement element, Func<string, IWriteContract> resolveContract, ICollection<Action> bindActions)
         {
             var fields = new List<Field>();
 
@@ -87,12 +103,14 @@ namespace Dasher.Contracts.Types
             Fields = fields;
         }
 
+        /// <inheritdoc />
         public override bool Equals(Contract other)
         {
             return other is ComplexWriteContract cwc &&
                    cwc.Fields.SequenceEqual(Fields, (a, b) => a.Name == b.Name && a.Contract.Equals(b.Contract));
         }
 
+        /// <inheritdoc />
         protected override int ComputeHashCode()
         {
             unchecked
@@ -123,21 +141,42 @@ namespace Dasher.Contracts.Types
                     new XAttribute("Contract", f.Contract.ToReferenceString()))));
         }
 
+        /// <inheritdoc />
         public IWriteContract CopyTo(ContractCollection collection)
         {
             return collection.GetOrCreate(this, () => new ComplexWriteContract(Fields.Select(f => new Field(f.Name, f.Contract.CopyTo(collection))).ToList()));
         }
     }
 
+    /// <summary>
+    /// Contract to use when reading complex types.
+    /// </summary>
     internal sealed class ComplexReadContract : ByRefContract, IReadContract
     {
-        private struct Field
+        /// <summary>
+        /// Details of a complex type's field, for writing.
+        /// </summary>
+        public struct Field
         {
+            /// <summary>
+            /// Name of the field.
+            /// </summary>
+            /// <remarks>
+            /// Names are case in-sensitive.
+            /// </remarks>
             public string Name { get; }
+
+            /// <summary>
+            /// The contract to use when reading this field's value.
+            /// </summary>
             public IReadContract Contract { get; }
+
+            /// <summary>
+            /// Whether the field is required when reading this complex type.
+            /// </summary>
             public bool IsRequired { get; }
 
-            public Field(string name, IReadContract contract, bool isRequired)
+            internal Field(string name, IReadContract contract, bool isRequired)
             {
                 Name = name;
                 Contract = contract;
@@ -145,9 +184,12 @@ namespace Dasher.Contracts.Types
             }
         }
 
-        private IReadOnlyList<Field> Fields { get; }
+        /// <summary>
+        /// The fields that comprise this complex type.
+        /// </summary>
+        public IReadOnlyList<Field> Fields { get; }
 
-        public ComplexReadContract(Type type, ContractCollection contractCollection)
+        internal ComplexReadContract(Type type, ContractCollection contractCollection)
         {
             var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.DeclaredOnly | BindingFlags.Instance);
             if (constructors.Length != 1)
@@ -166,12 +208,9 @@ namespace Dasher.Contracts.Types
                 .ToList();
         }
 
-        private ComplexReadContract(IReadOnlyList<Field> fields)
-        {
-            Fields = fields;
-        }
+        private ComplexReadContract(IReadOnlyList<Field> fields) => Fields = fields;
 
-        public ComplexReadContract(XElement element, Func<string, IReadContract> resolveContract, ICollection<Action> bindActions)
+        internal ComplexReadContract(XElement element, Func<string, IReadContract> resolveContract, ICollection<Action> bindActions)
         {
             var fields = new List<Field>();
 

@@ -31,44 +31,59 @@ using Dasher.Utils;
 
 namespace Dasher.Contracts.Types
 {
-    internal sealed class EnumContract : ByRefContract, IWriteContract, IReadContract
+    /// <summary>
+    /// Contract to use when reading or writing enum values.
+    /// </summary>
+    public sealed class EnumContract : ByRefContract, IWriteContract, IReadContract
     {
-        public static bool CanProcess(Type type) => type.GetTypeInfo().IsEnum;
+        internal static bool CanProcess(Type type) => type.GetTypeInfo().IsEnum;
 
-        private HashSet<string> MemberNames { get; }
+        private readonly HashSet<string> _memberNames;
 
-        public EnumContract(Type type)
+        /// <summary>
+        /// The set of member names present in this contract.
+        /// </summary>
+#if NET45
+        public IEnumerable<string> MemberNames => _memberNames;
+#else
+        public IReadOnlyCollection<string> MemberNames => _memberNames;
+#endif
+
+        internal EnumContract(Type type)
         {
             if (!CanProcess(type))
                 throw new ArgumentException("Must be an enum.", nameof(type));
-            MemberNames = new HashSet<string>(Enum.GetNames(type), StringComparer.OrdinalIgnoreCase);
+            _memberNames = new HashSet<string>(Enum.GetNames(type), StringComparer.OrdinalIgnoreCase);
         }
 
-        public EnumContract(XContainer element)
+        internal EnumContract(XContainer element)
         {
-            MemberNames = new HashSet<string>(element.Elements("Member").Select(e => e.Attribute("Name").Value));
+            _memberNames = new HashSet<string>(element.Elements("Member").Select(e => e.Attribute("Name").Value));
         }
 
+        /// <inheritdoc />
         public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
             if (!(writeContract is EnumContract that))
                 return false;
 
             return strict
-                ? MemberNames.SetEquals(that.MemberNames)
-                : MemberNames.IsSupersetOf(that.MemberNames);
+                ? _memberNames.SetEquals(that.MemberNames)
+                : _memberNames.IsSupersetOf(that.MemberNames);
         }
 
         internal override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
 
-        public override bool Equals(Contract other) => other is EnumContract e && MemberNames.SetEquals(e.MemberNames);
+        /// <inheritdoc />
+        public override bool Equals(Contract other) => other is EnumContract e && _memberNames.SetEquals(e._memberNames);
 
+        /// <inheritdoc />
         protected override int ComputeHashCode()
         {
             unchecked
             {
                 var hash = 0;
-                foreach (var memberName in MemberNames)
+                foreach (var memberName in _memberNames)
                 {
                     hash <<= 5;
                     hash ^= memberName.GetHashCode();
@@ -83,7 +98,7 @@ namespace Dasher.Contracts.Types
                 throw new InvalidOperationException("\"Id\" property cannot be null.");
             return new XElement("Enum",
                 new XAttribute("Id", Id),
-                MemberNames.Select(m => new XElement("Member", new XAttribute("Name", m))));
+                _memberNames.Select(m => new XElement("Member", new XAttribute("Name", m))));
         }
 
         IReadContract IReadContract.CopyTo(ContractCollection collection) => collection.Intern(this);

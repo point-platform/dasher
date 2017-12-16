@@ -27,16 +27,24 @@ using Dasher.Utils;
 
 namespace Dasher.Contracts.Types
 {
-    internal sealed class EmptyContract : ByValueContract, IWriteContract, IReadContract
+    /// <summary>
+    /// Contract to use when reading or writing the <see cref="Empty"/> value.
+    /// </summary>
+    public sealed class EmptyContract : ByValueContract, IWriteContract, IReadContract
     {
+        internal EmptyContract() {}
+
+        /// <inheritdoc />
         public bool CanReadFrom(IWriteContract writeContract, bool strict) => writeContract is EmptyContract || !strict;
 
+        /// <inheritdoc />
         public override bool Equals(Contract other) => other is EmptyContract;
 
         internal override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
 
         internal override string MarkupValue => "{empty}";
 
+        /// <inheritdoc />
         protected override int ComputeHashCode() => MarkupValue.GetHashCode();
 
         IWriteContract IWriteContract.CopyTo(ContractCollection collection) => collection.Intern(this);

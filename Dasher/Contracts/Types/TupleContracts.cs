@@ -29,13 +29,19 @@ using System.Reflection;
 
 namespace Dasher.Contracts.Types
 {
-    internal sealed class TupleReadContract : ByValueContract, IReadContract
+    /// <summary>
+    /// Contract to use when reading a tuple of values of known types.
+    /// </summary>
+    public sealed class TupleReadContract : ByValueContract, IReadContract
     {
-        public static bool CanProcess(Type type) => TupleWriteContract.CanProcess(type);
+        internal static bool CanProcess(Type type) => TupleWriteContract.CanProcess(type);
 
-        private IReadOnlyList<IReadContract> Items { get; }
+        /// <summary>
+        /// The contract of each type in the tuple, in the order they appear.
+        /// </summary>
+        public IReadOnlyList<IReadContract> Items { get; }
 
-        public TupleReadContract(Type type, ContractCollection contractCollection)
+        internal TupleReadContract(Type type, ContractCollection contractCollection)
         {
             if (!TupleWriteContract.CanProcess(type))
                 throw new ArgumentException($"Type {type} is not a supported tuple type.", nameof(type));
@@ -43,11 +49,9 @@ namespace Dasher.Contracts.Types
             Items = type.GetGenericArguments().Select(contractCollection.GetOrAddReadContract).ToList();
         }
 
-        public TupleReadContract(IReadOnlyList<IReadContract> items)
-        {
-            Items = items;
-        }
+        internal TupleReadContract(IReadOnlyList<IReadContract> items) => Items = items;
 
+        /// <inheritdoc />
         public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
             var that = writeContract as TupleWriteContract;
@@ -56,8 +60,10 @@ namespace Dasher.Contracts.Types
                    && !Items.Where((rs, i) => !rs.CanReadFrom(that.Items[i], strict)).Any();
         }
 
+        /// <inheritdoc />
         public override bool Equals(Contract other) => other is TupleReadContract o && o.Items.SequenceEqual(Items);
 
+        /// <inheritdoc />
         protected override int ComputeHashCode()
         {
             unchecked
@@ -76,15 +82,19 @@ namespace Dasher.Contracts.Types
 
         internal override string MarkupValue => $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}";
 
+        /// <inheritdoc />
         public IReadContract CopyTo(ContractCollection collection)
         {
             return collection.GetOrCreate(this, () => new TupleReadContract(Items.Select(i => i.CopyTo(collection)).ToList()));
         }
     }
 
-    internal sealed class TupleWriteContract : ByValueContract, IWriteContract
+    /// <summary>
+    /// Contract to use when reading a tuple of values of known types.
+    /// </summary>
+    public sealed class TupleWriteContract : ByValueContract, IWriteContract
     {
-        public static bool CanProcess(Type type)
+        internal static bool CanProcess(Type type)
         {
             if (!type.GetTypeInfo().IsGenericType)
                 return false;
@@ -104,9 +114,12 @@ namespace Dasher.Contracts.Types
                    genType == typeof(Tuple<,,,,,,,>);
         }
 
+        /// <summary>
+        /// The contract of each type in the tuple, in the order they appear.
+        /// </summary>
         public IReadOnlyList<IWriteContract> Items { get; }
 
-        public TupleWriteContract(Type type, ContractCollection contractCollection)
+        internal TupleWriteContract(Type type, ContractCollection contractCollection)
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} is not a supported tuple type.", nameof(type));
@@ -114,13 +127,12 @@ namespace Dasher.Contracts.Types
             Items = type.GetGenericArguments().Select(contractCollection.GetOrAddWriteContract).ToList();
         }
 
-        public TupleWriteContract(IReadOnlyList<IWriteContract> items)
-        {
-            Items = items;
-        }
+        internal TupleWriteContract(IReadOnlyList<IWriteContract> items) => Items = items;
 
+        /// <inheritdoc />
         public override bool Equals(Contract other) => other is TupleWriteContract o && o.Items.SequenceEqual(Items);
 
+        /// <inheritdoc />
         protected override int ComputeHashCode()
         {
             unchecked
@@ -137,11 +149,9 @@ namespace Dasher.Contracts.Types
 
         internal override IEnumerable<Contract> Children => Items.Cast<Contract>();
 
-        internal override string MarkupValue
-        {
-            get { return $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}"; }
-        }
+        internal override string MarkupValue => $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}";
 
+        /// <inheritdoc />
         public IWriteContract CopyTo(ContractCollection collection)
         {
             return collection.GetOrCreate(this, () => new TupleWriteContract(Items.Select(i => i.CopyTo(collection)).ToList()));

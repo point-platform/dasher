@@ -31,25 +31,41 @@ using Dasher.Utils;
 
 namespace Dasher.Contracts.Types
 {
-    internal sealed class UnionWriteContract : ByRefContract, IWriteContract
+    /// <summary>
+    /// Contract to use when writing a value having union type.
+    /// </summary>
+    public sealed class UnionWriteContract : ByRefContract, IWriteContract
     {
-        public static bool CanProcess(Type type) => Union.IsUnionType(type);
+        internal static bool CanProcess(Type type) => Union.IsUnionType(type);
 
+        /// <summary>
+        /// Details of a member type within a union, for writing.
+        /// </summary>
         public struct Member
         {
+            /// <summary>
+            /// The ID used in serialised format that identifies this member type.
+            /// </summary>
             public string Id { get; }
+
+            /// <summary>
+            /// The contract to use when writing this member type's value.
+            /// </summary>
             public IWriteContract Contract { get; }
 
-            public Member(string id, IWriteContract contract)
+            internal Member(string id, IWriteContract contract)
             {
                 Id = id;
                 Contract = contract;
             }
         }
 
+        /// <summary>
+        /// The members that comprise this union type.
+        /// </summary>
         public IReadOnlyList<Member> Members { get; }
 
-        public UnionWriteContract(Type type, ContractCollection contractCollection)
+        internal UnionWriteContract(Type type, ContractCollection contractCollection)
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be a union.", nameof(type));
@@ -59,12 +75,9 @@ namespace Dasher.Contracts.Types
                 .ToArray();
         }
 
-        private UnionWriteContract(IReadOnlyList<Member> members)
-        {
-            Members = members;
-        }
+        private UnionWriteContract(IReadOnlyList<Member> members) => Members = members;
 
-        public UnionWriteContract(XElement element, Func<string, IWriteContract> resolveContract, ICollection<Action> bindActions)
+        internal UnionWriteContract(XElement element, Func<string, IWriteContract> resolveContract, ICollection<Action> bindActions)
         {
             var members = new List<Member>();
 
@@ -87,11 +100,13 @@ namespace Dasher.Contracts.Types
             Members = members;
         }
 
+        /// <inheritdoc />
         public override bool Equals(Contract other)
         {
             return other is UnionWriteContract o && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Contract.Equals(b.Contract));
         }
 
+        /// <inheritdoc />
         protected override int ComputeHashCode()
         {
             unchecked
@@ -121,22 +136,36 @@ namespace Dasher.Contracts.Types
                     new XAttribute("Contract", m.Contract.ToReferenceString()))));
         }
 
+        /// <inheritdoc />
         public IWriteContract CopyTo(ContractCollection collection)
         {
             return collection.GetOrCreate(this, () => new UnionWriteContract(Members.Select(m => new Member(m.Id, m.Contract.CopyTo(collection))).ToList()));
         }
     }
 
-    internal sealed class UnionReadContract : ByRefContract, IReadContract
+    /// <summary>
+    /// Contract to use when reading a value having union type.
+    /// </summary>
+    public sealed class UnionReadContract : ByRefContract, IReadContract
     {
-        public static bool CanProcess(Type type) => UnionWriteContract.CanProcess(type);
+        internal static bool CanProcess(Type type) => UnionWriteContract.CanProcess(type);
 
-        private struct Member
+        /// <summary>
+        /// Details of a member type within a union, for reading.
+        /// </summary>
+        public struct Member
         {
+            /// <summary>
+            /// The ID used in serialised format that identifies this member type.
+            /// </summary>
             public string Id { get; }
+
+            /// <summary>
+            /// The contract to use when reading this member type's value.
+            /// </summary>
             public IReadContract Contract { get; }
 
-            public Member(string id, IReadContract contract)
+            internal Member(string id, IReadContract contract)
             {
                 Id = id;
                 Contract = contract;
@@ -145,7 +174,7 @@ namespace Dasher.Contracts.Types
 
         private IReadOnlyList<Member> Members { get; }
 
-        public UnionReadContract(Type type, ContractCollection contractCollection)
+        internal UnionReadContract(Type type, ContractCollection contractCollection)
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be a union.", nameof(type));
@@ -157,7 +186,7 @@ namespace Dasher.Contracts.Types
 
         private UnionReadContract(IReadOnlyList<Member> members) => Members = members;
 
-        public UnionReadContract(XElement element, Func<string, IReadContract> resolveContract, ICollection<Action> bindActions)
+        internal UnionReadContract(XElement element, Func<string, IReadContract> resolveContract, ICollection<Action> bindActions)
         {
             var members = new List<Member>();
 
@@ -180,6 +209,7 @@ namespace Dasher.Contracts.Types
             Members = members;
         }
 
+        /// <inheritdoc />
         public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
             // TODO write EmptyContract test for this case
@@ -235,11 +265,13 @@ namespace Dasher.Contracts.Types
             return true;
         }
 
+        /// <inheritdoc />
         public override bool Equals(Contract other)
         {
             return other is UnionReadContract o && o.Members.SequenceEqual(Members, (a, b) => a.Id == b.Id && a.Contract.Equals(b.Contract));
         }
 
+        /// <inheritdoc />
         protected override int ComputeHashCode()
         {
             unchecked
@@ -269,6 +301,7 @@ namespace Dasher.Contracts.Types
                     new XAttribute("Contract", m.Contract.ToReferenceString()))));
         }
 
+        /// <inheritdoc />
         public IReadContract CopyTo(ContractCollection collection)
         {
             return collection.GetOrCreate(this, () => new UnionReadContract(Members.Select(m => new Member(m.Id, m.Contract.CopyTo(collection))).ToList()));

@@ -28,14 +28,24 @@ using System.Reflection;
 
 namespace Dasher.Contracts.Types
 {
-    internal sealed class DictionaryWriteContract : ByValueContract, IWriteContract
+    /// <summary>
+    /// Contract to use when writing a map of values from one domain to another.
+    /// </summary>
+    public sealed class DictionaryWriteContract : ByValueContract, IWriteContract
     {
-        public static bool CanProcess(Type type) => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>);
+        internal static bool CanProcess(Type type) => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>);
 
+        /// <summary>
+        /// The contract to use when writing keys.
+        /// </summary>
         public IWriteContract KeyContract { get; }
+
+        /// <summary>
+        /// The contract to use when writing values.
+        /// </summary>
         public IWriteContract ValueContract { get; }
 
-        public DictionaryWriteContract(Type type, ContractCollection contractCollection)
+        internal DictionaryWriteContract(Type type, ContractCollection contractCollection)
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyDictionary<int, int>)}<,>.", nameof(type));
@@ -43,17 +53,19 @@ namespace Dasher.Contracts.Types
             ValueContract = contractCollection.GetOrAddWriteContract(type.GetGenericArguments()[1]);
         }
 
-        public DictionaryWriteContract(IWriteContract keyContract, IWriteContract valueContract)
+        internal DictionaryWriteContract(IWriteContract keyContract, IWriteContract valueContract)
         {
             KeyContract = keyContract;
             ValueContract = valueContract;
         }
 
+        /// <inheritdoc />
         public override bool Equals(Contract other)
         {
             return other is DictionaryWriteContract o && o.KeyContract.Equals(KeyContract) && o.ValueContract.Equals(ValueContract);
         }
 
+        /// <inheritdoc />
         protected override int ComputeHashCode()
         {
             unchecked
@@ -69,20 +81,31 @@ namespace Dasher.Contracts.Types
 
         internal override string MarkupValue => $"{{dictionary {KeyContract.ToReferenceString()} {ValueContract.ToReferenceString()}}}";
 
+        /// <inheritdoc />
         public IWriteContract CopyTo(ContractCollection collection)
         {
             return collection.GetOrCreate(this, () => new DictionaryWriteContract(KeyContract.CopyTo(collection), ValueContract.CopyTo(collection)));
         }
     }
 
-    internal sealed class DictionaryReadContract : ByValueContract, IReadContract
+    /// <summary>
+    /// Contract to use when reading a map of values from one domain to another.
+    /// </summary>
+    public sealed class DictionaryReadContract : ByValueContract, IReadContract
     {
-        public static bool CanProcess(Type type) => DictionaryWriteContract.CanProcess(type);
+        internal static bool CanProcess(Type type) => DictionaryWriteContract.CanProcess(type);
 
-        private IReadContract KeyContract { get; }
-        private IReadContract ValueContract { get; }
+        /// <summary>
+        /// The contract to use when reading keys.
+        /// </summary>
+        public IReadContract KeyContract { get; }
 
-        public DictionaryReadContract(Type type, ContractCollection contractCollection)
+        /// <summary>
+        /// The contract to use when reading values.
+        /// </summary>
+        public IReadContract ValueContract { get; }
+
+        internal DictionaryReadContract(Type type, ContractCollection contractCollection)
         {
             if (!CanProcess(type))
                 throw new ArgumentException($"Type {type} must be {nameof(IReadOnlyDictionary<int, int>)}<,>.", nameof(type));
@@ -90,12 +113,13 @@ namespace Dasher.Contracts.Types
             ValueContract = contractCollection.GetOrAddReadContract(type.GetGenericArguments()[1]);
         }
 
-        public DictionaryReadContract(IReadContract keyContract, IReadContract valueContract)
+        internal DictionaryReadContract(IReadContract keyContract, IReadContract valueContract)
         {
             KeyContract = keyContract;
             ValueContract = valueContract;
         }
 
+        /// <inheritdoc />
         public bool CanReadFrom(IWriteContract writeContract, bool strict)
         {
             return writeContract is DictionaryWriteContract ws &&
@@ -103,11 +127,13 @@ namespace Dasher.Contracts.Types
                    ValueContract.CanReadFrom(ws.ValueContract, strict);
         }
 
+        /// <inheritdoc />
         public override bool Equals(Contract other)
         {
             return other is DictionaryReadContract o && o.KeyContract.Equals(KeyContract) && o.ValueContract.Equals(ValueContract);
         }
 
+        /// <inheritdoc />
         protected override int ComputeHashCode()
         {
             unchecked
@@ -123,6 +149,7 @@ namespace Dasher.Contracts.Types
 
         internal override string MarkupValue => $"{{dictionary {KeyContract.ToReferenceString()} {ValueContract.ToReferenceString()}}}";
 
+        /// <inheritdoc />
         public IReadContract CopyTo(ContractCollection collection)
         {
             return collection.GetOrCreate(this, () => new DictionaryReadContract(KeyContract.CopyTo(collection), ValueContract.CopyTo(collection)));

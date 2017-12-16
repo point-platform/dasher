@@ -29,7 +29,37 @@ using Dasher.Utils;
 
 namespace Dasher.Contracts.Types
 {
-    internal sealed class PrimitiveContract : ByValueContract, IWriteContract, IReadContract
+    /// <summary>
+    /// Contract to use when reading or writing the primitive values supported by Dasher.
+    /// </summary>
+    /// <remarks>
+    /// Supported types are:
+    /// <list type="bullet">
+    ///   <item><see cref="byte" /></item>
+    ///   <item><see cref="sbyte" /></item>
+    ///   <item><see cref="short" /></item>
+    ///   <item><see cref="ushort" /></item>
+    ///   <item><see cref="int" /></item>
+    ///   <item><see cref="uint" /></item>
+    ///   <item><see cref="long" /></item>
+    ///   <item><see cref="ulong" /></item>
+    ///   <item><see cref="float" /></item>
+    ///   <item><see cref="double" /></item>
+    ///   <item><see cref="bool" /></item>
+    ///   <item><see cref="char" /></item>
+    ///   <item><see cref="string" /></item>
+    ///   <item><see cref="byte" /> array</item>
+    ///   <item><see cref="ArraySegment{T}" /> of byte</item>
+    ///   <item><see cref="decimal" /></item>
+    ///   <item><see cref="DateTime" /></item>
+    ///   <item><see cref="DateTimeOffset" /></item>
+    ///   <item><see cref="TimeSpan" /></item>
+    ///   <item><see cref="IntPtr" /></item>
+    ///   <item><see cref="Guid" /></item>
+    ///   <item><see cref="Version" /></item>
+    /// </list>
+    /// </remarks>
+    public sealed class PrimitiveContract : ByValueContract, IWriteContract, IReadContract
     {
         private static readonly Dictionary<Type, string> _nameByType;
         private static readonly Dictionary<string, Type> _typeByName;
@@ -65,28 +95,41 @@ namespace Dasher.Contracts.Types
             _typeByName = _nameByType.ToDictionary(p => p.Value, p => p.Key);
         }
 
-        public static bool CanProcess(Type type) => _nameByType.ContainsKey(type);
+        internal static bool CanProcess(Type type) => _nameByType.ContainsKey(type);
 
-        private string TypeName { get; }
+        /// <summary>
+        /// Gets the name of the primitive type.
+        /// </summary>
+        public string TypeName { get; }
 
-        public PrimitiveContract(Type type)
+        /// <summary>
+        /// Gets the .NET type that maps to the primitive type.
+        /// </summary>
+        public Type Type { get; }
+
+        internal PrimitiveContract(Type type)
         {
-            if (!_nameByType.TryGetValue(type, out string name))
+            if (!_nameByType.TryGetValue(type, out var name))
                 throw new ArgumentException($"Type {type} is not a supported primitive.", nameof(type));
             TypeName = name;
+            Type = type;
         }
 
-        public PrimitiveContract(string typeName)
+        internal PrimitiveContract(string typeName)
         {
-            if (!_typeByName.ContainsKey(typeName))
+            if (!_typeByName.TryGetValue(typeName, out var type))
                 throw new ContractParseException($"Invalid primitive contract name \"{typeName}\".");
             TypeName = typeName;
+            Type = type;
         }
 
+        /// <inheritdoc />
         public bool CanReadFrom(IWriteContract writeContract, bool strict) => Equals(writeContract);
 
+        /// <inheritdoc />
         public override bool Equals(Contract other) => other is PrimitiveContract contract && contract.TypeName == TypeName;
 
+        /// <inheritdoc />
         protected override int ComputeHashCode() => TypeName.GetHashCode();
 
         internal override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
