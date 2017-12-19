@@ -74,7 +74,10 @@ namespace Dasher.Contracts
     /// </remarks>
     public abstract class Contract
     {
-        internal abstract IEnumerable<Contract> Children { get; }
+        /// <summary>
+        /// Gets the set of child contracts that this contract depends upon, if any.
+        /// </summary>
+        public abstract IEnumerable<Contract> Children { get; }
 
         /// <inheritdoc />
         public override bool Equals(object obj) => obj is Contract other && Equals(other);
@@ -103,13 +106,20 @@ namespace Dasher.Contracts
     /// <remarks>For complex, union and enum.</remarks>
     public abstract class ByRefContract : Contract
     {
-        private string _id;
+        [CanBeNull] private string _id;
 
+        /// <summary>
+        /// Gets the ID used to reference this contract.
+        /// </summary>
+        /// <remarks>
+        /// May be <c>null</c>.
+        /// </remarks>
+        /// <exception cref="ArgumentException"></exception>
         [CanBeNull]
-        internal string Id
+        public string Id
         {
             get => _id;
-            set
+            internal set
             {
                 if (string.IsNullOrWhiteSpace(value))
                     throw new ArgumentException("Must be non-blank string.");
@@ -129,7 +139,10 @@ namespace Dasher.Contracts
     /// <remarks>For primitive, nullable, list, dictionary, tuple, empty.</remarks>
     public abstract class ByValueContract : Contract
     {
-        internal abstract string MarkupValue { get; }
+        /// <summary>
+        /// Gets the markup string that represents this contract.
+        /// </summary>
+        public abstract string MarkupValue { get; }
 
         /// <inheritdoc />
         public override string ToString() => MarkupValue;

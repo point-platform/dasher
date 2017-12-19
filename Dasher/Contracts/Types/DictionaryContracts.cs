@@ -77,9 +77,11 @@ namespace Dasher.Contracts.Types
             }
         }
 
-        internal override IEnumerable<Contract> Children => new[] { (Contract)KeyContract, (Contract)ValueContract };
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => new[] { (Contract)KeyContract, (Contract)ValueContract };
 
-        internal override string MarkupValue => $"{{dictionary {KeyContract.ToReferenceString()} {ValueContract.ToReferenceString()}}}";
+        /// <inheritdoc />
+        public override string MarkupValue => $"{{dictionary {KeyContract.ToReferenceString()} {ValueContract.ToReferenceString()}}}";
 
         /// <inheritdoc />
         public IWriteContract CopyTo(ContractCollection collection)
@@ -145,9 +147,11 @@ namespace Dasher.Contracts.Types
             }
         }
 
-        internal override IEnumerable<Contract> Children => new[] { (Contract)KeyContract, (Contract)ValueContract };
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => new[] { (Contract)KeyContract, (Contract)ValueContract };
 
-        internal override string MarkupValue => $"{{dictionary {KeyContract.ToReferenceString()} {ValueContract.ToReferenceString()}}}";
+        /// <inheritdoc />
+        public override string MarkupValue => $"{{dictionary {KeyContract.ToReferenceString()} {ValueContract.ToReferenceString()}}}";
 
         /// <inheritdoc />
         public IReadContract CopyTo(ContractCollection collection)

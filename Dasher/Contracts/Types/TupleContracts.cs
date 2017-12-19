@@ -78,9 +78,11 @@ namespace Dasher.Contracts.Types
             }
         }
 
-        internal override IEnumerable<Contract> Children => Items.Cast<Contract>();
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => Items.Cast<Contract>();
 
-        internal override string MarkupValue => $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}";
+        /// <inheritdoc />
+        public override string MarkupValue => $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}";
 
         /// <inheritdoc />
         public IReadContract CopyTo(ContractCollection collection)
@@ -147,9 +149,11 @@ namespace Dasher.Contracts.Types
             }
         }
 
-        internal override IEnumerable<Contract> Children => Items.Cast<Contract>();
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => Items.Cast<Contract>();
 
-        internal override string MarkupValue => $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}";
+        /// <inheritdoc />
+        public override string MarkupValue => $"{{tuple {string.Join(" ", Items.Select(i => i.ToReferenceString()))}}}";
 
         /// <inheritdoc />
         public IWriteContract CopyTo(ContractCollection collection)

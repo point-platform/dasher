@@ -40,9 +40,11 @@ namespace Dasher.Contracts.Types
         /// <inheritdoc />
         public override bool Equals(Contract other) => other is EmptyContract;
 
-        internal override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
 
-        internal override string MarkupValue => "{empty}";
+        /// <inheritdoc />
+        public override string MarkupValue => "{empty}";
 
         /// <inheritdoc />
         protected override int ComputeHashCode() => MarkupValue.GetHashCode();

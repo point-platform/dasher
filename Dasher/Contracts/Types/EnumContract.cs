@@ -72,7 +72,8 @@ namespace Dasher.Contracts.Types
                 : _memberNames.IsSupersetOf(that.MemberNames);
         }
 
-        internal override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
 
         /// <inheritdoc />
         public override bool Equals(Contract other) => other is EnumContract e && _memberNames.SetEquals(e._memberNames);

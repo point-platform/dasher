@@ -132,9 +132,11 @@ namespace Dasher.Contracts.Types
         /// <inheritdoc />
         protected override int ComputeHashCode() => TypeName.GetHashCode();
 
-        internal override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => EmptyArray<Contract>.Instance;
 
-        internal override string MarkupValue => TypeName;
+        /// <inheritdoc />
+        public override string MarkupValue => TypeName;
 
         IWriteContract IWriteContract.CopyTo(ContractCollection collection) => collection.Intern(this);
         IReadContract IReadContract.CopyTo(ContractCollection collection) => collection.Intern(this);

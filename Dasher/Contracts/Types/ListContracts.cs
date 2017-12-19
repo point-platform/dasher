@@ -59,9 +59,11 @@ namespace Dasher.Contracts.Types
         /// <inheritdoc />
         protected override int ComputeHashCode() => unchecked((int)0xA4A76926 ^ ItemContract.GetHashCode());
 
-        internal override IEnumerable<Contract> Children => new[] { (Contract)ItemContract };
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => new[] { (Contract)ItemContract };
 
-        internal override string MarkupValue => $"{{list {ItemContract.ToReferenceString()}}}";
+        /// <inheritdoc />
+        public override string MarkupValue => $"{{list {ItemContract.ToReferenceString()}}}";
 
         /// <inheritdoc />
         public IWriteContract CopyTo(ContractCollection collection)
@@ -103,9 +105,11 @@ namespace Dasher.Contracts.Types
         /// <inheritdoc />
         protected override int ComputeHashCode() => unchecked((int)0x9ABCF854 ^ ItemContract.GetHashCode());
 
-        internal override IEnumerable<Contract> Children => new[] { (Contract)ItemContract };
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => new[] { (Contract)ItemContract };
 
-        internal override string MarkupValue => $"{{list {ItemContract.ToReferenceString()}}}";
+        /// <inheritdoc />
+        public override string MarkupValue => $"{{list {ItemContract.ToReferenceString()}}}";
 
         /// <inheritdoc />
         public IReadContract CopyTo(ContractCollection collection)

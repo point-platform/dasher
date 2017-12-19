@@ -128,7 +128,8 @@ namespace Dasher.Contracts.Types
             }
         }
 
-        internal override IEnumerable<Contract> Children => Fields.Select(f => f.Contract).Cast<Contract>();
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => Fields.Select(f => f.Contract).Cast<Contract>();
 
         internal override XElement ToXml()
         {
@@ -335,7 +336,8 @@ namespace Dasher.Contracts.Types
             }
         }
 
-        internal override IEnumerable<Contract> Children => Fields.Select(f => f.Contract).Cast<Contract>();
+        /// <inheritdoc />
+        public override IEnumerable<Contract> Children => Fields.Select(f => f.Contract).Cast<Contract>();
 
         internal override XElement ToXml()
         {
